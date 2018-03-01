@@ -1,0 +1,65 @@
+.flippant {
+	transform: perspective(500px) rotateY(0deg);
+	-webkit-transform: perspective(500px) rotateY(0deg);
+	-moz-transform: perspective(500px) rotateY(0deg);
+	/*z-index: 200;*/
+}
+
+.flippant-back {
+	transform: perspective(500px) rotateY(-180deg);
+	-moz-transform: perspective(500px) rotateY(-180deg);
+	-webkit-transform: perspective(500px) rotateY(-180deg);
+	height: 0;
+	/*z-index: 200;*/
+}
+
+.flippant, .flippant-back {
+	transform-style: preserve-3d;
+	-webkit-transform-style: preserve-3d;
+	-moz-transform-style: preserve-3d;
+
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+}
+
+.flippant, .flipper {
+	-o-transition: all .5s ease-in-out;
+	-ms-transition: all .5s ease-in-out;
+	-moz-transition: all .5s ease-in-out;
+	-webkit-transition: all .5s ease-in-out;
+	transition: all .5s ease-in-out;
+}
+
+.flippant.flipped {
+	transform: perspective(500px) rotateY(180deg);
+	-moz-transform: perspective(500px) rotateY(180deg);
+	-webkit-transform: perspective(500px) rotateY(180deg);
+
+}
+
+.flippant-back.flipped  {
+	transform: perspective(500px) rotateY(0deg);
+	-moz-transform: perspective(500px) rotateY(0deg);
+	-webkit-transform: perspective(500px) rotateY(0deg);
+}
+
+.flippant-modal-dark, .flippant-modal-light {
+	position: fixed;
+	margin: 0;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	background: rgba(255,255,255,1);
+}
+
+.flippant-modal-dark, .flippant-modal-dark p { color: #000;}
+
+.flippant-modal-light {
+	background: rgba(230,230,230,230.7);
+	box-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+	border-radius: 5px;
+	border: 1px solid #aaa;
+}
