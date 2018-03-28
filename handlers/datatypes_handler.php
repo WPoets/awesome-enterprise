@@ -193,7 +193,7 @@ function aw2_arr_set($atts,$content=null,$shortcode){
 
 function aw2_arr_create($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
+
 	$ab=new array_builder();
 	$return_value=$ab->parse($content);
 	$return_value=aw2_library::post_actions('all',$return_value,$atts);
@@ -212,8 +212,10 @@ public $is_api=false;
 //public $ctr=0;
 
 public function parse($str){
+	
 	$this->str=$str;
-	while (!ctype_space($this->str)) {
+	
+	while (!ctype_space($this->str) && $this->str!=='') {
 		//$this->ctr++;
 		//d('counter',$this->ctr); 
 		//if($this->ctr>=50)die();
@@ -234,14 +236,20 @@ public function parse($str){
 }	
 
 private function next_element(){
-	$pattern = '/\s*\[([a-zA-Z].*?)(\/]|])/';
+	//$pattern = '/\s*\[([a-zA-Z].*?)(\/]|])/';
+	
+	$pattern = '/\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])/';
+	// <whitespace>[<atleast one character><any thing lazy>(optional /)] 
 	$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
+
+	
 	if(!$reply){
 		echo '<br>Remaining String.' . $this->str;
 		echo '<br>No elements found in the above string.';
 		die();
 	}
 	$text=$match[1][0];	
+	
 	$state=$match[2][0];
 	$next_char= strlen($match[2][0]) + $match[2][1];	
 	$this->str=substr($this->str,$next_char);
@@ -249,7 +257,7 @@ private function next_element(){
 	$this->new_node($text,$state);
 }
 
-//first node or child node
+//Extract all the attributes of the node
 private function new_node($text,$state){
 	$atts=array();
 	$pattern = '/([-a-zA-Z0-9_.]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
@@ -304,9 +312,12 @@ private function new_node($text,$state){
 		$ptr=&$this->arr; 
 
 
+		
 	
 	//it is do. It has to be executed
 	if($item_name=='do'){
+		
+
 		$pattern = '/^((?s:.*?))(\[\/do\])/';
 		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 		if(!$reply){
@@ -341,81 +352,6 @@ private function new_node($text,$state){
 		return;
 	}
 
-	//it is do. It has to be executed
-	if($item_name=='aw2.do'){
-		$pattern = '/^((?s:.*?))(\[\/aw2.do\])/';
-		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-		if(!$reply){
-			echo '<br>Remaining String.' . $this->str;
-			echo '<br>. Something is wrong. A do was not closed';
-			die();
-		}
-		$do=$match[1][0];
-		$next_char= strlen($match[2][0]) + $match[2][1];	
-		$this->str=substr($this->str,$next_char);
-		$result=aw2_library::parse_shortcode($do);
-		if(array_key_exists('_return',aw2_library::$stack)){
-			$result=aw2_library::$stack['_return'];
-			unset(aw2_library::$stack['_return']);
-		}
-	
-		if(is_array($result)){
-			if(!is_array($ptr))$ptr=array();
-
-			foreach ($result as $key => $value) {
-				if(is_array($ptr[$key])){
-					$ptr[$key]=array_merge($ptr[$key],$value);
-				}
-				else	
-					$ptr[$key]=$value;
-			}
-		}
-		else
-			$this->str=$result . $this->str ;
-
-		return;
-	}
-	
-	//it is run. Module has to be called
-	if($item_name=='aw2.run'){
-		$run_content='';
-
-		if ($state==']'){
-			//it is a open node closing node
-			$pattern = '/^((?s:.*?))(\[\/aw2.run\])/';
-			$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-			if(!$reply){
-				echo '<br>Remaining String.' . $this->str;
-				echo '<br>. Something is wrong. aw2.run was not closed';
-				die();
-			}
-			$run_content=$match[1][0];
-			$next_char= strlen($match[2][0]) + $match[2][1];	
-			$this->str=substr($this->str,$next_char);
-		}
-	
-		$result=awesome2_run($atts,$run_content,'aw2.run');
-		if(array_key_exists('_return',aw2_library::$stack)){
-			$result=aw2_library::$stack['_return'];
-			unset(aw2_library::$stack['_return']);
-		}
-	
-		if(is_array($result)){
-			if(!is_array($ptr))$ptr=array();
-
-			foreach ($result as $key => $value) {
-				if(is_array($ptr[$key])){
-					$ptr[$key]=array_merge($ptr[$key],$value);
-				}
-				else	
-					$ptr[$key]=$value;
-			}
-		}
-		else
-			$this->str=$result . $this->str ;
-
-		return;
-	}
 	
 	if(!is_array($ptr))$ptr=array();
 	$raw=false;			
@@ -471,7 +407,9 @@ private function new_node($text,$state){
 private function within_element(){
 	$last_node=end($this->stack);
 	$name=$last_node->element_name;
+	
 	if($last_node->raw){
+		
 		$pattern = '/((?s:.*?))(\[\/' . $name . '\])/';
 		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 		if(!$reply){
@@ -487,39 +425,8 @@ private function within_element(){
 		return;
 	}
 	
-	if($name=='code' && $this->is_api){
-		$pattern = '/((?s:.*?))(\[\/' . $name . '\])/';
-		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-		if(!$reply){
-			echo '<br>Remaining String.' . $this->str;
-			echo '<br>Code element was started but not ended';
-			echo '<br>' . $name ;
-			die();
-		}
-		$next_char= strlen($match[2][0]) + $match[2][1];	
-		$this->str=substr($this->str,$next_char);		
-		$last_node->ptr=$match[1][0];
-		array_pop($this->stack);
-		return;
-	}	
-
-	if($name=='on_submit' && $this->is_api){
-		$pattern = '/((?s:.*?))(\[\/' . $name . '\])/';
-		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-		if(!$reply){
-			echo '<br>Remaining String.' . $this->str;
-			echo '<br>on_submit element was started but not ended';
-			echo '<br>' . $name ;
-			die();
-		}
-		$next_char= strlen($match[2][0]) + $match[2][1];	
-		$this->str=substr($this->str,$next_char);		
-		$last_node->ptr=$match[1][0];
-		array_pop($this->stack);
-		return;
-	}	
-	
-	$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|(?:\s*\[([a-zA-Z].*?)(\/]|]))|(?s:(.*?)(\[\/' . $name .'\]))/s';	
+	//$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|(?:\s*\[([a-zA-Z].*?)(\/]|]))|(?s:(.*?)(\[\/' . $name .'\]))/s';	
+		$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])|(?s:(.*?)(\[\/' . $name .'\]))/s';	
 	$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 	if(!$reply){
 		echo '<br>Remaining String.' . $this->str;
@@ -536,6 +443,7 @@ private function within_element(){
 			;
 		else	
 			$last_node->ptr=$match[1][0];
+		
 		$next_char= strlen($match[2][0]) + $match[2][1];	
 		$this->str=substr($this->str,$next_char);
 		array_pop($this->stack);
@@ -553,10 +461,15 @@ private function within_element(){
 		$last_node=end($this->stack);
 		if(is_array($last_node->ptr))
 			;
-		else	
+		else{
 			$last_node->ptr=$match[5][0];
+			$pos = strrpos($last_node->ptr, "[");
+			if ($pos !== false)$last_node->ptr=aw2_library::parse_shortcode($last_node->ptr);
+		}	
 		$next_char= strlen($match[6][0]) + $match[6][1];	
 		$this->str=substr($this->str,$next_char);
+
+
 		array_pop($this->stack);
 	}
 }

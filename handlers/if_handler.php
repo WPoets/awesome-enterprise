@@ -4,6 +4,7 @@
 aw2_library::add_library('if','If Functions');
 
 function aw2_if_equal($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['equal']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -13,6 +14,7 @@ function aw2_if_equal($atts,$content=null,$shortcode){
 }
 
 function aw2_if_not_equal($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['not_equal']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -22,6 +24,7 @@ function aw2_if_not_equal($atts,$content=null,$shortcode){
 }
 
 function aw2_if_greater_equal($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['greater_equal']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -31,6 +34,7 @@ function aw2_if_greater_equal($atts,$content=null,$shortcode){
 }
 
 function aw2_if_greater_than($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['greater_than']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -40,6 +44,7 @@ function aw2_if_greater_than($atts,$content=null,$shortcode){
 }
 
 function aw2_if_less_equal($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['less_equal']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -49,6 +54,7 @@ function aw2_if_less_equal($atts,$content=null,$shortcode){
 }
 
 function aw2_if_less_than($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['less_than']=$atts['rhs'];
 	unset($atts['lhs']);
@@ -263,6 +269,7 @@ function aw2_if_unhandled($atts,$content=null,$shortcode){
 }
 
 function aw2_if_contains($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['contains']=$atts['needle'];
 	$atts['list']=$atts['haystack'];
 	unset($atts['needle']);
@@ -272,6 +279,7 @@ function aw2_if_contains($atts,$content=null,$shortcode){
 }
 
 function aw2_if_not_contains($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['not_contains']=$atts['needle'];
 	$atts['list']=$atts['haystack'];
 	unset($atts['needle']);
@@ -282,19 +290,11 @@ function aw2_if_not_contains($atts,$content=null,$shortcode){
 
 
 function aw2_if_helper($atts,$content=null,$shortcode){
-	$cond=aw2_library::pre_actions('all',$atts,$content,$shortcode);
-	extract( shortcode_atts( array(
-		'main' => null
-	), $atts) );
+	$cond=aw2_library::pre_actions('check_if',$atts,$content,$shortcode);
 	
 	$stack_id=aw2_library::push_child('if','if');
 	$call_stack=&aw2_library::get_array_ref('call_stack',$stack_id);
 	
-	if($main){
-		$check=aw2_library::get($main);
-		if($check==false)
-			$cond=false;
-	}
 	
 	$return_value= '';
 	

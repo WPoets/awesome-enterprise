@@ -8,19 +8,19 @@ function aw2_query_meta_query($atts,$content=null,$shortcode){
 	$dataset=$atts['dataset'];
 
 	global $wpdb;
-	$results = $wpdb->get_results($dataset['query']);
+	$results = $wpdb->get_results($dataset['query'],ARRAY_A);
 	
 	$dataset['raw']=$results;
 	
-	if($dataset['transpose'] == "yes"){
+	if((isset($dataset['transpose']) && $dataset['transpose'] == "yes") || (isset($dataset['transform']) && $dataset['transform'] == "yes") ){
 		$dataset['rows']=array();
 		foreach($results as $result){
-			switch($result->type){
+			switch($result['type']){
 				case 'data_id':
-					$dataset['rows'][$result->data_id]=array();
+					$dataset['rows'][$result['data_id']]=array();
 					break;
 				case 'meta':
-					$dataset['rows'][$result->data_id][$result->meta_key]=$result->meta_value;
+					$dataset['rows'][$result['data_id']][$result['meta_key']]=$result['meta_value'];
 					break;
 			}
 		}

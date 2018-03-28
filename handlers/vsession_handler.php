@@ -13,14 +13,14 @@ function aw2_vsession_create($atts,$content=null,$shortcode){
 	$length=15;
 	$chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	
-	$token=substr( str_shuffle( $chars ), 0, $length );
+	$token=substr( str_shuffle($chars ), 0, $length );
 	$nonce=wp_create_nonce($token);
 	$ticket=$token . '.' . $nonce;
 	setcookie($id, $ticket, -1, '/');
+	
+	
 	return ;
 }
-
-aw2_library::add_library('vsession','Virtual Session Handler');
 
 function aw2_vsession_exists($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
@@ -38,7 +38,7 @@ function aw2_vsession_exists($atts,$content=null,$shortcode){
 		$nonce=$pieces[1];
 		
 		//verify that nonce is valid
-		if(wp_create_nonce($token)!=$nonce)$return_value = true;
+		if(wp_create_nonce($token) !==$nonce)$return_value = true;
 	}
 	
 	$return_value=aw2_library::post_actions('all',$return_value,$atts);
@@ -87,8 +87,7 @@ function aw2_vsession_set($atts,$content=null,$shortcode){
 	if($prefix)$key=$prefix . $key;
 	$redis->hMSet($ticket, array($key => $value));
 	
-	$redis->set($key, $value);
-	$redis->setTimeout($key, $ttl*60);
+	$redis->setTimeout($ticket, $ttl*60);
 	return;
 }
 
@@ -102,7 +101,6 @@ function aw2_vsession_get($atts,$content=null,$shortcode){
 	), $atts) );
 
 	if(!$id)$id='aw2_vsesssion'	;
-	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
 	$redis = new Redis();
@@ -119,7 +117,16 @@ function aw2_vsession_get($atts,$content=null,$shortcode){
 		
 		//verify that nonce is valid
 		if(wp_create_nonce($token)==$nonce){
-			$return_value=$redis->hMGet($ticket, array($main));
+			
+			if(!$main){
+				$return_value=$redis->hGetAll($ticket);
+			}			
+			else{
+				if(!$redis->hExists($ticket,$main))
+					$return_value='';
+				else
+					$return_value=$redis->hGet($ticket, $main);
+			}
 		}
 	}
 	

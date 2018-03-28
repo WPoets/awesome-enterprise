@@ -1,6 +1,9 @@
 <?php
 
+/*
 aw2_library::add_shortcode('search','new_ticket', 'search_new_ticket');
+
+
 
 function search_new_ticket($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
@@ -94,6 +97,7 @@ function search_get_ticket($atts,$content=null,$shortcode){
 	return $return_value;
 }
  
+*/ 
 aw2_library::add_shortcode('search','form_data', 'search_form_data');
 function search_form_data($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
@@ -115,18 +119,17 @@ function search_save_csv_page($atts,$content=null,$shortcode){
 	extract( shortcode_atts( array(
 	'pageno'=>'',
 	'rows'=>'',
-	'key'=>''
+	'key'=>'',
+	'ttl' => ''
 	), $atts) );
 	
-	$key = $key.":data";
-	
+ 
 	$redis = new Redis();
 	$redis->connect('127.0.0.1', 6379);
 	$database_number = 12;
 	$redis->select($database_number);
 	
-	$ttl = $atts['ttl'];
-	
+
 	$buffer = fopen('php://memory','w');
 	foreach ($rows as $line) {
 		fputcsv($buffer, $line);
@@ -141,14 +144,4 @@ function search_save_csv_page($atts,$content=null,$shortcode){
 	else
 		$redis->setTimeout($key, $ttl*60);
 	
-}
-
-aw2_library::add_shortcode('search','get_csv', 'search_get_csv');
-function search_get_csv($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-	
-	extract( shortcode_atts( array(
-	'main'=>''
-	), $atts) );
-
 }

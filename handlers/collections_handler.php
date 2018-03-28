@@ -13,6 +13,12 @@ function aw2_collections_add($atts,$content=null,$shortcode){
 	aw2_library::add_collection($main,$atts,$desc);
 }
 
+
+//////// Collections Library ///////////////////
+aw2_library::add_library('collection','Collections Library');
+
+
+
 function aw2_collection_unhandled($atts,$content,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract( shortcode_atts( array(
@@ -67,8 +73,6 @@ function aw2_collection_include($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
-//////// Collections Library ///////////////////
-aw2_library::add_library('collection','Collections Library');
 
 function aw2_collection_export($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;

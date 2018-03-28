@@ -76,7 +76,12 @@ static function setup(){
 	}
 }
 
-
+static function redis_connect($database_number){
+	$redis = new Redis();
+	$redis->connect('127.0.0.1', 6379);
+	$redis->select($database_number);
+	return $redis;	
+}
 // takes a json and returns back an array
 static function get_clean_args($content,&$atts=null){
 	if($content==null || $content=='')return '';
@@ -260,7 +265,6 @@ static function add_shortcode($library,$tag, $func,$desc=null) {
 	$handler[$tag]['name']=$tag;
 	$handler[$tag]['desc']=$desc;
 	$handler[$tag]['func']=$func;
-	
 }
 
 static $libraries=array();
@@ -270,7 +274,6 @@ static function add_library($library,$desc=null,$alias=null) {
 	if(!$alias)$alias=$library;
 	$handler['alias']=$alias;
 	$handler['desc']=$desc;
-	
 }
 
 
@@ -281,6 +284,17 @@ static function add_collection($name,$atts,$desc=null) {
 	$handler=&self::get_array_ref('handlers',$name);
 	$handler=array_merge($handler,$arr);
 }
+
+
+
+static function register_service($name,$atts,$desc=null) {
+	$arr=$atts;
+	$arr['alias']='service';
+	$arr['desc']=$desc;
+	$handler=&self::get_array_ref('handlers',$name);
+	$handler=array_merge($handler,$arr);
+}
+
 
 static function collection_define($collection,$atts){
 	if (!is_array(self::$stack['collections']))self::$stack['collections']=array();
@@ -384,20 +398,18 @@ static function set_error($msg){
 static function pre_actions($actions,&$atts=null,$content,$shortcode=null){
 	$return_value=true;
 	if(!$atts) return $return_value;
-	if($actions='all'){
+	if($actions==='all'){
 		$return_value=self::pre_action_parse($atts);
 		$return_value=self::checkcondition($atts);
 		return $return_value;
 	}
-	foreach ($actions as $action) {
-		switch ($action) {
-			case 'parse_attributes':
-				$return_value=self::pre_action_parse($atts);
-				break;
-			case 'check_if':
-				$return_value=self::checkcondition($atts);
-				break;
-		}
+	switch ($actions) {
+		case 'parse_attributes':
+			$return_value=self::pre_action_parse($atts);
+			break;
+		case 'check_if':
+			$return_value=self::checkcondition($atts);
+			break;
 	}
 	return $return_value;
 	
@@ -442,365 +454,363 @@ static function pre_action_parse(&$atts) {
 }
 	
 static function checkcondition(&$atts){
-	  if($atts){
-		  
-      if(array_key_exists('check_conditions',$atts)){
-				$arr=self::get($atts['check_conditions']);
-				$result=self::checkcondition($arr);
-				if($result==false)
-					return false;
-				else
-					unset($atts['check_conditions']);  
-      }
-			
-			
-      if(array_key_exists('ignore',$atts)){
-				return false;
-      }
+	if(!$atts)return true;
 
-      if(array_key_exists('odd',$atts)){
-        if((int)$atts['odd'] % 2 == 0)
-			return false;
-		else
-			unset($atts['odd']);  
-      }
-      
-      if(array_key_exists('even',$atts)){
-        if((int)$atts['even'] % 2 != 0)
-			return false;
-		else
-			unset($atts['even']);  
-      }
 
-      if(array_key_exists('true',$atts)){
-        if($atts['true']!=true)
+		if(array_key_exists('ignore',$atts)){
 			return false;
-		else
-			unset($atts['true']); 
 		}
 
-		if(array_key_exists('false',$atts)){
-        if($atts['false']==true)
-			return false;
-		else
-			unset($atts['false']); 
-		}
-
-		if(array_key_exists('yes',$atts)){
-      if($atts['yes']!=='yes')
-				return false;
-			else
-				unset($atts['yes']); 
-		}
-
-		if(array_key_exists('no',$atts)){
-      if($atts['no']!=='no')
-				return false;
-			else
-				unset($atts['no']); 
+		if(array_key_exists('odd',$atts)){
+			if((int)$atts['odd'] % 2 == 0)
+		return false;
+	else
+		unset($atts['odd']);  
 		}
 		
-		if(array_key_exists('arr',$atts)){
-      if(!is_array($atts['arr']))
-				return false;
-			else
-				unset($atts['arr']); 
-		}
-		
-		if(array_key_exists('not_arr',$atts)){
-      if(is_array($atts['not_arr']))
-				return false;
-			else
-				unset($atts['not_arr']); 
-		}
-		
-		if(array_key_exists('str',$atts)){
-      if(!is_string($atts['str']))
-				return false;
-			else
-				unset($atts['str']); 
-		}
-		
-		if(array_key_exists('not_str',$atts)){
-      if(is_string($atts['not_str']))
-				return false;
-			else
-				unset($atts['not_str']); 
-		}
-		
-		if(array_key_exists('bool',$atts)){
-      if(!is_bool($atts['bool']))
-				return false;
-			else
-				unset($atts['bool']); 
-		}
-		
-		if(array_key_exists('not_bool',$atts)){
-      if(is_bool($atts['not_bool']))
-				return false;
-			else
-				unset($atts['not_bool']); 
-		}
-		
-		if(array_key_exists('num',$atts)){
-      if(!is_float($atts['num']))
-				return false;
-			else
-				unset($atts['num']); 
-		}
-		
-		if(array_key_exists('not_num',$atts)){
-      if(is_float($atts['not_num']))
-				return false;
-			else
-				unset($atts['not_num']); 
+		if(array_key_exists('even',$atts)){
+			if((int)$atts['even'] % 2 != 0)
+		return false;
+	else
+		unset($atts['even']);  
 		}
 
-		if(array_key_exists('int',$atts)){
-      if(!is_int($atts['int']))
-				return false;
-			else
-				unset($atts['int']); 
-		}
-		
-		if(array_key_exists('not_int',$atts)){
-      if(is_int($atts['not_int']))
-				return false;
-			else
-				unset($atts['not_int']); 
-		}
-		
-		if(array_key_exists('date_obj',$atts)){
-      if(!get_class($atts['date_obj'])=='DateTime')
-				return false;
-			else
-				unset($atts['date_obj']); 
-		}
-		
-		if(array_key_exists('not_date_obj',$atts)){
-      if(get_class($atts['date_obj']))
-				return false;
-			else
-				unset($atts['not_date_obj']); 
-		}
-
-		if(array_key_exists('obj',$atts)){
-      if(!is_object($atts['obj']))
-				return false;
-			else
-				unset($atts['obj']); 
-		}
-		
-		if(array_key_exists('not_obj',$atts)){
-      if(is_object($atts['not_obj']))
-				return false;
-			else
-				unset($atts['not_obj']); 
-		}
-		
-		
-      if(array_key_exists('empty',$atts)){
-        if(!empty($atts['empty']))
-			return false;
-		else
-			unset($atts['empty']); 
-		}
-
-		if(array_key_exists('not_empty',$atts)){
-			if(empty($atts['not_empty']))
-				return false;
-			else
-				unset($atts['not_empty']); 
-		}
-
-		if(array_key_exists('whitespace',$atts)){
-			if(!(ctype_space($atts['whitespace']) || $atts['whitespace'] == ''))return false;
-		else
-			unset($atts['whitespace']); 
-		}
-
-		if(array_key_exists('not_whitespace',$atts)){
-			if(ctype_space($atts['not_whitespace']) || $atts['not_whitespace'] == '')return false;
-		else
-			unset($atts['not_whitespace']); 
-		}
-		
-      if(array_key_exists('user_can',$atts)){
-		if(current_user_can($atts['user_can'])===false)
-			return false;
-		else
-			unset($atts['user_can']); 
-      }
-	  
-      if(array_key_exists('user_cannot',$atts)){
-		if(current_user_can($atts['user_cannot']))
-			return false;
-		else
-			unset($atts['user_cannot']); 
-      }
-      
-      if(array_key_exists('logged_in',$atts)){
-		if(!is_user_logged_in())
-			return false;
-		else
-			unset($atts['logged_in']); 
-      }
-
-      if(array_key_exists('not_logged_in',$atts)){
-		if(is_user_logged_in())
-			return false;
-		else
-			unset($atts['not_logged_in']); 
-      }
-
-      if(array_key_exists('request_exists',$atts)){
-		if(self::get_request($atts['request_exists'])==null)
-			return false;
-		else
-			unset($atts['request_exists']); 		  
-      }	  
-    
-      if(array_key_exists('request_not_exists',$atts)){
-		if(self::get_request($atts['request_not_exists'])!=null)
-			return false;
-		else
-			unset($atts['request_not_exists']); 		  
-      }
-
-      if(array_key_exists('ajax',$atts)){
-		if(self::get_request('ajax')!='true')
-			return false;
-		else
-			unset($atts['ajax']); 
-      }
-
-      if(array_key_exists('not_ajax',$atts)){
-		if(self::get_request('ajax')=='true')
-			return false;
-		else
-			unset($atts['not_ajax']); 
-      }
-	  
-      if(array_key_exists('request_part',$atts)){
-		if((self::get_request('part') ==$atts['request_part']) || (self::get_request('part')==null && $atts['request_part']=='default') )
-			unset($atts['request_part']); 
-		else
-			return false;	
-      }	  
-	
-      if(array_key_exists('list',$atts) && array_key_exists('contains',$atts) ){
-				if(!is_array($atts['list']))
-					$arr= explode( ',' ,$atts['list'] );
-				else
-					$arr=$atts['list']; 
-        if(!in_array($atts['contains'],$arr))
-			return false;
-        else 
-		{unset($atts['list']);unset($atts['contains']); }		
-      }
-
-      if(array_key_exists('list',$atts) && array_key_exists('not_contains',$atts) ){
-				if(!is_array($atts['list']))
-					$arr= explode( ',' ,$atts['list'] );
-				else
-					$arr=$atts['list']; 
-        if(in_array($atts['not_contains'],$arr))
-			return false;
-        else 
-		{unset($atts['list']);unset($atts['not_contains']); }		
-      }
-
-      if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
-        if($atts['cond']!=$atts['not_equal'])
-			{unset($atts['cond']);unset($atts['not_equal']); }		
-        else 
-			return false;
-      }
-
-      if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
-        if($atts['cond']==$atts['equal'])
-			{unset($atts['cond']);unset($atts['equal']); }		
-        else 
-			return false;
-      }
-
-      if(array_key_exists('cond',$atts) && array_key_exists('greater_than',$atts) ){
-        if($atts['cond']>$atts['greater_than'])
-			{unset($atts['cond']);unset($atts['greater_than']); }		
-        else 
-			return false;
-      }
-	  
-      if(array_key_exists('cond',$atts) && array_key_exists('less_than',$atts) ){
-        if($atts['cond']<$atts['less_than'])
-			{unset($atts['cond']);unset($atts['less_than']); }		
-        else 
-			return false;
-      }
-
-      if(array_key_exists('cond',$atts) && array_key_exists('greater_equal',$atts) ){
-        if($atts['cond']>=$atts['greater_equal'])
-			{unset($atts['cond']);unset($atts['greater_equal']); }		
-        else 
-			return false;
-      }
-
-      if(array_key_exists('cond',$atts) && array_key_exists('less_equal',$atts) ){
-        if($atts['cond']<=$atts['less_equal'])
-			{unset($atts['cond']);unset($atts['less_equal']); }		
-        else 
-			return false;
-      }
-	  
-	  
-      if(array_key_exists('require_once',$atts)){
-		$stack=&self::get_array_ref('require_once_stack');
-		if(array_key_exists($atts['require_once'],$stack))
-			return false;
-		else
-		{
-			self::set('require_once_stack.' . $atts['require_once'] ,true);
-			unset($atts['require_once']);	
-		}
-      }
-
-
-      if(array_key_exists('device',$atts)){
-		$detect = new Mobile_Detect;
-		$device_status=false;
-        $arr= explode( ',' ,$atts['device'] );
-        if($detect->isMobile() && !$detect->isTablet() && in_array('mobile',$arr) )
-			$device_status=true;
-		
-        if($detect->isTablet() && in_array('tablet',$arr) )
-			$device_status=true;
-		
-        if(!$detect->isMobile() && !$detect->isTablet() && in_array('desktop',$arr) )
-			$device_status=true;
-
-		if($device_status==false)
-			return false;		
-        else 
-			unset($atts['device']);	
-      }
-	  
-	  if(array_key_exists('in_array',$atts) && array_key_exists('contains',$atts) ){
-        
-        if(!self::in_array_r($atts['contains'],self::get($atts['in_array'])))
-			return false;
-        else 
-		{unset($atts['in_array']);unset($atts['contains']); }		
-      }
-	  
-	  if(array_key_exists('in_array',$atts) && array_key_exists('not_contains',$atts) ){
-        if(self::in_array_r($atts['not_contains'],self::get($atts['in_array'])))
-			return false;
-        else 
-		{unset($atts['in_array']);unset($atts['not_contains']); }		
-      }
-	  
-	  return true;
+		if(array_key_exists('true',$atts)){
+			if($atts['true']!=true)
+		return false;
+	else
+		unset($atts['true']); 
 	}
+
+	if(array_key_exists('false',$atts)){
+			if($atts['false']==true)
+		return false;
+	else
+		unset($atts['false']); 
+	}
+
+	if(array_key_exists('yes',$atts)){
+		if($atts['yes']!=='yes')
+			return false;
+		else
+			unset($atts['yes']); 
+	}
+
+	if(array_key_exists('no',$atts)){
+		if($atts['no']!=='no')
+			return false;
+		else
+			unset($atts['no']); 
+	}
+	
+	if(array_key_exists('arr',$atts)){
+		if(!is_array($atts['arr']))
+			return false;
+		else
+			unset($atts['arr']); 
+	}
+	
+	if(array_key_exists('not_arr',$atts)){
+		if(is_array($atts['not_arr']))
+			return false;
+		else
+			unset($atts['not_arr']); 
+	}
+	
+	if(array_key_exists('str',$atts)){
+		if(!is_string($atts['str']))
+			return false;
+		else
+			unset($atts['str']); 
+	}
+	
+	if(array_key_exists('not_str',$atts)){
+		if(is_string($atts['not_str']))
+			return false;
+		else
+			unset($atts['not_str']); 
+	}
+	
+	if(array_key_exists('bool',$atts)){
+		if(!is_bool($atts['bool']))
+			return false;
+		else
+			unset($atts['bool']); 
+	}
+	
+	if(array_key_exists('not_bool',$atts)){
+		if(is_bool($atts['not_bool']))
+			return false;
+		else
+			unset($atts['not_bool']); 
+	}
+	
+	if(array_key_exists('num',$atts)){
+		if(!is_numeric($atts['num']))
+			return false;
+		else
+			unset($atts['num']); 
+	}
+
+	if(array_key_exists('is_num',$atts)){
+		if(!is_numeric($atts['is_num']))
+			return false;
+		else
+			unset($atts['is_num']); 
+	}
+	
+	if(array_key_exists('not_num',$atts)){
+		if(is_numeric($atts['not_num']))
+			return false;
+		else
+			unset($atts['not_num']); 
+	}
+
+	if(array_key_exists('int',$atts)){
+		if(!is_int($atts['int']))
+			return false;
+		else
+			unset($atts['int']); 
+	}
+	
+	if(array_key_exists('not_int',$atts)){
+		if(is_int($atts['not_int']))
+			return false;
+		else
+			unset($atts['not_int']); 
+	}
+	
+	if(array_key_exists('date_obj',$atts)){
+		if(!get_class($atts['date_obj'])=='DateTime')
+			return false;
+		else
+			unset($atts['date_obj']); 
+	}
+	
+	if(array_key_exists('not_date_obj',$atts)){
+		if(get_class($atts['date_obj']))
+			return false;
+		else
+			unset($atts['not_date_obj']); 
+	}
+
+	if(array_key_exists('obj',$atts)){
+		if(!is_object($atts['obj']))
+			return false;
+		else
+			unset($atts['obj']); 
+	}
+	
+	if(array_key_exists('not_obj',$atts)){
+		if(is_object($atts['not_obj']))
+			return false;
+		else
+			unset($atts['not_obj']); 
+	}
+	
+	
+		if(array_key_exists('empty',$atts)){
+			if(!empty($atts['empty']))
+		return false;
+	else
+		unset($atts['empty']); 
+	}
+
+	if(array_key_exists('not_empty',$atts)){
+		if(empty($atts['not_empty']))
+			return false;
+		else
+			unset($atts['not_empty']); 
+	}
+
+	if(array_key_exists('whitespace',$atts)){
+		if($atts['whitespace'] === '' || !(ctype_space($atts['whitespace'])))return false;
+	else
+		unset($atts['whitespace']); 
+	}
+
+	if(array_key_exists('not_whitespace',$atts)){
+		if(ctype_space($atts['not_whitespace']) || $atts['not_whitespace'] === '')return false;
+	else
+		unset($atts['not_whitespace']); 
+	}
+
+	
+		if(array_key_exists('user_can',$atts)){
+	if(current_user_can($atts['user_can'])===false)
+		return false;
+	else
+		unset($atts['user_can']); 
+		}
+	
+		if(array_key_exists('user_cannot',$atts)){
+	if(current_user_can($atts['user_cannot']))
+		return false;
+	else
+		unset($atts['user_cannot']); 
+		}
+		
+		if(array_key_exists('logged_in',$atts)){
+	if(!is_user_logged_in())
+		return false;
+	else
+		unset($atts['logged_in']); 
+		}
+
+		if(array_key_exists('not_logged_in',$atts)){
+	if(is_user_logged_in())
+		return false;
+	else
+		unset($atts['not_logged_in']); 
+		}
+
+		if(array_key_exists('request_exists',$atts)){
+	if(self::get_request($atts['request_exists'])==null)
+		return false;
+	else
+		unset($atts['request_exists']); 		  
+		}	  
+	
+		if(array_key_exists('request_not_exists',$atts)){
+	if(self::get_request($atts['request_not_exists'])!=null)
+		return false;
+	else
+		unset($atts['request_not_exists']); 		  
+		}
+
+		if(array_key_exists('ajax',$atts)){
+	if(self::get_request('ajax')!='true')
+		return false;
+	else
+		unset($atts['ajax']); 
+		}
+
+		if(array_key_exists('not_ajax',$atts)){
+	if(self::get_request('ajax')=='true')
+		return false;
+	else
+		unset($atts['not_ajax']); 
+		}
+	
+		if(array_key_exists('request_part',$atts)){
+	if((self::get_request('part') ==$atts['request_part']) || (self::get_request('part')==null && $atts['request_part']=='default') )
+		unset($atts['request_part']); 
+	else
+		return false;	
+		}	  
+
+		if(array_key_exists('list',$atts) && array_key_exists('contains',$atts) ){
+			if(!is_array($atts['list']))
+				$arr= explode( ',' ,$atts['list'] );
+			else
+				$arr=$atts['list']; 
+			if(!in_array($atts['contains'],$arr))
+		return false;
+			else 
+	{unset($atts['list']);unset($atts['contains']); }		
+		}
+
+		if(array_key_exists('list',$atts) && array_key_exists('not_contains',$atts) ){
+			if(!is_array($atts['list']))
+				$arr= explode( ',' ,$atts['list'] );
+			else
+				$arr=$atts['list']; 
+			if(in_array($atts['not_contains'],$arr))
+		return false;
+			else 
+	{unset($atts['list']);unset($atts['not_contains']); }		
+		}
+
+		if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
+			if($atts['cond']!=$atts['not_equal'])
+		{unset($atts['cond']);unset($atts['not_equal']); }		
+			else 
+		return false;
+		}
+
+		if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
+			if($atts['cond']==$atts['equal'])
+		{unset($atts['cond']);unset($atts['equal']); }		
+			else 
+		return false;
+		}
+
+		if(array_key_exists('cond',$atts) && array_key_exists('greater_than',$atts) ){
+			if($atts['cond']>$atts['greater_than'])
+		{unset($atts['cond']);unset($atts['greater_than']); }		
+			else 
+		return false;
+		}
+	
+		if(array_key_exists('cond',$atts) && array_key_exists('less_than',$atts) ){
+			if($atts['cond']<$atts['less_than'])
+		{unset($atts['cond']);unset($atts['less_than']); }		
+			else 
+		return false;
+		}
+
+		if(array_key_exists('cond',$atts) && array_key_exists('greater_equal',$atts) ){
+			if($atts['cond']>=$atts['greater_equal'])
+		{unset($atts['cond']);unset($atts['greater_equal']); }		
+			else 
+		return false;
+		}
+
+		if(array_key_exists('cond',$atts) && array_key_exists('less_equal',$atts) ){
+			if($atts['cond']<=$atts['less_equal'])
+		{unset($atts['cond']);unset($atts['less_equal']); }		
+			else 
+		return false;
+		}
+	
+	
+		if(array_key_exists('require_once',$atts)){
+	$stack=&self::get_array_ref('require_once_stack');
+	if(array_key_exists($atts['require_once'],$stack))
+		return false;
+	else
+	{
+		self::set('require_once_stack.' . $atts['require_once'] ,true);
+		unset($atts['require_once']);	
+	}
+		}
+
+
+		if(array_key_exists('device',$atts)){
+	$detect = new Mobile_Detect;
+	$device_status=false;
+			$arr= explode( ',' ,$atts['device'] );
+			if($detect->isMobile() && !$detect->isTablet() && in_array('mobile',$arr) )
+		$device_status=true;
+	
+			if($detect->isTablet() && in_array('tablet',$arr) )
+		$device_status=true;
+	
+			if(!$detect->isMobile() && !$detect->isTablet() && in_array('desktop',$arr) )
+		$device_status=true;
+
+	if($device_status==false)
+		return false;		
+			else 
+		unset($atts['device']);	
+		}
+	
+	if(array_key_exists('in_array',$atts) && array_key_exists('contains',$atts) ){
+			
+			if(!self::in_array_r($atts['contains'],self::get($atts['in_array'])))
+		return false;
+			else 
+	{unset($atts['in_array']);unset($atts['contains']); }		
+		}
+	
+	if(array_key_exists('in_array',$atts) && array_key_exists('not_contains',$atts) ){
+			if(self::in_array_r($atts['not_contains'],self::get($atts['in_array'])))
+		return false;
+			else 
+	{unset($atts['in_array']);unset($atts['not_contains']); }		
+		}
+	
+	return true;
 }
 
 // post actions	
@@ -1341,6 +1351,10 @@ static function get($main,&$atts=null,$content=null){
 	$o->main=$main;
 	$o->atts=$atts;
 	$o->content=$content;
+	if(is_array($main))return 'array was passed to get';
+	if(is_object($main))return 'object was passed to get';
+	
+	
 	$o->pieces=explode('.',$main);
 	$o->value='';
 	
@@ -2948,7 +2962,15 @@ static function get_request($main=null){
 		return $_REQUEST;
 	if($main=='request_body'){
 			$value = file_get_contents('php://input');
+			return $value;
 	}
+
+	if($main=='post_json'){
+			$value = json_encode($_POST);
+			return $value;			
+	}
+	
+	
 	if(get_query_var($main)){
 		$value=get_query_var($main);
 	}
@@ -3159,8 +3181,10 @@ static function get_module($collection,$module){
 		return $arr;
 	}
 
-	if(isset($collection['services_folder'])){
-		$hash=$collection['services_folder'] . '_' . $module;
+	if(isset($collection['app'])){
+		$post_type=self::$stack['apps'][$collection['app']]['collection']['modules']['post_type'];
+		
+		$hash=$post_type . '_' . $module;
 		$return_value=null;
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
@@ -3169,7 +3193,39 @@ static function get_module($collection,$module){
 		
 		if(!$return_value){
 			global $wpdb;
-			$path=self::$stack['settings']['services_path'] . $collection['services_folder'] . '/' . $module . '.html';
+			$sql="select post_content,post_type,ID,post_name,post_title from  ".$wpdb->posts."  where post_type='" . $post_type . "' and post_name='" . $module . "'";
+			$results = $wpdb->get_results($sql,'ARRAY_A');	
+			if(count($results)!==1)return null;
+			$arr=array();
+			$arr['module']=$results[0]['post_name'];
+			$arr['title']=$results[0]['post_title'];
+			$arr['id']=$results[0]['ID'];
+			$arr['code']=$results[0]['post_content'];
+			$arr['post_type']=$results[0]['post_type'];
+			
+			$arr['collection']=$collection;
+			$arr['hash']=$hash;		
+			aw2_global_cache_set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+		}
+		else{
+			$arr=json_decode($return_value,true);
+		}
+		
+		return $arr;
+	}
+
+	
+	if(isset($collection['shared_app'])){
+		$hash=$collection['shared_app'] . '_' . $module;
+		$return_value=null;
+		//check cache
+		if(!current_user_can('develop_for_awesomeui')){
+			$return_value=aw2_global_cache_get(["main"=>$hash,"prefix"=>"module"],null,null);
+		}
+		
+		if(!$return_value){
+			global $wpdb;
+			$path=self::$stack['settings']['shared_app_path'] . $collection['shared_app'] . '/modules/' . $module . '.html';
 			$code = file_get_contents($path);
 			
 			$arr=array();
@@ -3177,7 +3233,7 @@ static function get_module($collection,$module){
 			$arr['title']=$module;
 			$arr['id']=$module;
 			$arr['code']=$code;
-			$arr['services_folder']=$collection['services_folder'];
+			$arr['shared_app']=$collection['shared_app'];
 			
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		

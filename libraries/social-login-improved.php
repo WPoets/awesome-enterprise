@@ -22,7 +22,31 @@ Class awesome_social{
 			$monomyth_options=&aw2_library::get_array_ref('settings');
 			$upload_dir = wp_upload_dir();
 			
-
+			if(!isset($monomyth_options['opt-yahoo-id']))
+			{
+				$monomyth_options['opt-yahoo-id']="";
+				$monomyth_options['opt-yahoo-secret']="";
+			}		
+			if(!isset($monomyth_options['opt-google-id']))
+			{
+				$monomyth_options['opt-google-id']="";
+				$monomyth_options['opt-google-secret']="";
+			}	
+			if(!isset($monomyth_options['opt-facebook-id']))
+			{
+				$monomyth_options['opt-facebook-id']="";
+				$monomyth_options['opt-facebook-secret']="";
+			}	
+			if(!isset($monomyth_options['opt-twitter-id']))
+			{
+				$monomyth_options['opt-twitter-id']="";
+				$monomyth_options['opt-twitter-secret']="";
+			}	
+			if(!isset($monomyth_options['opt-winlive-id']))
+			{
+				$monomyth_options['opt-winlive-id']="";
+				$monomyth_options['opt-winlive-secret']="";
+			}	
 			$config = array(
 				
 				"base_url" => plugins_url( 'hybridauth/', __FILE__ ),

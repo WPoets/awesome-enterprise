@@ -37,6 +37,8 @@ function awesome_add_custom_box() {
 	 * @param WP_Post $post The object for the current post/page.
 	 */
 function awesome_init_codemirror( $post ) {
+
+	
 	$codemirror_js_url = plugins_url( 'editor/codemirror/lib/codemirror.min.js' , dirname(__FILE__) );
 	$codemirror_css_url = plugins_url( 'editor/codemirror/lib/codemirror.css' , dirname(__FILE__));
 	
@@ -68,6 +70,8 @@ function awesome_init_codemirror( $post ) {
 	$codemirror_addon_xmlfold = plugins_url( 'editor/codemirror/addon/fold/xml-fold.js' , dirname(__FILE__) );
 	$codemirror_addon_indentfold = plugins_url( 'editor/codemirror/addon/fold/indent-fold.js' , dirname(__FILE__) );
 	$codemirror_addon_commentfold = plugins_url( 'editor/codemirror/addon/fold/comment-fold.js' , dirname(__FILE__) );
+	
+	$codemirror_addon_keymap = plugins_url( 'editor/codemirror/keymap/sublime.js' , dirname(__FILE__) );
 	
 	
 	$codemirror_theme = plugins_url( 'editor/codemirror/theme/monokai-aw.css' , dirname(__FILE__) );
@@ -110,11 +114,18 @@ function awesome_init_codemirror( $post ) {
 		 <script src="'.$codemirror_addon_xmlfold.'"></script>	 
 		 <script src="'.$codemirror_addon_indentfold.'"></script>	 
 		 <script src="'.$codemirror_addon_commentfold.'"></script>	 
+		 <script src="'.$codemirror_addon_keymap.'"></script>	 
 		 
 		 ';
-
+		
+		$apphelp=&aw2_library::get_array_ref('apphelp');
+		if(!in_array($post->post_type, $apphelp)){
+				echo '<style>.postarea{display:none} </style>';
+		}
+		
+		
 	  echo'<style>
-	  .postarea{display:none} 
+	  
 	  .CodeMirror-fullscreen {
 			 position: fixed;
 			  top: 0; left: 0; right: 0; bottom: 0;
@@ -155,7 +166,31 @@ function awesome_init_codemirror( $post ) {
 	  
 	  $content=$post->post_content;
 	  $content=str_replace('<','__lt__',$content);
-	  
+		
+		
+		if(in_array($post->post_type, $apphelp)){
+			$prefered_editor = get_post_meta($post->ID,'app_help_editor',true);
+			
+			if(empty($prefered_editor)){
+				$prefered_editor='content-editor';
+			}
+			
+			echo '
+			<div>
+				<p>Please select your preferred editor:</p>
+				<input type="radio" id="app_help1" name="app_help_editor" value="code-editor" '; if($prefered_editor=='code-editor'){echo 'checked';} echo'>
+				<label for="app_help1">Code Editor</label>
+
+				<input type="radio" id="app_help2" name="app_help_editor" value="content-editor" ';if($prefered_editor=='content-editor'){echo 'checked';} echo'> 
+				<label for="app_help2">Content Editor</label>
+				<br>
+				<br>
+				<br>
+			</div>
+			
+			';
+		}
+		
 	  echo '
 	  <div id="cm_editor"></div>
 	  <textarea id="awesome_code" name="awesome_code" rows="20" cols="100">'.$content.'</textarea>';
@@ -169,6 +204,7 @@ function awesome_init_codemirror( $post ) {
 						styleActiveLine: true,
 						matchBrackets: true,
 						viewportMargin: Infinity,
+						keyMap: "sublime",
 						theme: "monokai",
 						mode: "awcode",
 						foldGutter: true,
@@ -222,7 +258,7 @@ function awesome_save_postdata( $post_id ) {
 	   * We need to verify this came from the our screen and with proper authorization,
 	   * because save_post can be triggered at other times.
 	   */
-	  global $aw_post_type;
+
 	  // Check if our nonce is set.
 	  if ( ! isset( $_POST['awesome_cm_custom_box_nonce'] ) )
 		return $post_id;
@@ -254,24 +290,47 @@ function awesome_save_postdata( $post_id ) {
 	  
 	  // Update the meta field in the database.
 	  // unhook this function so it doesn't loop infinitely
-			remove_action('save_post', 'awesome_save_postdata');
+	remove_action('save_post', 'awesome_save_postdata');
+	
+			
+		$apphelp=&aw2_library::get_array_ref('apphelp');
+		if(in_array($_POST['post_type'], $apphelp) ){
+			update_post_meta($post_id,'app_help_editor',$_POST['app_help_editor']);	
 
-	  // Update post 37
-	  $my_post = array(
-		  'ID'           => $post_id,
-		  'post_content' => $_POST['awesome_code']
-	  );
+			 if($_POST['app_help_editor'] == 'code-editor'){
+				  $my_post = array(
+					  'ID'           => $post_id,
+					  'post_content' => $_POST['awesome_code']
+				  );
 
-	// Update the post into the database
-	  wp_update_post( $my_post );
+				  wp_update_post( $my_post );
+			 }  
+		}
+		else{
+			 // Update post 37
+			  $my_post = array(
+				  'ID'           => $post_id,
+				  'post_content' => $_POST['awesome_code']
+			  );
 
+			// Update the post into the database
+			wp_update_post( $my_post );
+		}
+		
+	aw2_library::get_module(["post_type"=>$_POST['post_type']],$_POST['post_name']);
+	
 	  // re-hook this function
-			add_action('save_post', 'awesome_save_postdata');
+	 add_action('save_post', 'awesome_save_postdata');
 }
 	
 function awesome_custom_button(){
 		global $post;
-
+		
+		$apphelp=&aw2_library::get_array_ref('apphelp');
+		if(in_array($post->post_type, $apphelp) ){
+			return ;
+		}
+		
 		//if ( Monoframe::is_awesome_post_type($post)) 
 		{
 			if ( in_array( $post->post_status, array('publish', 'future', 'private') ) && 0 != $post->ID ) {
@@ -308,6 +367,9 @@ function awesome_save_without_refersh(){
 
 		// Update the post into the database
 		wp_update_post( $my_post );
+		$new_post = get_post($_POST['post_id']);
+		
+		aw2_library::get_module(['post_type'=>$new_post->post_type],$new_post->post_name);
 	}  
 }
 

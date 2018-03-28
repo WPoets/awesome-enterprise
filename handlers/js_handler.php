@@ -1,20 +1,14 @@
 <?php
 
 //////// CSS Library ///////////////////
-aw2_library::add_library('css','CSS Handler');
+aw2_library::add_library('js','js Handler');
 
-function aw2_css_less($atts,$content=null,$shortcode){
-	require_once (aw2_library::$plugin_path . "/libraries/wp-less/wp-less.php");
-	$string=aw2_library::parse_shortcode($content);
-	$less = new lessc;
-	$return_value = $less->compile($string);
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
-	return $return_value;	
-}
-function aw2_css_minify($atts,$content=null,$shortcode){
-	//require_once (aw2_library::$plugin_path . "/libraries/minify2/Minify.php");
-	//require_once (aw2_library::$plugin_path . "/libraries/minify2/CSS.php");
+
+function aw2_js_minify($atts,$content=null,$shortcode){
 	
+	$string=aw2_library::parse_shortcode($content);
+	
+
 	$path = aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/minify2/Minify.php';
 	require_once $path . '/minify2/CSS.php';
@@ -26,15 +20,10 @@ function aw2_css_minify($atts,$content=null,$shortcode){
 	require_once $path . '/minify2/path-converter/ConverterInterface.php';
 	require_once $path . '/minify2/path-converter/Converter.php';
 	
-	
-	$string=aw2_library::parse_shortcode($content);
-	
-	$minifier = new \MatthiasMullie\Minify\CSS();
+	$minifier = new \MatthiasMullie\Minify\JS();
 	$minifier->add($string);
 	
 	$return_value = $minifier->minify();
 	$return_value=aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
-
-

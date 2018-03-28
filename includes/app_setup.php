@@ -33,7 +33,7 @@ class aw2_apps_library{
 		$services=&aw2_library::get_array_ref('services');
 		
 		foreach($services as $key =>$service){
-			aw2_library::add_collection($key,$service,$service['desc']);
+			aw2_library::register_service($key,$service,$service['desc']);
 		}
 	}
 	
@@ -171,6 +171,11 @@ class aw2_apps_library{
 					$hierarchical=true;
 					$public=false;
 				}
+				
+				if($collection_name == 'apphelp'){
+					$hierarchical=false;
+					$public=true;
+				}
 	
 				if(!post_type_exists( $collection['post_type'] ))
 					self::register_cpt($collection['post_type'],$collection_name,$app['name'],$public,$supports,$hierarchical);
@@ -189,6 +194,8 @@ class aw2_apps_library{
 	static function load_apps(){
 		
 		$registered_apps=&aw2_library::get_array_ref('apps');
+		$apphelp=&aw2_library::get_array_ref('apphelp');
+		
 		$app_posts= aw2_library::get_collection(["post_type"=>"aw2_app"]);
 		foreach($app_posts as $app_post){
 			$app = array();
@@ -220,7 +227,13 @@ class aw2_apps_library{
 			if($posts){
 				$app['collection']['posts']['post_type']=$posts;
 			}
-		
+			
+			$app_help=aw2_library::get_post_meta($app_post['id'],'apphelp_collection');
+			if($app_help){
+				$app['collection']['apphelp']['post_type']=$app_help;
+				$apphelp[]=$app_help;
+			}
+				
 			
 			$ptr=&aw2_library::get_array_ref('');
 			$ptr['app']=$app;
@@ -236,18 +249,27 @@ class aw2_apps_library{
 	}
 		
 	static function app_takeover($query){
-
 		if(empty($query->request)){
 			self::initialize_root(); // it is front page hence request is not set so setup root.
 			return;
 		}
 		
 		$pieces = explode('/',$query->request);
+		
 		// do we own the app?
 		$app_slug= $pieces[0];
 		if($app_slug == 'wp-admin') return;
-	
+		
 		$app = new awesome_app();
+
+		//is it a ticket
+		if($app_slug==='t'){
+			$ticket=$pieces[1];
+			$app_slug=$app->get_app_ticket($ticket);
+			array_unshift($pieces,$app_slug);
+		}
+
+		
 		
 		if($app->exists($app_slug)){
 			//yes - setup app
@@ -272,7 +294,7 @@ class aw2_apps_library{
 
 		// run init
 		$app->run_init();
-		
+				
 		//now resolve the route.
 		if($app->slug!='root'){
 			$app->resolve_route($pieces,$query);
@@ -511,13 +533,13 @@ class awesome_app{
 	
 	public function load_settings(){
 		$app=&aw2_library::get_array_ref('app');
-		
+	
 		if(!isset($app['configs']['settings']))
 			return;
 		
 		$settings_post_id = $app['configs']['settings']['id'];
 		$all_post_meta = aw2_library::get_post_meta($settings_post_id);
-		
+	
 		foreach($all_post_meta as $key=>$meta){
 			
 			//ignore private keys
@@ -525,9 +547,7 @@ class awesome_app{
 				continue;
 			
 			$app['settings'][$key] = $meta;
-			//if it is single value store single value
-			if(count($meta) == 1 )
-				$app['settings'][$key] = $meta[0];	
+
 		}
 	}	
 	
@@ -564,6 +584,7 @@ class awesome_app{
 	}
 	
 	public function check_rights($query){
+		
 		if(current_user_can('administrator'))return;
 		
 		if(!isset($this->configs['rights']))return;
@@ -583,6 +604,9 @@ class awesome_app{
 		
 		
 		//must be authenticated
+
+
+					
 		foreach($rights['auth'] as $auth){
 			if(is_callable(array('awesome_auth', $auth['method']))){
 				$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
@@ -601,7 +625,7 @@ class awesome_app{
 		$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
 		
 		if(isset($rights['access']['title'])){
-			$login_url .= '&title='. $rights['access']['title'];
+			$login_url .= '&title='. urlencode($rights['access']['title']);
 		}
 		
 		wp_redirect( $login_url );
@@ -613,6 +637,22 @@ class awesome_app{
 	public function resolve_route($pieces,$query){
 		controllers::resolve_route($pieces,$query);
 	}	
+
+	public function get_app_ticket($ticket){
+		$json=aw2_session_ticket_get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
+		if(!$json){
+			echo 'Ticket is invalid: ' . $ticket;
+			exit();			
+		}
+		$ticket_activity=json_decode($json,true);
+		
+		if(!isset($ticket_activity['app'])){
+			echo 'Ticket is invalid: ' . $ticket;
+			exit();			
+		}
+		return $ticket_activity['app'];
+	}
+	
 }
 
 class awesome_auth{
@@ -629,35 +669,104 @@ class awesome_auth{
 		return true; //user is logged in and has all the roles/capabilities.
 	}
 	
-	static function single_access_otp($auth){
-		if(!isset($_REQUEST['username']) || !isset($_REQUEST['password']) || !isset($_REQUEST['otp']) )return false;
+	static function single_access($auth){
+
+		if(!isset($_REQUEST['username']) || !isset($_REQUEST['password'])){
+			if(isset($_REQUEST['force_single_access']))
+			{
+				echo 'error::Password and Username Required';
+				exit;
+			}		
+			else
+				return false;
+		}
 		$username = $_REQUEST['username'];
 		$password = $_REQUEST['password'];
-		$otp = $_REQUEST['otp'];
 		
+
 		$app = &aw2_library::get_array_ref('app'); 
 		
 		$user = get_user_by( 'login', $username );
 		
+		//check that password is valid
+		if(!$user || !wp_check_password( $password, $user->data->user_pass, $user->ID )){
+				if(isset($_REQUEST['force_single_access']))
+				{
+					echo 'error::Invalid Username or Password';
+					exit;
+				}		
+				else
+					return false;
+		}
 
-		if(!$user || !wp_check_password( $password, $user->data->user_pass, $user->ID ))return false;
-		$actual_otp = aw2_session_cache_get(["main"=>$app['slug'].'_'.$username,"prefix"=>'otp']);
-		if($otp !== $actual_otp)return false;
 
 		if(!isset($auth['all_roles']))return true;
 		
-/*		
 		//check roles
 		$all_roles = explode(',',$auth['all_roles']);
 			
 		foreach($all_roles as $role){
-			if(!current_user_can($role))return false; //if any of the role/capability is not valid throw the user
+			
+			if(!in_array($role,(array)$user->roles)){
+				if(isset($_REQUEST['force_single_access']))
+				{
+					echo 'error::Role Mismatch';
+					exit;
+				}		
+				else
+					return false;
+			} //if any of the role/capability is not valid throw the user
 		}
-	*/	
+	
 		return true; //user is logged in and has all the roles/capabilities.
 	}
-	static function vsession(){
-		return aw2_vsession_exists();
+	
+	static function vsession($auth){
+		
+		//check for cookie -> 
+		if(isset($_COOKIE['aw2_vsesssion'])){
+						
+			$app = &aw2_library::get_array_ref('app'); 
+		//cookie = yes
+			//get app_valid status
+			$name=$app['slug'].'_valid';
+			
+			$vsession=aw2_vsession_get([],null,'');
+			//if app_valid=yes  return true
+			if(isset($vsession[$name]) && $vsession[$name] === 'yes'){
+				$app['session']=$vsession;
+				return true;
+			} 
+	
+			//else
+				//set auth_data
+			if(!isset($auth['code'])){
+				wp_die('Authentication code is missing');
+			}
+			
+			
+			
+				//run auth code
+			aw2_library::parse_shortcode($auth['code']);
+
+			 //if auth_data.status == success
+			if($app['auth']['status'] == 'success'){
+					//set app_valid=yes and return true
+				$atts['key']=$app['slug'].'_valid';
+				$atts['value']='yes';
+				aw2_vsession_set($atts,null,'');
+				return true;
+			}				
+			//else go login	
+		}
+		
+		//at this stage with either cookie is not set or user did not authenticate
+		//create a cookie for vsession
+		
+		aw2_vsession_create('','','');
+		
+		return false;
+		
 	}
 }
 
@@ -666,7 +775,7 @@ class controllers{
 	static $template;
 	
 	static function resolve_route($pieces,$query){
-	
+
 		$ajax=false;
 		$app=&aw2_library::get_array_ref('app');
 				
@@ -691,7 +800,7 @@ class controllers{
 			$app['active']['controller'] = $controller;
 			$app['active']['collection'] = $app['collection']['modules'];
 			
-			call_user_func(array('controllers', 'controller_'.$controller),$o);
+			call_user_func(array('controllers', 'controller_'.$controller),$o, $query);
 		}
 		
 		if($ajax != true){
@@ -702,9 +811,58 @@ class controllers{
 	
 		self::controller_modules($o);
 		
-		self:: controller_404();
+		self:: controller_404($o);
 		
 	}
+	
+	static function controller_apphelp($o, $query){
+		if(empty($o->pieces))return;
+		
+		$app=&aw2_library::get_array_ref('app');
+		
+		if(!isset($app['collection']['apphelp'])) return;
+		
+		$slug= $o->pieces[0];
+		$post_type = $app['collection']['apphelp']['post_type'];
+		
+		if(!aw2_library::get_post_from_slug($slug,$post_type,$post)) return;
+			
+		array_shift($o->pieces);
+		self::set_qs($o);
+		
+		$app['active']['collection'] = $app['collection']['apphelp'];
+		$app['active']['module'] = $slug; // this is kept to keep this workable
+		$app['active']['controller'] = 'apphelp';	
+		
+		if(isset($app['configs'])){
+			$layout='';
+			$app_config = $app['configs'];
+			$awesome_core=&aw2_library::get_array_ref('awesome_core');
+			
+			if(isset($awesome_core['layout'])){
+				$layout=$awesome_core['layout']['code'];
+			}
+			if(isset($awesome_core['apphelp-content-layout'])){
+				$layout=$awesome_core['apphelp-content-layout']['code'];
+			}
+
+			if(!empty($layout)){
+				$output = aw2_library::parse_shortcode($layout);
+			}
+		}
+		
+		if($output !== false){
+			echo $output;
+			exit();
+		}
+		
+		$query->query_vars[$post_type]=$slug;
+		$query->query_vars['post_type']=$post_type;
+		$query->query_vars['name']=$slug;
+		unset($query->query_vars['error']);
+		
+		return;		
+	}	
 	
 	static function controller_css($o){
 		self::$module=array_shift($o->pieces);
@@ -915,20 +1073,12 @@ class controllers{
 	}
 	
 	static function controller_csv_download($o){
-		self::$module=array_shift($o->pieces);
-		$pieces=explode('.',self::$module);
+
+		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
 		
-		$token=$pieces[0];
-		$nonce=$pieces[1];
 		$filename=$_REQUEST['filename'];
 		
-		//verify that nonce is valid
-		if(wp_create_nonce($token)!=$nonce){
-			echo 'Error E1:The Data Submitted is not valid. Check with Administrator';
-			exit();		
-		}
-
 		header("Content-type: application/csv");
 		header('Content-Disposition: attachment;filename="' . $filename);
 		header('Cache-Control: max-age=0');
@@ -941,20 +1091,15 @@ class controllers{
 		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
 		header ('Pragma: public'); // HTTP/1.0
 		
-		$key = self::$module.":data";	//set the key
-		
 		$redis = new Redis();
 		$redis->connect('127.0.0.1', 6379);
 		$database_number = 12;
 		$redis->select($database_number);
-		if($redis->exists($key))
-			$result = $redis->zRange($key, 0, -1);
-		
-		$output=implode('',$result);
-			
-		echo $output;
-		
-		
+		if($redis->exists($csv_ticket)){
+			$result = $redis->zRange($csv_ticket, 0, -1);
+			$output=implode('',$result);
+			echo $output;
+		}
 		exit();	
 	}
 	
@@ -1028,22 +1173,67 @@ class controllers{
 	
 	static function controller_modules($o){ 
 		if(empty($o->pieces))return;
-		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
+		self::$module= $o->pieces[0];
+		self::module_parts();
+		
+		$post_type = $app['collection']['modules']['post_type'];
+		if(aw2_library::get_post_from_slug(self::$module,$post_type,$post)){
+			array_shift($o->pieces);
+
+			$app['active']['collection'] = $app['collection']['modules'];
+			$app['active']['controller'] = 'modules';
+			
+			self::set_qs($o);
+			$app['active']['module'] = self::$module;
+			$app['active']['template'] = self::$template;
+			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
+
+			echo $result;
+			exit();	
+		}
+	}
+
+	static function controller_t($o){ 
+
+		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
-		$app['active']['collection'] = $app['collection']['modules'];
-		$app['active']['controller'] = 'modules';
+		$ticket=array_shift($o->pieces);
+		$hash=aw2_session_ticket_get(["main"=>$ticket],null,null);
+		if(!$hash || !$hash['ticket_activity']){
+			echo 'Ticket is invalid: ' . $ticket;
+			exit();			
+		}
+		$ticket_activity=json_decode($hash['ticket_activity'],true);
+		
+		if(!isset($ticket_activity['module'])){
+			echo 'Ticket is invalid for module: ' . $ticket;
+			exit();			
+		}		
+		
+		self::$module= $ticket_activity['module'];
 		self::module_parts();
 		self::set_qs($o);
+		$app['active']['controller'] = 'ticket';
+		$app['active']['ticket'] = $ticket;
+		
+		if(isset($ticket_activity['collection']))
+			$app['active']['collection'] = $ticket_activity['collection'];
+		else
+			$app['active']['collection'] = $app['collection']['modules'];
+			
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
+		//util::var_dump($hash);
+		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template,null,$hash);
 
 		echo $result;
 		exit();	
 	}
-		
+	
 	static function controller_posts($o, $query){
+	
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
@@ -1079,7 +1269,7 @@ class controllers{
 				$output = aw2_library::module_run($app['collection']['config'],$layout,null,null);
 			}
 		}
-			
+		
 		if($output !== false){
 			echo $output;
 			exit();
@@ -1088,21 +1278,23 @@ class controllers{
 		$query->query_vars[$post_type]=$slug;
 		$query->query_vars['post_type']=$post_type;
 		$query->query_vars['name']=$slug;
-		
+		unset($query->query_vars['error']);
+
 		return;
 	}
 	
 	static function controller_taxonomy($o, $query){
+
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
-		
+	
 		if(!isset($app['settings']['default_taxonomy'])) return;
 		
 		$slug= $o->pieces[0];
 		$taxonomy	= $app['settings']['default_taxonomy'];
 		$post_type	= $app['collection']['posts']['post_type'];
-			
+	
 		if(empty($taxonomy) || !term_exists( $slug, $taxonomy )) return;
 			
 		array_shift($o->pieces);
@@ -1110,13 +1302,34 @@ class controllers{
 		//taxonomy archive will be handled by archive.php == archive-content-layout;		
 		$query->query_vars[$taxonomy]=$slug;
 		$query->query_vars['post_type']=$post_type;
-		
+		unset($query->query_vars['attachment']);
+
 		return;
 	}
 	
-	static function controller_404(){
+	static function controller_404($o){
+		if(empty($o->pieces))return;
+		
 		$app=&aw2_library::get_array_ref('app');
-		$post_type = $app['collection']['pages']['post_type'];
+		$post_type = $app['collection']['modules']['post_type'];
+		
+		if(isset($app['settings']['unhandled_module'])){
+			self::$module=$app['settings']['unhandled_module'];
+
+			$app['active']['collection'] = $app['collection']['modules'];
+			$app['active']['controller'] = 'unhandled_module';
+		
+			self::module_parts();
+			self::set_qs($o);
+			
+			$app['active']['module'] = self::$module;
+			$app['active']['template'] = self::$template;
+			
+			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
+
+			echo $result;
+			exit();	
+		}
 		
 		if(aw2_library::get_post_from_slug('404-page',$post_type,$post)){
 			array_shift($o->pieces);
@@ -1130,6 +1343,7 @@ class controllers{
 	
 	
 	static function run_layout($app, $collection, $slug,$query){
+		
 		if(isset($app['configs'])){
 			$layout='';
 			$app_config = $app['configs'];
@@ -1157,11 +1371,11 @@ class controllers{
 		unset($query->query_vars['attachment']);
 		unset($query->query_vars['post_type']);
 		unset($query->query_vars['page']);
+		unset($query->query_vars['error']);
 		
 		$query->query_vars['post_type']=$app['active']['collection']['post_type'];
 		$query->query_vars['pagename']=$slug;
 		
-	
 		//exit();
 		return false;
 	}
