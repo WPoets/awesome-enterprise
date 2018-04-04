@@ -551,7 +551,15 @@ static function checkcondition(&$atts){
 		else
 			unset($atts['num']); 
 	}
+	
+	if(array_key_exists('greater_than_zero',$atts)){
+		if(!is_numeric($atts['greater_than_zero']) || $atts['greater_than_zero']<=0 )
+			return false;
+		else
+			unset($atts['greater_than_zero']); 
+	}
 
+	
 	if(array_key_exists('is_num',$atts)){
 		if(!is_numeric($atts['is_num']))
 			return false;
@@ -1083,9 +1091,14 @@ static function redirect_output($value,&$atts){
 
 		if(array_key_exists('merge_with',$atts)){
 			if(is_array($value)){
+				/*
 				foreach ($value as $key => $item) {
 					self::set($atts['merge_with'] . '.' . $key,$item,null,$atts);
-				}
+				}*/
+				$merge_with_array=self::get($atts['merge_with']);
+				if(!is_array($merge_with_array))$merge_with_array=array();
+				$final_array=array_merge($merge_with_array,$value);
+				self::set($atts['merge_with'],$final_array,null,$atts);
 				$value='';	
 			}
 		}	
@@ -3330,8 +3343,9 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 static function module_run($collection,$module,$template=null,$content=null,$atts=null){
 	
+
 	$arr=self::get_module($collection,$module);
-	
+
 	if(!$arr)return 'Module not found in Collection';
 	$stack_id=self::module_push($arr);
 

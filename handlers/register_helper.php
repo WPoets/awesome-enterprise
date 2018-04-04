@@ -120,26 +120,7 @@ class awesome2_register{
 		return;
 	}
 	
-	function metabox(){
-		$cmb_meta_boxes=&aw2_library::get_array_ref('cmb_meta_boxes');
-		$part = $this->att('part');
-		$args = $this->args();
-		$id = $args['id'];
-		if($part=='start' || ($part==null && $args!='')) 
-			$cmb_meta_boxes[$id]=$args;
 		
-		if($part=='field'){
-			$key = util::array_last_key( $cmb_meta_boxes );
-			if(array_key_exists('fields', $cmb_meta_boxes[$key])){
-			}
-			else
-				$cmb_meta_boxes[$key]['fields']=array();
-
-			$cmb_meta_boxes[$key]['fields'][]=$args;				
-		}
-		return;
-	}
-	
 	function custom_metabox(){
 		
 		$custom_meta_boxes=&aw2_library::get_array_ref('custom_meta_boxes');
@@ -150,46 +131,17 @@ class awesome2_register{
 		
 	}
 	
-	function site_option(){
-		$site_setting_sections=&aw2_library::get_array_ref('site_setting_sections');
-		$part = $this->att('part');
-		$args = $this->args();
-		$id = $args['id'];
-		if($part=='start' || ($part==null && $args!='')) 
-			$site_setting_sections[$id]=$args;
+	function less_variables(){
 		
-		if($part=='field'){
-			$key = util::array_last_key( $site_setting_sections );
-			if(array_key_exists('fields', $site_setting_sections[$key])){
-			}
-			else
-				$site_setting_sections[$key]['fields']=array();
-
-			$site_setting_sections[$key]['fields'][]=$args;				
-		}
-		return;
+		$less_variables=aw2_library::get('less_variables');
+		
+		$args = aw2_library::parse_shortcode($this->content);
+		$less_variables = $less_variables .' '.$args;
+		
+		aw2_library::set('less_variables',$less_variables );		
+		
 	}
 	
-	function app_option(){
-		$app_setting_sections=&aw2_library::get_array_ref('app_setting_sections');
-		$part = $this->att('part');
-		$args = $this->args();
-		$id = $args['id'];
-		if($part=='start' || ($part==null && $args!='')) 
-			$app_setting_sections[$id]=$args;
-		
-		
-		if($part=='field'){
-			$key = util::array_last_key( $app_setting_sections );
-			
-			if(!array_key_exists('fields', $app_setting_sections[$key]))
-				$app_setting_sections[$key]['fields']=array();
-			
-			$app_setting_sections[$key]['fields'][]=$args;				
-		}
-		return;
-	}
-
 	function rewrite_rule(){
 		$args=$this->args();
 		add_rewrite_rule($args['regex'], $args['redirect'], $args['after']);

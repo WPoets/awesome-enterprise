@@ -7,7 +7,9 @@ function aw2_css_less($atts,$content=null,$shortcode){
 	require_once (aw2_library::$plugin_path . "/libraries/wp-less/wp-less.php");
 	$string=aw2_library::parse_shortcode($content);
 	$less = new lessc;
-	$return_value = $less->compile($string);
+	$less_variables=aw2_library::get('less_variables');
+	
+	$return_value = $less->compile($less_variables .' '.$string);
 	$return_value=aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
@@ -37,4 +39,11 @@ function aw2_css_minify($atts,$content=null,$shortcode){
 	return $return_value;	
 }
 
-
+function aw2_css_style($atts,$content=null,$shortcode){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	$return_value = aw2_css_less($atts,$content,$shortcode);
+	$return_value = '<style>'.$return_value.'</style>';
+	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}
