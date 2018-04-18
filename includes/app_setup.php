@@ -6,7 +6,10 @@ add_action( 'parse_request', 'aw2_apps_library::app_takeover' );
 
 add_action( 'admin_menu', 'aw2_apps_library::register_menus' );
 //add_action('template_redirect', 'aw2_apps_library::template_redirect');
+
 add_action('generate_rewrite_rules', 'aw2_apps_library::app_slug_rewrite');
+add_filter( 'post_type_link', 'aw2_apps_library::fix_app_slug', 10, 3 );
+add_filter( 'nav_menu_css_class', 'aw2_apps_library::nav_menu_css_class', 10, 3 );
 
 add_action('wp_head', 'aw2_apps_library::wp_head');
 add_action('wp_footer', 'aw2_apps_library::wp_footer');
@@ -121,7 +124,7 @@ class aw2_apps_library{
 		register_post_type('aw2_app', array(
 			'label' => 'Local Apps',
 			'public' => false,
-			'show_in_nav_menus'=>false,
+			'show_in_nav_menus'=>true,
 			'show_ui' => true,
 			'show_in_menu' => false,
 			'capability_type' => 'post',
@@ -130,7 +133,7 @@ class aw2_apps_library{
 			'query_var' => false,
 			'menu_icon'=>'dashicons-archive',
 			'supports' => array('title','editor','revisions','thumbnail','custom-fields'),
-			'rewrite' => false,
+			'rewrite' => true,
 			'delete_with_user' => false,
 			'labels' => array (
 				  'name' => 'Local Apps',
@@ -158,6 +161,7 @@ class aw2_apps_library{
 				$supports='';
 				$hierarchical=false;
 				$public=false;
+				$slug=null;
 				if($collection_name == 'config'){
 					$supports = array('title','editor','revisions','custom-fields');
 				}
@@ -165,6 +169,7 @@ class aw2_apps_library{
 				if($collection_name == 'pages'){
 					$hierarchical=true;
 					$public=true;
+					$slug=$key;
 				}	
 				
 				if($collection_name == 'modules'){
@@ -178,8 +183,11 @@ class aw2_apps_library{
 				}
 	
 				if(!post_type_exists( $collection['post_type'] ))
-					self::register_cpt($collection['post_type'],$collection_name,$app['name'],$public,$supports,$hierarchical);
+					self::register_cpt($collection['post_type'],$collection_name,$app['name'],$public,$supports,$hierarchical,$slug);
 			}
+			
+			if(isset($app['collection']['pages']['post_type']))
+				$wp_post_types[$app['collection']['pages']['post_type']]->rewrite['slug'] = $key;
 		}
 	}
 	
@@ -405,10 +413,32 @@ class aw2_apps_library{
 				continue;
 			
 			$rules[$app['slug'] . '/?$'] = 'index.php?pagename=home&post_type='.$app['collection']['pages']['post_type'];
+			 
 		}	
 		
 		$wp_rewrite->rules = $rules + $wp_rewrite->rules;
 	
+	}
+	
+	static function fix_app_slug( $post_link, $post, $leavename ) {
+ 		//now apps show list show up in the menu to make it easy to add to nav menu
+		if ( 'aw2_app' != $post->post_type || 'publish' != $post->post_status ) {
+			return $post_link;
+		}
+		
+		$post_link = str_replace( '/' . $post->post_type . '/', '/', $post_link );
+		return $post_link;
+	}
+	
+	static function nav_menu_css_class( $classes , $item, $args){
+		//ensures currect classes in menu if app is set
+		$current_app_id=aw2_library::get('app.post_id');
+		
+		if($current_app_id == $item->object_id && $item->current_item_parent === false){
+			$classes[] = 'current-menu-item';
+		}
+		
+		return $classes;
 	}
 	
 	//supporting functions

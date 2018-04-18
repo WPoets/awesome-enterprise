@@ -66,7 +66,30 @@ class awesome2_query{
 	function get_post_meta(){
 		return get_post_meta($this->att('post_id'), $this->att('key'), $this->att('single',true) );
 	}	
-
+	
+	
+	function all_post_meta(){
+		$post_id = $this->att('post_id');
+		
+		if($this->att('post_slug') && $this->att('post_type')){
+			aw2_library::get_post_from_slug($this->att('post_slug'),$this->att('post_type'),$post);
+			$post_id = $post->ID;
+		}
+		
+		$return_value = get_post_meta($post_id);
+		$temp = array();
+		foreach($return_value as $key=>$value){
+			if(count($value)===1)
+				$temp[$key] = $value[0];
+			else
+				$temp[$key] = $value;
+		}
+		$return_value = $temp;
+		
+		unset($temp);
+		return $return_value;
+	}	
+	
 	function insert_post(){
 		if($this->att('args'))
 			$return_value= wp_insert_post($this->att('args'),true);

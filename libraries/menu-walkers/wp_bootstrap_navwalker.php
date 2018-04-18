@@ -20,6 +20,7 @@ class wp_bootstrap_navwalker extends Walker_Nav_Menu {
 	 * @param int $depth Depth of page. Used for padding.
 	 */
 	public function start_lvl( &$output, $depth = 0, $args = array() ) {
+		
 		$indent = str_repeat( "\t", $depth );
 		$output .= "\n$indent<ul role=\"menu\" class=\" dropdown-menu\">\n";
 	}
@@ -36,7 +37,8 @@ class wp_bootstrap_navwalker extends Walker_Nav_Menu {
 	 */
 	public function start_el( &$output, $item, $depth = 0, $args = array(), $id = 0 ) {
 		$indent = ( $depth ) ? str_repeat( "\t", $depth ) : '';
-
+		
+			
 		/**
 		 * Dividers, Headers or Disabled
 		 * =============================
@@ -59,7 +61,7 @@ class wp_bootstrap_navwalker extends Walker_Nav_Menu {
 
 			$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 			$classes[] = 'menu-item-' . $item->ID;
-
+			
 			$class_names = join( ' ', apply_filters( 'nav_menu_css_class', array_filter( $classes ), $item, $args ) );
 
 			if ( $this->has_children )
@@ -70,6 +72,7 @@ class wp_bootstrap_navwalker extends Walker_Nav_Menu {
 	
 			if ( in_array( 'current-category-ancestor', $classes ) ) 
 				$class_names .= ' active';
+			
 	
 			$class_names = $class_names ? ' class="' . esc_attr( $class_names ) . '"' : '';
 

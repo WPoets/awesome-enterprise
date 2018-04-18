@@ -25,6 +25,7 @@ function aw2_service_unhandled($atts,$content,$shortcode){
 	return $return_value;
 }
 
+
 function aw2_service_run($atts,$content,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract( shortcode_atts( array(
@@ -56,6 +57,33 @@ function aw2_service_include($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+// aw2_register_service
+
+function aw2_service_call($atts,$content=null){
+	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract( shortcode_atts( array(
+		'service'=>null,
+		'main'=>null,
+		'template'=>null,
+		'module'=>null
+	), $atts) );
+	if($main==null)return 'Module/Template must be provided';	
+
+	$handlers=&aw2_library::get_array_ref('handlers');
+	$handler=$handlers[$service];
+
+				
+	if(!$module && $template)$return_value=aw2_library::module_forced_run($handler,$main,$template,$content,$atts);	
+	if(!$module && !$template)$return_value=aw2_library::module_run($handler,$main,null,$content,$atts);
+	if($module && !$template)$return_value=aw2_library::module_run($handler,$module,$main,$content,$atts);	
+		
+	if(is_string($return_value))$return_value=trim($return_value);
+	
+	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	if(is_object($return_value))$return_value='Object';
+	
+	return $return_value;
+}
 
 
 

@@ -128,7 +128,8 @@ class Monoframe
 		foreach ($registered_apps as $app){
 			
 			foreach($app['collection'] as $collection_name => $collection){
-			
+				if($collection_name == 'posts')
+					continue;
 				$app_post_types[]=$collection['post_type'];
 			}
 		}
