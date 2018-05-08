@@ -1,9 +1,13 @@
 <?php
+namespace aw2\query;
 
-aw2_library::add_library('query','Queries');
+\aw2_library::add_service('query','Query Library',['namespace'=>__NAMESPACE__]);
 
-function aw2_query_meta_query($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+\aw2_library::add_service('query.meta_query','Run Custom Meta Query',['namespace'=>__NAMESPACE__]);
+
+function meta_query($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 		
 	$dataset=$atts['dataset'];
 
@@ -27,20 +31,20 @@ function aw2_query_meta_query($atts,$content=null,$shortcode){
 	}else{
 		$dataset['rows']=$dataset['raw'];
 	}
-	$return_value=aw2_library::post_actions('all',$dataset,$atts);
+	$return_value=\aw2_library::post_actions('all',$dataset,$atts);
 	return $return_value;
 }
 
 
-function aw2_query_unhandled($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+function unhandled($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	$pieces=$shortcode['tags'];
 	if(count($pieces)!=2)return 'error:You must have exactly two parts to the query shortcode';
-	$query_obj=new awesome2_query($pieces[1],$atts,$content);
+	$query_obj=new \awesome2_query($pieces[1],$atts,$content);
 	$return_value=$query_obj->run();
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 	
 }

@@ -1,9 +1,13 @@
 <?php
+namespace aw2\vsession;
 
-aw2_library::add_library('vsession','Virtual Session Handler');
+\aw2_library::add_service('vsession','vsession Library',['namespace'=>__NAMESPACE__]);
 
-function aw2_vsession_create($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+\aw2_library::add_service('vsession.create','Create the Vsession',['namespace'=>__NAMESPACE__]);
+
+function create($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'id'=>null
 	), $atts) );
@@ -22,8 +26,9 @@ function aw2_vsession_create($atts,$content=null,$shortcode){
 	return ;
 }
 
-function aw2_vsession_exists($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+\aw2_library::add_service('vsession.exists','Check if VSession Exists',['namespace'=>__NAMESPACE__]);
+function exists($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'id'=>null
 	), $atts) );
@@ -41,13 +46,14 @@ function aw2_vsession_exists($atts,$content=null,$shortcode){
 		if(wp_create_nonce($token) !==$nonce)$return_value = true;
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
 
-function aw2_vsession_set($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('vsession.set','set VSession',['namespace'=>__NAMESPACE__]);
+function set($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( shortcode_atts( array(
 	'key'=>null,
@@ -59,10 +65,8 @@ function aw2_vsession_set($atts,$content=null,$shortcode){
 
 	if(!$id)$id='aw2_vsesssion';
 	
-	$redis = new Redis();
-	$redis->connect('127.0.0.1', 6379);
-	$database_number = 12;
-	$redis->select($database_number);
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+
 	
 	if(isset($_COOKIE[$id])){
 		$ticket=$_COOKIE[$id];
@@ -91,8 +95,9 @@ function aw2_vsession_set($atts,$content=null,$shortcode){
 	return;
 }
 
-function aw2_vsession_get($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('vsession.get','Get VSession',['namespace'=>__NAMESPACE__]);
+function get($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( shortcode_atts( array(
 	'main'=>null,
@@ -103,10 +108,8 @@ function aw2_vsession_get($atts,$content=null,$shortcode){
 	if(!$id)$id='aw2_vsesssion'	;
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = new Redis();
-	$redis->connect('127.0.0.1', 6379);
-	$database_number = 12;
-	$redis->select($database_number);
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+
 	$return_value='_error';
 	
 	if(isset($_COOKIE[$id])){
@@ -130,7 +133,7 @@ function aw2_vsession_get($atts,$content=null,$shortcode){
 		}
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 

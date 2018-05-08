@@ -1,8 +1,13 @@
 <?php
+namespace aw2\pdf;
 
-aw2_library::add_shortcode('aw2','pdf', 'awesome2_generate_pdf','Generate PDF form templates');
+\aw2_library::add_service('pdf','PDF Library',['namespace'=>__NAMESPACE__]);
 
-function awesome2_generate_pdf($atts,$content=null,$shortcode){
+
+\aw2_library::add_service('pdf.generate','PDF Generate',['namespace'=>__NAMESPACE__]);
+
+
+function pdf($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( shortcode_atts( array(

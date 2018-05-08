@@ -1,17 +1,10 @@
 <?php
+namespace aw2\wpmail;
 
-/**
- * Shortcodes definitions for current library
- */
-aw2_library::add_shortcode('wpmail','send', 'awesome2_wpmail','Send a Mail using wordpress mail');
-aw2_library::add_shortcode('sendgrid','send', 'awesome2_sendgrid','Send a Mail using Send Grid');
-aw2_library::add_shortcode('kookoo','send', 'awesome2_kookoo','Send a SMS using kookoo');
+\aw2_library::add_service('wpmail.send','Send wp mail',['namespace'=>__NAMESPACE__]);
 
-/**
- * Function to send mail using wordpress mail
- */
-function awesome2_wpmail($atts,$content=null,$shortcode){
-    if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+function send($atts,$content=null,$shortcode){
+    if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract( shortcode_atts( array(
         'email' => null,
@@ -30,7 +23,7 @@ function awesome2_wpmail($atts,$content=null,$shortcode){
     if(!isset($email['attachment']))$email['attachment']='';
 
     // Log data in db
-    notification_log('mail', 'wpmail', $email, $log, $notification_object_type, $notification_object_id);
+    \notification_log('mail', 'wpmail', $email, $log, $notification_object_type, $notification_object_id);
 
 	wp_mail( 
         $email['to']['email_id'], 
@@ -41,15 +34,18 @@ function awesome2_wpmail($atts,$content=null,$shortcode){
     );
 
     $return_value = "success";
-    $return_value=aw2_library::post_actions('all',$return_value,$atts);
+    $return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
-/**
- * Function to send mail using sendgrid
- */
+
+
+namespace aw2\sendgrid;
+\aw2_library::add_service('sendgrid.send','Send Sendgrid mail',['namespace'=>__NAMESPACE__]);
+
+ 
 function awesome2_sendgrid($atts,$content=null,$shortcode){
-    if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+    if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     //including SENDGRID library
 	require_once(ABSPATH . 'wp-content/plugins/awesome-studio/libraries/sendgrid/sendgrid-php.php');
@@ -70,20 +66,43 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
     if(!isset($email['message']))$email['message']='';
     if(!isset($email['subject']))$email['subject']='';
 		
-		//provider.apiKey or settings.sendgrid_apiKey
+    //provider.apiKey or settings.sendgrid_apiKey
     $apiKey = $email['provider']['key'];
 
     if(empty($apiKey) || strlen($apiKey) === 0){
-        $return_value=aw2_library::post_actions('all','No api key is not provided, check you settings for default api key!',$atts);
+        $return_value=\aw2_library::post_actions('all','No api key is not provided, check you settings for default api key!',$atts);
         return $return_value;
     }
 
+
     $sendgrid = new \SendGrid($apiKey);
     
-	$from = new SendGrid\Email(null, $email['from']['email_id']);
-	$to = new SendGrid\Email(null, $email['to']['email_id']);
-	$content = new SendGrid\Content("text/html", $email['message']);
-	$mail = new SendGrid\Mail($from, $email['subject'], $to, $content);
+	$from = new \SendGrid\Email(null, $email['from']['email_id']);
+	$to = new \SendGrid\Email(null, $email['to']['email_id']);
+    $content = new \SendGrid\Content("text/html", $email['message']);
+	$mail = new \SendGrid\Mail($from, $email['subject'], $to, $content);
+    
+    // Works on only when the attachments are present
+    if(isset($email['attachments']['file'])){
+        
+        //storing file array in variable
+        $file = $email['attachments']['file'];
+
+        //looping through the file content
+        for($i=0; $i<sizeof($file); $i++){
+            $name = $file[$i]['name'];
+            $path = $file[$i]['path'];
+            if(!empty($path)){
+                // new instance of attachment
+                $attachment = new \SendGrid\Attachment();
+                $file_encoded = base64_encode(file_get_contents($path));
+                $attachment->setContent($file_encoded);
+                $attachment->setDisposition("attachment");
+                $attachment->setFilename($name);
+                $mail->addAttachment($attachment);
+            }
+        }
+    }
 
     $response = $sendgrid->client->mail()->send()->post($mail);
 
@@ -91,7 +110,7 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
     $header = $response->headers();
 
     //getting the message id from the header response
-    $messageId = getBetween($header,"X-Message-Id:","Access-Control-Allow-Origin");
+    $messageId = \getBetween($header,"X-Message-Id:","Access-Control-Allow-Origin");
 
     //setting up tracking array
     $tracking['tracking_id'] = trim($messageId) ;
@@ -99,7 +118,7 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
     $tracking['tracking_stage'] = 'sent_to_provider';
 
     // Log data in db
-    notification_log('mail', 'sendgrid', $email, $log, $notification_object_type, $notification_object_id, $tracking);
+    \notification_log('mail', 'sendgrid', $email, $log, $notification_object_type, $notification_object_id, $tracking);
 
     $return_value = $response->statusCode();
 
@@ -107,15 +126,18 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
         $return_value = "success";
     }
 
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
-/**
- * Function to send sms using, KOOKOO
- */
+
+
+namespace aw2\kookoo;
+
+\aw2_library::add_service('kookoo.send','Send Kookoo SMS',['namespace'=>__NAMESPACE__]);
+
 function awesome2_kookoo($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract( shortcode_atts( array(
 		'sms' => null,
@@ -132,7 +154,7 @@ function awesome2_kookoo($atts,$content=null,$shortcode){
     if(!isset($sms['provider']['key']))$sms['provider']['key']='';
 
     // Log data in db
-    notification_log('sms', 'kookoo', $sms, $log, $notification_object_type, $notification_object_id);
+    \notification_log('sms', 'kookoo', $sms, $log, $notification_object_type, $notification_object_id);
 
     // api base url
     $url = 'http://www.kookoo.in/outbound/outbound_sms.php';
@@ -140,7 +162,7 @@ function awesome2_kookoo($atts,$content=null,$shortcode){
     $apiKey = $sms['provider']['key'];
 
     if(empty($apiKey) || strlen($apiKey) === 0){
-        $return_value=aw2_library::post_actions('all','No api key is not provided, check you settings for default api key!',$atts);
+        $return_value=\aw2_library::post_actions('all','No api key is not provided, check you settings for default api key!',$atts);
         return $return_value;
     }
 
@@ -162,50 +184,9 @@ function awesome2_kookoo($atts,$content=null,$shortcode){
     $result = simplexml_load_string($result);
     $return_value= $result->status;
 
-    $return_value=aw2_library::post_actions('all',$return_value,$atts);
+    $return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
-function notification_log($type, $provider, $data, $log, $notification_object_type, $notification_object_id, $tracking = null){
 
-    // when $log is empty or the value is not equals to 'yes', return.
-    if(is_null($log) || $log != 'yes') return;
 
-    if(!isset($data['to']['email_id']))$data['to']['email_id']='';
-
-    $to = $data['to']['email_id'];
-
-    if(isset($data['to']['mobile_number'])){
-        $to = $data['to']['mobile_number'];
-    }
-
-    //data for emails
-	if(!isset($data['from']['email_id']))$data['from']['email_id']='';
-    if(!isset($data['cc']['email_id']))$data['cc']['email_id']='';
-    if(!isset($data['bcc']['email_id']))$data['bcc']['email_id']='';
-    if(!isset($data['reply_to']['email_id']))$data['reply_to']['email_id']='';
-    if(!isset($data['subject']))$data['subject']='';
-    if(!isset($data['message']))$data['message']='';
-    if(!isset($data['object_type']))$data['object_type']='';
-    if(!isset($data['object_id']))$data['object_id']='';
-
-    //tracking array
-    if(!isset($tracking['tracking_id']))$tracking['tracking_id']='';
-    if(!isset($tracking['tracking_status']))$tracking['tracking_status']='';
-    if(!isset($tracking['tracking_stage']))$tracking['tracking_stage']='';
-
-    $subject = str_replace("'","\"",$data['subject']);
-    $message = str_replace("'","\"",$data['message']);
-
-    global $wpdb;
-    $wpdb->query("INSERT INTO `notification_log` (`notification_type`, `notification_provider`, `notification_to`, `notification_from`, `cc`, `bcc`, `reply_to`, `subject`, `message`, `object_type`, `object_id`, `tracking_id`, `tracking_status`, `tracking_stage`) VALUES ('".$type."', '".$provider."', '".$to."', '".$data['from']['email_id']."', '".$data['cc']['email_id']."', '".$data['bcc']['email_id']."', '".$data['reply_to']['email_id']."', '".$subject."', '".$message."', '".$notification_object_type."', '".$notification_object_id."', '".$tracking['tracking_id']."', '".$tracking['tracking_status']."', '".$tracking['tracking_stage']."')");			
-}
-
-function getBetween($content,$start,$end){
-    $r = explode($start, $content);
-    if (isset($r[1])){
-        $r = explode($end, $r[1]);
-        return $r[0];
-    }
-    return '';
-}

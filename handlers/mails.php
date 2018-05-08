@@ -1,18 +1,21 @@
 <?php
-aw2_library::add_shortcode('aw2','wp_mail', 'awesome2_wp_mail','Send a Mail using Wordpress');
+namespace aw2;
 
-function awesome2_wp_mail($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('aw2.wp_mail','Send a Mail using Wordpress',['namespace'=>__NAMESPACE__]);
+
+
+function wp_mail($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
 		'part' => 'start'
 	), $atts, 'aw_wp_mail' ) );
 
-	$ref=&aw2_library::get_array_ref('mail_builder');
+	$ref=&\aw2_library::get_array_ref('mail_builder');
 	if($part=='run'){
 		
 		// Log messages in table
-		$log_messages=aw2_library::get("site_settings.log_messages");
+		$log_messages=\aw2_library::get("site_settings.log_messages");
 		if($log_messages=="on"){
 			global $wpdb;
 			$message=esc_sql($ref['message']);
@@ -22,14 +25,14 @@ function awesome2_wp_mail($atts,$content=null,$shortcode){
 		}
 		//$ref['to']="hardcoded email id";	
 		wp_mail( $ref['to'], $ref['subject'], $ref['message'], $ref['headers'], $ref['attachment'] );
-		$ref=&aw2_library::get_array_ref();
+		$ref=&\aw2_library::get_array_ref();
 		unset($ref['mail_builder']);
 		return;
 	}
 
 
 	if($part=='start'){
-		$args=aw2_library::get_clean_args($content,$atts);
+		$args=\aw2_library::get_clean_args($content,$atts);
 		$ref=array();
 		$ref['to']=$args['to'];	
 		$ref['to']="gopi@amiworks.com";
@@ -58,17 +61,16 @@ function awesome2_wp_mail($atts,$content=null,$shortcode){
 	}	
 
 	if($part=='message'){
-		$ref['message']=aw2_library::parse_shortcode($content);	
+		$ref['message']=\aw2_library::parse_shortcode($content);	
 	}
 	return ;
 }
 
 
+\aw2_library::add_service('aw2.send_grid_mail','Send a Mail using Send Grid',['namespace'=>__NAMESPACE__]);
 
-aw2_library::add_shortcode('aw2','send_grid_mail', 'awesome2_send_grid_mail','Send a Mail using Send Grid');
-
-function awesome2_send_grid_mail($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+function send_grid_mail($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
 		'array' => null
@@ -76,14 +78,14 @@ function awesome2_send_grid_mail($atts,$content=null,$shortcode){
 
 	require_once(ABSPATH . 'wp-content/plugins/awesome-studio/monoframe/sendgrid/sendgrid-php.php');
 
-	$ref=aw2_library::get($array);	
+	$ref=\aw2_library::get($array);	
 	
 	
 	if(!isset($ref['cc']))$ref['cc']='';
 	if(!isset($ref['bcc']))$ref['bcc']='';
 	if(!isset($ref['reply_to']))$ref['reply_to']='';
 	$ref['to']="gopi@amiworks.com";
-	$log_messages=aw2_library::get("site_settings.log_messages");
+	$log_messages=\aw2_library::get("site_settings.log_messages");
 		if($log_messages=="on"){
 			global $wpdb;
 			$message=esc_sql($ref['message']);
@@ -93,10 +95,10 @@ function awesome2_send_grid_mail($atts,$content=null,$shortcode){
 		}
 	
 	
-	$from = new SendGrid\Email($ref['from_name'], $ref['from']);
-	$to = new SendGrid\Email(null, $ref['to']);
-	$content = new SendGrid\Content("text/html", $ref['message']);
-	$mail = new SendGrid\Mail($from, $ref['subject'], $to, $content);
+	$from = new \SendGrid\Email($ref['from_name'], $ref['from']);
+	$to = new \SendGrid\Email(null, $ref['to']);
+	$content = new \SendGrid\Content("text/html", $ref['message']);
+	$mail = new \SendGrid\Mail($from, $ref['subject'], $to, $content);
 
 	$apiKey = $ref['key'];
 	$sg = new \SendGrid($apiKey);
@@ -105,6 +107,6 @@ function awesome2_send_grid_mail($atts,$content=null,$shortcode){
 	$response = $sg->client->mail()->send()->post($mail);
 	$return_value= $response->statusCode();
 
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }

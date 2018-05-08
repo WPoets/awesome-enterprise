@@ -138,14 +138,15 @@ class Monoframe
 		
 		
 		$service_post_type= array();
-		$services=&aw2_library::get_array_ref('services');
+		$handlers=&aw2_library::get_array_ref('handlers');
 		
-		foreach($services as $key => $service){
-			if(!isset($service['post_type']))
+		foreach($handlers as $key => $handler){
+			if(!isset($handler['post_type']))
 				continue;
 			
-			$service_post_type[] =  $service['post_type'];
-				
+			if(isset($handler['service']) && strtolower($handler['service']) === 'yes'){
+				$service_post_type[] =  $handler['post_type'];
+			}	
 		}
 				
 		$app_post_types = array_merge($app_post_types, $service_post_type);

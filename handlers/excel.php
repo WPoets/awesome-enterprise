@@ -17,8 +17,9 @@ function excel_write_bulk($atts,$content=null,$shortcode){
 	$xlsdata=aw2_library::get($data);	
 
 	/** Include PHPExcel */
-	require_once ("wp-content/plugins/awesome-studio/monoframe/PHPExcel/PHPExcel.php");
-
+	$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
 	$file_path=$folder . $file_name;
 			
 	if(!array_key_exists('pageno',$xlsdata))
@@ -82,8 +83,10 @@ function excel_file_reader($atts,$content=null,$shortcode){
 		return;
 	}
 
-	$plugin_path=dirname(plugin_dir_path( __DIR__ ));
-	require_once ($plugin_path."/monoframe/PHPExcel/PHPExcel.php");
+	$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 	
 	/**  Identify the type of $inputFileName  **/
 	$inputFileType = PHPExcel_IOFactory::identify($file_path);
@@ -134,8 +137,10 @@ function excel_file_info($atts,$content=null,$shortcode){
 		return;
 	}
 	
-	$plugin_path=dirname(plugin_dir_path( __DIR__ ));
-	require_once ($plugin_path."/monoframe/PHPExcel/PHPExcel.php");
+		$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 	
 	/**  Identify the type of $inputFileName  **/
 	$inputFileType = PHPExcel_IOFactory::identify($file_path);
@@ -166,7 +171,10 @@ function excel_dataset_write($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-	require_once ("wp-content/plugins/awesome-studio/monoframe/PHPExcel/PHPExcel.php");
+		$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 
 	$file_path=$folder . $file_name;
 	
@@ -260,7 +268,10 @@ function excel_read_header($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-	require_once ("wp-content/plugins/awesome-studio/monoframe/PHPExcel/PHPExcel.php");
+		$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 
 	$file_path=$folder . $filename;
 	$objReader = PHPExcel_IOFactory::createReaderForFile($file_path);
@@ -297,7 +308,10 @@ function excel_read_post_data($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-	require_once ("wp-content/plugins/awesome-studio/monoframe/PHPExcel/PHPExcel.php");
+		$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 
 	$file_path=$folder . $filename;
 	$objReader = PHPExcel_IOFactory::createReaderForFile($file_path);
@@ -385,7 +399,10 @@ function excel_read_bulk($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-	require_once ("wp-content/plugins/awesome-studio/monoframe/PHPExcel/PHPExcel.php");
+		$path = aw2_library::$plugin_path . "/libraries";
+	require_once $path . '/PHPExcel/PHPExcel.php';
+	
+	
 
 	$objReader = PHPExcel_IOFactory::createReader('Excel2007');
 	$inputFileType = 'Excel2007';

@@ -30,14 +30,10 @@ class aw2_apps_library{
 	
 	static function setup_services(){
 		
-		aw2_library::add_collection('core',['post_type'=>'awesome_core'],'core service refers to core posts for config etc.');
+		aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>'awesome_core']);
 		
 		self::run_core('services');
-		$services=&aw2_library::get_array_ref('services');
 		
-		foreach($services as $key =>$service){
-			aw2_library::register_service($key,$service,$service['desc']);
-		}
 	}
 	
 	static function run_core($slug){
@@ -304,7 +300,7 @@ class aw2_apps_library{
 		$app->run_init();
 				
 		//now resolve the route.
-		if($app->slug!='root'){
+		if($app->slug!='root' || $app_slug=='ajax'){
 			$app->resolve_route($pieces,$query);
 		}
 		
@@ -327,13 +323,13 @@ class aw2_apps_library{
 		add_menu_page('Services', 'Services - Awesome Studio', 'develop_for_awesomeui','awesome-services', 'edit.php?post_type=aw2_app','dashicons-admin-network',2 );
 		
 		//register services
-		$services=&aw2_library::get_array_ref('services');
-		foreach($services as $key => $service){
-			if(isset($service['post_type'])){
-				add_submenu_page('awesome-services', $service['label'], $service['label'],  'develop_for_awesomeui','edit.php?post_type='.$service['post_type']);
-			}
-		}	
+		$handlers=&aw2_library::get_array_ref('handlers');
 		
+		foreach($handlers as $key => $handler){
+			if(isset($handler['post_type']) && isset($handler['service']) && $handler['service'] === 'yes'){
+				add_submenu_page('awesome-services', $handler['service_label'], $handler['service_label'],  'develop_for_awesomeui','edit.php?post_type='.$handler['post_type']);
+			}
+		}
 		
 		add_submenu_page('awesome-studio', 'Apps - Awesome Studio', 'Apps', 'develop_for_awesomeui', 'edit.php?post_type=aw2_app' );
 		add_submenu_page( 'awesome-studio', 'Core - Awesome Studio', 'Awesome Core', 'develop_for_awesomeui', 'edit.php?post_type=awesome_core' );
@@ -385,11 +381,11 @@ class aw2_apps_library{
 			switch ( $action ) {
 				case 'global':
 					check_admin_referer( 'global_nonced-purge_all' );
-					aw2_global_cache_flush(null,null,null);
+					\aw2\global_cache\flush(null,null,null);
 					break;
 				case 'session':
 					check_admin_referer( 'session_nonced-purge_all' );
-					aw2_session_cache_flush(null,null,'');
+					\aw2\session_cache\flush(null,null,'');
 					break;
 			}
 			
@@ -413,7 +409,6 @@ class aw2_apps_library{
 				continue;
 			
 			$rules[$app['slug'] . '/?$'] = 'index.php?pagename=home&post_type='.$app['collection']['pages']['post_type'];
-			 
 		}	
 		
 		$wp_rewrite->rules = $rules + $wp_rewrite->rules;
@@ -585,7 +580,7 @@ class awesome_app{
 		
 		//setup and define collections
 		foreach($this->collection as $collection_name => $collection){
-			aw2_library::add_collection(strtolower($collection_name),$collection,'app collections ');
+			aw2_library::add_service(strtolower($collection_name),'app collections',$collection);
 		}
 		
 		//setup services
@@ -599,7 +594,7 @@ class awesome_app{
 		$services=&aw2_library::get_array_ref('app.services');
 		
 		foreach($services as $service_name =>$service){
-			aw2_library::add_collection($service_name, $service['post_type'],$service['desc']);
+			aw2_library::add_service($service_name,$service['desc'], $service['post_type']);
 		}
 	}
 	
@@ -669,7 +664,7 @@ class awesome_app{
 	}	
 
 	public function get_app_ticket($ticket){
-		$json=aw2_session_ticket_get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
+		$json=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
 		if(!$json){
 			echo 'Ticket is invalid: ' . $ticket;
 			exit();			
@@ -784,7 +779,7 @@ class awesome_auth{
 					//set app_valid=yes and return true
 				$atts['key']=$app['slug'].'_valid';
 				$atts['value']='yes';
-				aw2_vsession_set($atts,null,'');
+				\aw2\vsession\set($atts,null,'');
 				return true;
 			}				
 			//else go login	
@@ -793,7 +788,7 @@ class awesome_auth{
 		//at this stage with either cookie is not set or user did not authenticate
 		//create a cookie for vsession
 		
-		aw2_vsession_create('','','');
+		aw2\vsession\create('','','');
 		
 		return false;
 		
@@ -838,7 +833,7 @@ class controllers{
 			self::controller_posts($o, $query);
 			self::controller_taxonomy($o, $query);
 		}
-	
+
 		self::controller_modules($o);
 		
 		self:: controller_404($o);
@@ -1149,7 +1144,7 @@ class controllers{
 	}
 	
 	static function controller_pages($o, $query){
-		
+
 		if(empty($o->pieces))return;
 		
 		$slug= $o->pieces[0];
@@ -1173,6 +1168,8 @@ class controllers{
 					echo $output;
 					exit();
 				}
+				
+				
 				return;
 			}
 		}
@@ -1197,7 +1194,8 @@ class controllers{
 				
 			}
 		}	
-
+		
+		
 		return;
 	}
 	
@@ -1225,12 +1223,11 @@ class controllers{
 	}
 
 	static function controller_t($o){ 
-
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
 		$ticket=array_shift($o->pieces);
-		$hash=aw2_session_ticket_get(["main"=>$ticket],null,null);
+		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
 		if(!$hash || !$hash['ticket_activity']){
 			echo 'Ticket is invalid: ' . $ticket;
 			exit();			
@@ -1255,7 +1252,7 @@ class controllers{
 			
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-		//util::var_dump($hash);
+
 		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template,null,$hash);
 
 		echo $result;
@@ -1402,6 +1399,7 @@ class controllers{
 		unset($query->query_vars['post_type']);
 		unset($query->query_vars['page']);
 		unset($query->query_vars['error']);
+		unset($query->query_vars[$app['active']['collection']['post_type']]);
 		
 		$query->query_vars['post_type']=$app['active']['collection']['post_type'];
 		$query->query_vars['pagename']=$slug;

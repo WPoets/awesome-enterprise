@@ -1,6 +1,11 @@
 <?php
+namespace aw2\_file;
 
-aw2_library::add_shortcode('file','write', 'awesome2_file_write');
+
+\aw2_library::add_service('file','File Services',['namespace'=>__NAMESPACE__]);
+
+
+\aw2_library::add_service('file.write','Write content to file',['namespace'=>__NAMESPACE__]);
 function awesome2_file_write($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	

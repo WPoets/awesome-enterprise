@@ -1,49 +1,49 @@
 <?php
-//////// Collections Library ///////////////////
-aw2_library::add_library('collections','Collections Library');
 
+namespace aw2\collection;
+
+/*
 function aw2_collections_add($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	'desc'=>null,
 	'post_type'=>null,
 	
 	), $atts) );
-	aw2_library::add_collection($main,$atts,$desc);
+	\aw2_library::add_collection($main,$atts,$desc);
 }
+*/
 
+\aw2_library::add_service('collection','Handles Collections',['namespace'=>__NAMESPACE__]);
 
-//////// Collections Library ///////////////////
-aw2_library::add_library('collection','Collections Library');
-
-
-
-function aw2_collection_unhandled($atts,$content,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+function unhandled($atts,$content,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract( shortcode_atts( array(
 		'template'=>null
 	), $atts) );
-	$pieces=$shortcode['tags'];
+	$pieces=$shortcode['tags_left'];
 	if(!count($pieces)>=1)return 'Module not defined';
-	array_shift($pieces);
 	$module=array_shift($pieces);
 	
 	$t=implode('.',$pieces);
 
 	if($template)
-		$return_value=aw2_library::module_forced_run($shortcode['handler'],$module,$template,$content,$atts);	
+		$return_value=\aw2_library::module_forced_run($shortcode['collection'],$module,$template,$content,$atts);	
 	else
-		$return_value=aw2_library::module_run($shortcode['handler'],$module,$t,$content,$atts);		
+		$return_value=\aw2_library::module_run($shortcode['collection'],$module,$t,$content,$atts);		
 	
 	if(is_string($return_value))$return_value=trim($return_value);
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	if(is_object($return_value))$return_value='Object';
 	return $return_value;
 }
 
-function aw2_collection_run($atts,$content,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+\aw2_library::add_service('collection.run','Used to call a module of a collection. Cannot be called directly',['namespace'=>__NAMESPACE__]);
+
+function run($atts,$content,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract( shortcode_atts( array(
 		'main'=>null,
 		'template'=>null,
@@ -51,31 +51,48 @@ function aw2_collection_run($atts,$content,$shortcode){
 	), $atts) );
 	if($main==null)return 'Module/Template must be provided';	
 
-	if(!$module && $template)$return_value=aw2_library::module_forced_run($shortcode['handler'],$main,$template,$content,$atts);	
-	if(!$module && !$template)$return_value=aw2_library::module_run($shortcode['handler'],$main,null,$content,$atts);
-	if($module && !$template)$return_value=aw2_library::module_run($shortcode['handler'],$module,$main,$content,$atts);	
+	if(!$module && $template)$return_value=\aw2_library::module_forced_run($shortcode['collection'],$main,$template,$content,$atts);	
+	if(!$module && !$template)$return_value=\aw2_library::module_run($shortcode['collection'],$main,null,$content,$atts);
+	if($module && !$template)$return_value=\aw2_library::module_run($shortcode['collection'],$module,$main,$content,$atts);	
 		
 	if(is_string($return_value))$return_value=trim($return_value);
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	if(is_object($return_value))$return_value='Object';
 	
 	return $return_value;
 }
 
-function aw2_collection_include($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+\aw2_library::add_service('collection.include','Used to include a module of a collection. Cannot be called directly',['func'=>'_include','namespace'=>__NAMESPACE__]);
+
+function _include($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	), $atts ) );
-	$return_value=aw2_library::module_include($shortcode['handler'],$main);
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::module_include($shortcode['collection'],$main);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
 
-function aw2_collection_export($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+\aw2_library::add_service('collection.include_raw','Used to include a module of a collection as a string. Cannot be called directly',['namespace'=>__NAMESPACE__]);
+
+function include_raw($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract( shortcode_atts( array(
+	'main'=>null,
+	), $atts ) );
+	$return_value=\aw2_library::module_include_raw($shortcode['collection'],$main);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
+
+\aw2_library::add_service('collection.export','Exports a collection. Needs a post_type',['namespace'=>__NAMESPACE__]);
+
+function export($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null
 	), $atts ) );
@@ -112,10 +129,12 @@ function aw2_collection_export($atts,$content=null,$shortcode){
 	return 'Done. Taken Backup';	
 }
 
-function aw2_collection_import($atts,$content=null,$shortcode){
+\aw2_library::add_service('collection.import','Imports a collection. Needs a post_type',['namespace'=>__NAMESPACE__]);
+
+function import($atts,$content=null,$shortcode){
 	global $wbdb;
 	
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	'overwrite'=>'no'

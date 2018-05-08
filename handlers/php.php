@@ -1,10 +1,11 @@
 <?php
+namespace aw2\php;
 
 
-aw2_library::add_library('php','PHP Library');
+\aw2_library::add_service('php','PHP Library',['namespace'=>__NAMESPACE__]);
 
-function aw2_php_unhandled($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+function unhandled($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$pieces=$shortcode['tags'];
 	if(count($pieces)!=2)return 'error:You must have exactly two parts to the php shortcode';
 	$fname=$pieces[1];
@@ -25,7 +26,7 @@ function aw2_php_unhandled($atts,$content=null,$shortcode){
 	}	
 
 	$return_value=call_user_func_array($fname, $parameters);	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 
 }

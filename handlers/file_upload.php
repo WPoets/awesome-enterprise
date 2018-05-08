@@ -1,7 +1,10 @@
 <?php
-aw2_library::add_shortcode('aw2','upload', 'awesome2_upload','Upload a File');
+namespace aw2;
 
-function awesome2_upload($atts,$content=null,$shortcode){
+\aw2_library::add_service('aw2.upload','Upload',['namespace'=>__NAMESPACE__]);
+
+
+function upload($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
@@ -142,9 +145,8 @@ function aw2_woo_set_prodcut_gallery($post_id,$attach_ids){
 	update_post_meta( $post_id, '_product_image_gallery', $attach_ids );
 }
 
-aw2_library::add_shortcode('aw2','sideload', 'awesome2_side_upload','Download a File from URL and attach to media');
-
-function awesome2_side_upload($atts,$content=null,$shortcode){
+\aw2_library::add_service('aw2.sideload','Download a File from URL and attach to media',['namespace'=>__NAMESPACE__]);
+function sideload($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(

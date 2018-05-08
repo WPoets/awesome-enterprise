@@ -1,10 +1,11 @@
 <?php
+namespace aw2\loop;
 
-//////// Module Library ///////////////////
-aw2_library::add_library('resource','Loop Functions');
+\aw2_library::add_service('loop','Loop Library',['namespace'=>__NAMESPACE__]);
 
-function aw2_resource_unhandled($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+function unhandled($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract( shortcode_atts( array(
 		'main' => null,
@@ -15,17 +16,17 @@ function aw2_resource_unhandled($atts,$content=null,$shortcode){
 	$pieces=$shortcode['tags'];
 	if(count($pieces)!=2)return 'error:You must have exactly two parts to the loop shortcode';
 	$ctr=$pieces[1];
-	$stack_id=aw2_library::push_child($ctr,$main);
-	$call_stack=&aw2_library::get_array_ref('call_stack',$stack_id);
+	$stack_id=\aw2_library::push_child($ctr,$main);
+	$call_stack=&\aw2_library::get_array_ref('call_stack',$stack_id);
 	
 	$is_done=false;
 	//decide loop or for loop
 	
 	if($main){
 		$is_done=true;
-		$items=aw2_library::get($main);
+		$items=\aw2_library::get($main);
 		if(!is_array($items) && !is_object($items)){
-			aw2_library::set_error('Loop Element is not an Array:' . $main);
+			\aw2_library::set_error('Loop Element is not an Array:' . $main);
 			return;
 		}
 
@@ -54,7 +55,7 @@ function aw2_resource_unhandled($atts,$content=null,$shortcode){
 			if($index==$call_stack['count'])$call_stack['last']=true;
 			if($index!=$call_stack['count'])$call_stack['between']=true;
 				
-			$output[]=aw2_library::parse_shortcode($content);
+			$output[]=\aw2_library::parse_shortcode($content);
 			$index++;
 		}
 		$string=implode($output);	
@@ -90,7 +91,7 @@ function aw2_resource_unhandled($atts,$content=null,$shortcode){
 				if($index==1)$call_stack['first']=true;
 				if($index==$call_stack['count'])$call_stack['last']=true;
 				if($index!=$call_stack['count'])$call_stack['between']=true;
-				$output[]=aw2_library::parse_shortcode($content);
+				$output[]=\aw2_library::parse_shortcode($content);
 				$index++;
 			}
 			$string=implode($output);	
@@ -116,7 +117,7 @@ function aw2_resource_unhandled($atts,$content=null,$shortcode){
 				if($index==$call_stack['count'])$call_stack['last']=true;
 				if($index!=$call_stack['count'])$call_stack['between']=true;
 					
-				$output[]=$string . aw2_library::parse_shortcode($content);
+				$output[]=$string . \aw2_library::parse_shortcode($content);
 				$index++;
 			}
 			$string=implode($output);	
@@ -127,8 +128,8 @@ function aw2_resource_unhandled($atts,$content=null,$shortcode){
 	
 	if($is_done===false)return 'error: either array or start stop must be provided';
 			
-	aw2_library::pop_child($stack_id);	
-	$return_value=aw2_library::post_actions('all',$string,$atts);
+	\aw2_library::pop_child($stack_id);	
+	$return_value=\aw2_library::post_actions('all',$string,$atts);
 	return $return_value;
 }
 
