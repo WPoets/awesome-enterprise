@@ -46,7 +46,7 @@ function minify($atts,$content=null,$shortcode){
 function style($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
-	$return_value = aw2_css_less($atts,$content,$shortcode);
+	$return_value = less($atts,$content,$shortcode);
 	$return_value = '<style>'.$return_value.'</style>';
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	

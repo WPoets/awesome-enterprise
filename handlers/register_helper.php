@@ -1,6 +1,8 @@
 <?php
 
-aw2_library::add_library('register','Queries');
+namespace aw2\register;
+
+\aw2_library::add_service('register','Handles the registration of ctp, less variables etc.',['namespace'=>__NAMESPACE__]);
 
 
 function aw2_register_unhandled($atts,$content=null,$shortcode){
