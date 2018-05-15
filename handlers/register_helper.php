@@ -1,12 +1,12 @@
 <?php
-
 namespace aw2\register;
 
 \aw2_library::add_service('register','Handles the registration of ctp, less variables etc.',['namespace'=>__NAMESPACE__]);
 
 
-function aw2_register_unhandled($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+function unhandled($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	$pieces=$shortcode['tags'];
 
@@ -14,36 +14,15 @@ function aw2_register_unhandled($atts,$content=null,$shortcode){
 	
 	$register=new awesome2_register($pieces[1],$atts,$content);
 	if($register->status==false){
-		return aw2_library::get('errors');
+		return \aw2_library::get('errors');
 	}
 	$return_value =$register->run();
 		
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 	
 }
-/* 
-aw2_library::add_shortcode('aw2','register', 'awesome2_register','Register various wordpress objects');
 
-
-function awesome2_register($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-	
-	extract( shortcode_atts( array(
-		'main'=>null
-		), $atts) );
-
-	$register=new awesome2_register($main,$atts,$content);
-	if($register->status==false){
-		return aw2_library::get('errors');
-	}
-	
-	$return_value =$register->run();
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
-	
-	return $return_value;
-}
- */
 class awesome2_register{
 	public $action=null;
 	public $atts=null;
@@ -62,7 +41,7 @@ class awesome2_register{
      if (method_exists($this, $this->action))
 		return call_user_func(array($this, $this->action));
      else
-		aw2_library::set_error('Register Method does not exist'); 
+		\aw2_library::set_error('Register Method does not exist'); 
 	}
 	
 	function att($el,$default=null){
@@ -76,11 +55,11 @@ class awesome2_register{
 			$return_value=array();	
 		}
 		else{
-			$json=aw2_library::clean_specialchars($this->content);
-			$json=aw2_library::parse_shortcode($json);		
+			$json=\aw2_library::clean_specialchars($this->content);
+			$json=\aw2_library::parse_shortcode($json);		
 			$return_value=json_decode($json, true);
 			if(is_null($return_value)){
-				aw2_library::set_error('Invalid JSON' . $this->content); 
+				\aw2_library::set_error('Invalid JSON' . $this->content); 
 				$return_value=array();	
 			}
 		}
@@ -94,7 +73,7 @@ class awesome2_register{
 	}
 	
 	function widget(){
-		$widgets=&aw2_library::get_array_ref('widgets');
+		$widgets=&\aw2_library::get_array_ref('widgets');
 		$new=array();
 		$new['id']=$this->att('id');
 		$new['name']=$this->att('name');
@@ -125,7 +104,7 @@ class awesome2_register{
 		
 	function custom_metabox(){
 		
-		$custom_meta_boxes=&aw2_library::get_array_ref('custom_meta_boxes');
+		$custom_meta_boxes=&\aw2_library::get_array_ref('custom_meta_boxes');
 		
 		$args = $this->args();
 		$id = $args['id'];
@@ -135,12 +114,12 @@ class awesome2_register{
 	
 	function less_variables(){
 		
-		$less_variables=aw2_library::get('less_variables');
+		$less_variables=\aw2_library::get('less_variables');
 		
-		$args = aw2_library::parse_shortcode($this->content);
+		$args = \aw2_library::parse_shortcode($this->content);
 		$less_variables = $less_variables .' '.$args;
 		
-		aw2_library::set('less_variables',$less_variables );		
+		\aw2_library::set('less_variables',$less_variables );		
 		
 	}
 	
@@ -153,7 +132,7 @@ class awesome2_register{
 
 	function query_vars(){
 		
-		$query_vars=&aw2_library::get_array_ref('query_vars_array');
+		$query_vars=&\aw2_library::get_array_ref('query_vars_array');
 		$query_vars[]=$this->att('var');
 	}
 	
@@ -189,23 +168,23 @@ class awesome2_register{
 		
 		$user = new stdClass();
 		if(!isset($user_args['user_login'])){
-			aw2_library::set_error('user_login not set'); 
+			\aw2_library::set_error('user_login not set'); 
 			return $return_value;
 		}
 			
 		
 		if(empty($user_args['user_login'])){
-			aw2_library::set_error('user_login not empty'); 
+			\aw2_library::set_error('user_login not empty'); 
 			return $return_value;
 		}
 			
 		if(username_exists($user_args['user_login'])){
-			aw2_library::set_error('user_login already exists'); 
+			\aw2_library::set_error('user_login already exists'); 
 			return $return_value;
 		}
 		
 		if(!validate_username($user_args['user_login'])){
-			aw2_library::set_error('user_login not set'); 
+			\aw2_library::set_error('user_login not set'); 
 			return $return_value;
 		}
 		
@@ -214,12 +193,12 @@ class awesome2_register{
 		//making email optional for user registration.. special case
 		if(isset($user_args['user_email'])){
 			if(email_exists($user_args['user_email'])){
-				aw2_library::set_error('user_email already exists'); 
+				\aw2_library::set_error('user_email already exists'); 
 				return $return_value;
 			}
 		   
 			if(!is_email($user_args['user_email'])){
-				aw2_library::set_error('user_email is invalid email'); 
+				\aw2_library::set_error('user_email is invalid email'); 
 				return $return_value;
 			}
 			
@@ -228,12 +207,12 @@ class awesome2_register{
 		
 		if(isset($user_args['user_pass'])){
 			if(empty($user_args['user_pass'])){
-				aw2_library::set_error('user_pass is empty'); 
+				\aw2_library::set_error('user_pass is empty'); 
 				return $return_value;
 			}
 			
 			if(isset($user_args['user_pass_confirm']) && ($user_args['user_pass']!=$user_args['user_pass_confirm'])){
-				aw2_library::set_error('user_pass & user_pass_confirm are different'); 
+				\aw2_library::set_error('user_pass & user_pass_confirm are different'); 
 				return $return_value;
 			}
 			
@@ -258,7 +237,7 @@ class awesome2_register{
 		
 		
 		if(is_wp_error($new_user_id )){
-			aw2_library::set_error('Error Creating User : '.$new_user_id->get_error_message()); 
+			\aw2_library::set_error('Error Creating User : '.$new_user_id->get_error_message()); 
 			return $return_value;
 		}
 		if(isset($user_args['meta'])){

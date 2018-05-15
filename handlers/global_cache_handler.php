@@ -17,10 +17,8 @@ function set($atts,$content=null,$shortcode){
 	if(!isset($atts['value']))$value=$content;
 	else
 	$value=$atts['value'];	
-	$redis = new \Redis();
-	$redis->connect('127.0.0.1', 6379);
-	$database_number = 11;
-	$redis->select($database_number);
+	
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
 	
 	if(!$key)return 'Invalid Key';		
 	if($prefix)$key=$prefix . $key;
@@ -42,11 +40,9 @@ function get($atts,$content=null,$shortcode=null){
 	
 	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = new \Redis();
-	$redis->connect('127.0.0.1', 6379);
-	$database_number = 11;
-	$redis->select($database_number);
+	//Connect to Redis and store the data		
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+
 	$return_value='';
 	if($redis->exists($main))
 		$return_value = $redis->get($main);
@@ -61,9 +57,8 @@ function flush($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	//Connect to Redis and store the data
-	$redis = new \Redis();
-	$redis->connect('127.0.0.1', 6379);
-	$database_number = 11;
-	$redis->select($database_number);
+		
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+
 	$redis->flushdb() ;
 }

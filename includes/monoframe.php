@@ -19,7 +19,7 @@ class Monoframe
 
 	public static function load()
 	{
-
+		add_filter('acf/settings/remove_wp_meta_box', '__return_false', 20);
 		
 		//https://gist.github.com/mikeschinkel/523831/
 		//require_once  __DIR__ . '/monoframe/instrument-hooks.php';
