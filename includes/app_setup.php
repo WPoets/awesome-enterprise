@@ -4,7 +4,7 @@ add_action('init','aw2_apps_library::wp_init',11);
 add_action('admin_init','aw2_apps_library::admin_init',1);
 add_action( 'parse_request', 'aw2_apps_library::app_takeover' );
 
-add_action( 'admin_menu', 'aw2_apps_library::register_menus' );
+//add_action( 'admin_menu', 'aw2_apps_library::register_menus' );
 //add_action('template_redirect', 'aw2_apps_library::template_redirect');
 
 add_action('generate_rewrite_rules', 'aw2_apps_library::app_slug_rewrite');
@@ -16,10 +16,12 @@ add_action('wp_footer', 'aw2_apps_library::wp_footer');
 
 add_filter( 'wpseo_sitemap_index', 'aw2_apps_library::add_apps_to_yoast_sitemap' );
 
+require_once('awesome-menus.php');
 
 class aw2_apps_library{
 	
 	static function initialize(){
+		header("Cache-Control: no-cache, must-revalidate");
 		self::load_apps();
 		self::setup_services();
 		self::run_core('config');
@@ -29,27 +31,20 @@ class aw2_apps_library{
 		$time_zone = aw2_library::get('settings.time_zone');
 		if(!empty($time_zone))
 			date_default_timezone_set($time_zone);
-		
-		
+
 	}
 	
 	static function setup_services(){
 		
 		aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>'awesome_core']);
-		
 		self::run_core('services');
 		
 	}
 	
 	static function run_core($slug){
 		
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
-		
-		if(!isset($awesome_core[$slug])) return;
-		
-		aw2_library::parse_shortcode($awesome_core[$slug]['code']);
-		//consume
-		unset($awesome_core[$slug]);
+		if(aw2_library::get_module(['service'=>'core'],$slug,true))
+			$result=aw2_library::module_run(['service'=>'core'],$slug);
 		
 	}
 
@@ -57,28 +52,30 @@ class aw2_apps_library{
 	static function load_env_settings(){
 		$settings=&aw2_library::get_array_ref('settings');
 		
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
+		$arr=aw2_library::get_module(['service'=>'core'],'settings');
+		if(!$arr)return;
 		
-		if(!isset($awesome_core['settings']))return;
-			
-		$post_id = $awesome_core['settings']['id'];
-		$all_post_meta = aw2_library::get_post_meta($post_id);
-		
+		aw2_library::module_run(['service'=>'core'],'settings');
+		$all_post_meta = aw2_library::get_post_meta($arr['id']);
 		foreach($all_post_meta as $key=>$meta){
-			
 			//ignore private keys
 			if(strpos($key, '_') === 0 )
 				continue;
-			
 			$settings[$key] = $meta;
 		}
-	
 	}
 
 	static function wp_init(){
 		self::register_app_cpts();
 		self::run_core('register');
-		self::setup_yoast_links();	
+		
+		$registered_apps=&aw2_library::get_array_ref('apps');
+		foreach($registered_apps as $key=>$app){
+			if(!self::enable_sitemap($app)) continue;
+			
+			self::setup_yoast_links($app['slug']);	
+		}
+		
 		
 		if(is_admin())
 			return;
@@ -184,7 +181,7 @@ class aw2_apps_library{
 					$public=true;
 				}
 	
-				if(!post_type_exists( $collection['post_type'] ))
+				if(isset($collection['post_type']) && !post_type_exists( $collection['post_type'] ))
 					self::register_cpt($collection['post_type'],$collection_name,$app['name'],$public,$supports,$hierarchical,$slug);
 			}
 			
@@ -216,28 +213,37 @@ class aw2_apps_library{
 			$app['slug']=$app_post['module'];
 			$app['post_id']=$app_post['id'];
 			$app['hash']=$app_post['hash'];
-			
 			$app['collection']=array();
-			
-			$app['skip_sitemap']=aw2_library::get_post_meta($app_post['id'],'skip_sitemap',true);
-			if(empty($app['skip_sitemap']))
-				$app['skip_sitemap']='yes';
-			
+
+
 			$app_config=aw2_library::get_post_meta($app_post['id'],'config_collection');
 			if($app_config){
-				$app['collection']['config']['post_type']=$app_config;
+				$decode=json_decode($app_config,true);
+				if($decode)
+					$app['collection']['config']=$decode;
+				else	
+					$app['collection']['config']['post_type']=$app_config;
 			}
-			
+
 			$modules=aw2_library::get_post_meta($app_post['id'],'modules_collection');
 			if($modules){
-				$app['collection']['modules']['post_type']=$modules;
+				$decode=json_decode($modules,true);
+				if($decode)
+					$app['collection']['modules']=$decode;
+				else	
+					$app['collection']['modules']['post_type']=$modules;
 			}
-			
+
 			$pages=aw2_library::get_post_meta($app_post['id'],'pages_collection');
 			if($pages){
-				$app['collection']['pages']['post_type']=$pages;
+				$decode=json_decode($pages,true);
+				if($decode)
+					$app['collection']['pages']=$decode;
+				else	
+					$app['collection']['pages']['post_type']=$pages;
+				
 			}	
-			
+
 			$posts=aw2_library::get_post_meta($app_post['id'],'posts_collection');
 			if($posts){
 				$app['collection']['posts']['post_type']=$posts;
@@ -255,7 +261,7 @@ class aw2_apps_library{
 			
 			$registered_apps[$app_post['module']]=$ptr['app'];
 		}
-		
+ 	
 		//load all config post, as they are used they will be consumed.
 		$awesome_core=&aw2_library::get_array_ref('awesome_core');
 		
@@ -268,6 +274,7 @@ class aw2_apps_library{
 			self::initialize_root(); // it is front page hence request is not set so setup root.
 			return;
 		}
+		
 		
 		$pieces = explode('/',$query->request);
 		
@@ -309,12 +316,12 @@ class aw2_apps_library{
 
 		// run init
 		$app->run_init();
-				
+
 		//now resolve the route.
 		if($app->slug!='root' || $app_slug=='ajax'){
 			$app->resolve_route($pieces,$query);
 		}
-		
+	
 	}
 	
 	static function initialize_root(){
@@ -329,34 +336,6 @@ class aw2_apps_library{
 		
 	}
 	
-	static function register_menus(){
-		
-		add_menu_page('Services', 'Services - Awesome Studio', 'develop_for_awesomeui','awesome-services', 'edit.php?post_type=aw2_app','dashicons-admin-network',2 );
-		
-		//register services
-		$handlers=&aw2_library::get_array_ref('handlers');
-		
-		foreach($handlers as $key => $handler){
-			if(isset($handler['post_type']) && isset($handler['service']) && $handler['service'] === 'yes'){
-				add_submenu_page('awesome-services', $handler['service_label'], $handler['service_label'],  'develop_for_awesomeui','edit.php?post_type='.$handler['post_type']);
-			}
-		}
-		
-		add_submenu_page('awesome-studio', 'Apps - Awesome Studio', 'Apps', 'develop_for_awesomeui', 'edit.php?post_type=aw2_app' );
-		add_submenu_page( 'awesome-studio', 'Core - Awesome Studio', 'Awesome Core', 'develop_for_awesomeui', 'edit.php?post_type=awesome_core' );
-		add_submenu_page('awesome-studio', 'Manage Cache - Awesome Studio', 'Manage Cache', 'develop_for_awesomeui','awesome-studio-cache' ,'aw2_apps_library::manage_cache');
-		//register apps menu
-		$registered_apps=&aw2_library::get_array_ref('apps');
-		foreach($registered_apps as $key => $app){
-			add_menu_page($app['name'], $app['name'].' App', 'manage_options', 'awesome-app-'.$app['slug'], 'aw2_apps_library::show_app_pages', 'dashicons-admin-multisite',3);
-			
-			foreach($app['collection'] as $collection_name => $collection){
-				add_submenu_page('awesome-app-'.$app['slug'], $app['name'] . ' ' . $collection_name, $collection_name,  'develop_for_awesomeui','edit.php?post_type='.$collection['post_type']);
-			}
-			//add_submenu_page('awesome-app-'.$app->slug, $app->name . ' config', 'Config',  'develop_for_awesomeui','post.php?post=' . $app->post_id . '&action=edit');
-		}
-		
-	}
 	
 	static function manage_cache(){
 		
@@ -523,7 +502,8 @@ class aw2_apps_library{
 	
 	static function wp_footer(){
 		self::run_core('footer-scripts');
-	}	
+	}
+	
 	static function  add_apps_to_yoast_sitemap(){
 		global $wpseo_sitemaps;
 		global $wpdb;
@@ -536,21 +516,50 @@ class aw2_apps_library{
 		//$date = $wpseo_sitemaps->get_last_modified('aw2_app');
 		$timezone =  new WPSEO_Sitemap_Timezone();
 		$mod = $timezone->format_date($mod );
-		$smp ='';
 		
-		$smp .= '<sitemap>' . "\n";
+		$registered_apps=&aw2_library::get_array_ref('apps');
+		
+		
+		$smp ='';
+		foreach($registered_apps as $key=>$app){
+			
+			if(!self::enable_sitemap($app)) continue;
+			
+			$smp .= '<sitemap>' . "\n";
+			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-sitemap.xml</loc>' . "\n";
+			$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
+			$smp .= '</sitemap>' . "\n";
+		}
+		
+		/* $smp .= '<sitemap>' . "\n";
 		$smp .= '<loc>' . site_url() .'/awesome-apps-sitemap.xml</loc>' . "\n";
 		$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
-		$smp .= '</sitemap>' . "\n";
+		$smp .= '</sitemap>' . "\n"; */
 		
 		return $smp;
+		
 	}
 	
-	static function setup_yoast_links(){
-		add_action( "wpseo_do_sitemap_awesome-apps", 'aw2_apps_library::awesome_apps_pages_sitemap');
+	static function setup_yoast_links($slug){
+		add_action( "wpseo_do_sitemap_".$slug,  function() use ($slug){
+														aw2_apps_library::awesome_apps_pages_sitemap($slug);
+												});
 	}
 	
-	static function awesome_apps_pages_sitemap(){
+	static function enable_sitemap($app){
+		
+		if(!isset($app['collection']['config'])) return false;
+			
+		$arr=aw2_library::get_module($app['collection']['config'],'settings');
+		if(!$arr) return false;
+		aw2_library::module_run($app['collection']['config'],'settings');
+		$enable_sitemap = aw2_library::get_post_meta($arr['id'],'enable_sitemap');
+		
+		if($enable_sitemap !== 'yes')  return false;
+		
+		return true;
+	}
+	static function awesome_apps_pages_sitemap($slug){
 		global $wpseo_sitemaps;
 		global $wpdb;
 		
@@ -559,134 +568,131 @@ class aw2_apps_library{
 		$skip_slugs=array('single','archive','header','footer');
 		
 		$output = '';
-		foreach($registered_apps as $key => $app){
+		$app=$registered_apps[$slug];
+		
+		//foreach($registered_apps as $key => $app){
+		if(!self::enable_sitemap($app)) {
+            $wpseo_sitemaps->bad_sitemap = true;
+			return;
+		}	
 			
-			if($app['slug']=='root')
-				continue;
+		if(isset($app['collection']['pages']['post_type'])){
+			$args = array(
+				'posts_per_page'   => 500,
+				'orderby'          => 'post_date',
+				'order'            => 'DESC',
+				'post_type'        => $app['collection']['pages']['post_type'],
+				'post_status'      => 'publish',
+				'suppress_filters' => true
+			);
 			
-			if($app['skip_sitemap']=='yes')
-				continue;
-		/* 
-			$app_options = cmb2_get_option( $app->slug .'_options','all');	
+			$app_pages = new WP_Query( $args );
 			
-			if(!empty($app_options['members_only'])){
-				continue;
-			} */
 			
-			//util::var_dump($app);
-			
-			if(isset($app['collection']['pages']['post_type'])){
-				$args = array(
-					'posts_per_page'   => 500,
-					'orderby'          => 'post_date',
-					'order'            => 'DESC',
-					'post_type'        => $app['collection']['pages']['post_type'],
-					'post_status'      => 'publish',
-					'suppress_filters' => true
-				);
-				
-				$app_pages = new WP_Query( $args );
-				
-				
-				if( $app_pages->have_posts() ){
-					$chf = 'weekly';
-					$pri = 1.0;
-					foreach ( $app_pages->posts as $p ) {
-						if(in_array($p->post_name,$skip_slugs)){
-							continue;
-						}
-						$slug= $p->post_name.'/';
-						if($slug=='home/')
-							$slug='';
-						
-						$url = array();
-						if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
-							$url['mod'] = $p->post_modified_gmt;
-						} else {
-							if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
-								$url['mod'] = $p->post_date_gmt;
-							} else {
-								$url['mod'] = $p->post_date;
-							}
-						}
-						$url['loc'] = $app['path'].'/'.$slug;
-						$url['chf'] = $chf;
-						$url['pri'] = $pri;
-						$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
+			if( $app_pages->have_posts() ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $app_pages->posts as $p ) {
+					if(in_array($p->post_name,$skip_slugs)){
+						continue;
 					}
+					$slug= $p->post_name.'/';
+					if($slug=='home/')
+						$slug='';
+					
+					$url = array();
+					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
+						$url['mod'] = $p->post_modified_gmt;
+					} else {
+						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
+							$url['mod'] = $p->post_date_gmt;
+						} else {
+							$url['mod'] = $p->post_date;
+						}
+					}
+					$url['loc'] = $app['path'].'/'.$slug;
+					$url['chf'] = $chf;
+					$url['pri'] = $pri;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
 				}
 			}
+		}
 			
 		
-			if(isset($app['collection']['posts']['post_type'])){
-				$args = array(
-					'posts_per_page'   => 500,
-					'orderby'          => 'post_date',
-					'order'            => 'DESC',
-					'post_type'        => $app['collection']['posts']['post_type'],
-					'post_status'      => 'publish',
-					'suppress_filters' => true
-				);
-				
-				$app_posts = new WP_Query( $args );
-				
-				
-				if( $app_posts->have_posts() ){
-					$chf = 'weekly';
-					$pri = 1.0;
-					foreach ( $app_posts->posts as $p ) {
-								
-						$url = array();
-						if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
-							$url['mod'] = $p->post_modified_gmt;
+		if(isset($app['collection']['posts']['post_type'])){
+			$args = array(
+				'posts_per_page'   => 500,
+				'orderby'          => 'post_date',
+				'order'            => 'DESC',
+				'post_type'        => $app['collection']['posts']['post_type'],
+				'post_status'      => 'publish',
+				'suppress_filters' => true
+			);
+			
+			$app_posts = new WP_Query( $args );
+			
+			
+			if( $app_posts->have_posts() ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $app_posts->posts as $p ) {
+							
+					$url = array();
+					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
+						$url['mod'] = $p->post_modified_gmt;
+					} else {
+						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
+							$url['mod'] = $p->post_date_gmt;
 						} else {
-							if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
-								$url['mod'] = $p->post_date_gmt;
-							} else {
-								$url['mod'] = $p->post_date;
-							}
+							$url['mod'] = $p->post_date;
 						}
-						$url['loc'] = site_url().'/'.$app['slug'].'/'.$p->post_name.'/';
-						$url['chf'] = $chf;
-						$url['pri'] = $pri;
-						$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
 					}
+					$url['loc'] = site_url().'/'.$app['slug'].'/'.$p->post_name.'/';
+					$url['chf'] = $chf;
+					$url['pri'] = $pri;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
 				}
 			}
-			/* if(!empty($app->default_taxonomy)){
-				$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
-						FROM	$wpdb->posts AS p
-						WHERE post_status IN ('publish') AND post_type = %s ", $app->default_post_type );
-				$mod = $wpdb->get_var( $sql );
+		}
+			
+			
+		$arr=aw2_library::get_module($app['collection']['config'],'settings');
+		$default_taxonomy = aw2_library::get_post_meta($arr['id'],'default_taxonomy');
+		
+			
+		if(!empty($default_taxonomy)){
+			$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
+					FROM	$wpdb->posts AS p
+					WHERE post_status IN ('publish') AND post_type = %s ", $app['collection']['posts']['post_type'] );
+			$mod = $wpdb->get_var( $sql );
 
-				$terms = get_terms( array(
-							'taxonomy' => $app->default_taxonomy,
-							'hide_empty' => false,
-						) );
-				if( ! empty( $terms ) && ! is_wp_error( $terms )  ){
-					$chf = 'weekly';
-					$pri = 1.0;
-					foreach ( $terms as $term  ) {
-	
-						$url = array();
-						$url['loc'] = site_url().'/'.$app->slug.'/'.$term->slug.'/';
-						$url['pri'] = $pri;
-						$url['mod'] = $mod;
-						$url['chf'] = $chf;
-						$output .= $wpseo_sitemaps->sitemap_url( $url );
-						
-					}
+			$terms = get_terms( array(
+						'taxonomy' => $default_taxonomy,
+						'hide_empty' => false,
+					) );
+			if( ! empty( $terms ) && ! is_wp_error( $terms )  ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $terms as $term  ) {
+
+					$url = array();
+					$url['loc'] = site_url().'/'.$app['slug'].'/'.$term->slug.'/';
+					$url['pri'] = $pri;
+					$url['mod'] = $mod;
+					$url['chf'] = $chf;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
+					
 				}
-				
-			} */
+			}
+			
+		} 
 			
 	
-		}
-
-		/* if ( empty( $output ) ) {
-            $wpseo_sitemaps->bad_sitemap = true;
-            return;
-        } */
+		
+		
+		if(aw2_library::get_module($app['collection']['config'],'custom-sitemap',true))
+			$output .= aw2_library::module_run($app['collection']['config'],'custom-sitemap');
+		
 		//Build the full sitemap
         $sitemap = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
         $sitemap .= 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" ';
@@ -726,34 +732,47 @@ class awesome_app{
 			
 		$this->settings = array();
 		
-		if(isset($this->collection['config'])){
+		/* if(isset($this->collection['config'])){
 		$config_posts=aw2_library::get_collection(['post_type'=>$this->collection['config']['post_type']]);
 		$this->configs = $config_posts	;
 			
-		}
+		} */
 
 		aw2_library::set('app',(array) $this);				
 
 	}
 	
+	public function run_config_module($slug){
+		$app=&aw2_library::get_array_ref('app');
+		
+		if(!isset($app['collection']['config']))
+			return false;		
+			
+		if(aw2_library::get_module($app['collection']['config'],$slug,true)){
+			aw2_library::module_run($app['collection']['config'],$slug);
+			return true;
+		}
+		return false;		
+		
+	}
 	
 	public function load_settings(){
 		$app=&aw2_library::get_array_ref('app');
-	
-		if(!isset($app['configs']['settings']))
-			return;
 		
-		$settings_post_id = $app['configs']['settings']['id'];
-		$all_post_meta = aw2_library::get_post_meta($settings_post_id);
-	
+		if(!isset($app['collection']['config']))
+			return;
+
+		$config=$app['collection']['config'];
+		
+		$arr=aw2_library::get_module($config,'settings');
+		if(!$arr)return;
+		aw2_library::module_run($config,'settings');
+		$all_post_meta = aw2_library::get_post_meta($arr['id']);
 		foreach($all_post_meta as $key=>$meta){
-			
 			//ignore private keys
 			if(strpos($key, '_') === 0 )
 				continue;
-			
 			$app['settings'][$key] = $meta;
-
 		}
 	}	
 	
@@ -764,38 +783,20 @@ class awesome_app{
 			aw2_library::add_service(strtolower($collection_name),'app collections',$collection);
 		}
 		
-		//setup services
-		if(!isset($this->configs['services']))
-			return;
-		
-		$service_post = $this->configs['services'];
-		
-		aw2_library::parse_shortcode($service_post['code']);
-
-		$services=&aw2_library::get_array_ref('app.services');
-		
-		foreach($services as $service_name =>$service){
-			aw2_library::add_service($service_name,$service['desc'], $service['post_type']);
-		}
+		//Run service module for any additional services
+		$this->run_config_module('services');
 	}
 	
 	public function run_init(){
 				
-		if(!isset($this->configs['init']))
-			return;
-		
-		$init = $this->configs['init'];
-		
-		aw2_library::parse_shortcode($init['code']);
+		$this->run_config_module('init');
 	}
 	
 	public function check_rights($query){
 		
 		if(current_user_can('administrator'))return;
 		
-		if(!isset($this->configs['rights']))return;
-		
-		aw2_library::parse_shortcode($this->configs['rights']['code']);
+		if(!$this->run_config_module('rights'))return;
 		
 		$rights =&aw2_library::get_array_ref('app','rights');
 		
@@ -1008,6 +1009,8 @@ class controllers{
 			
 			call_user_func(array('controllers', 'controller_'.$controller),$o, $query);
 		}
+		if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes')
+			header("Cache-Control: public, must-revalidate");
 		
 		if($ajax != true){
 			self::controller_pages($o, $query);
@@ -1031,8 +1034,8 @@ class controllers{
 		$slug= $o->pieces[0];
 		$post_type = $app['collection']['apphelp']['post_type'];
 		
-		if(!aw2_library::get_post_from_slug($slug,$post_type,$post)) return;
-			
+		if(!isset($app['collection']['apphelp']) || !aw2_library::get_module($app['collection']['apphelp'],$slug,true)) return;
+						
 		array_shift($o->pieces);
 		self::set_qs($o);
 		
@@ -1040,22 +1043,20 @@ class controllers{
 		$app['active']['module'] = $slug; // this is kept to keep this workable
 		$app['active']['controller'] = 'apphelp';	
 		
-		if(isset($app['configs'])){
+		
 			$layout='';
-			$app_config = $app['configs'];
+
 			$awesome_core=&aw2_library::get_array_ref('awesome_core');
-			
-			if(isset($awesome_core['layout'])){
-				$layout=$awesome_core['layout']['code'];
-			}
-			if(isset($awesome_core['apphelp-content-layout'])){
-				$layout=$awesome_core['apphelp-content-layout']['code'];
+			if(aw2_library::get_module(['service'=>'core'],'layout',true))
+				$layout='layout';
+		
+			if(aw2_library::get_module(['service'=>'core'],'apphelp-content-layout',true)){
+				$layout='apphelp-content-layout';
 			}
 
 			if(!empty($layout)){
-				$output = aw2_library::parse_shortcode($layout);
+				$output = aw2_library::module_run(['service'=>'core'],$layout);
 			}
-		}
 		
 		if($output !== false){
 			echo $output;
@@ -1212,8 +1213,10 @@ class controllers{
 
 		
 		} else {
-			aw2_library::get_post_from_slug(self::$module,$app['active']['collection']['post_type'],$post);
-			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID  . "&action=edit"));
+			
+			$post = aw2_library::get_module(['service'=>'core'],self::$module);
+			if(!empty($post))
+				header("Location: " . site_url("wp-admin/post.php?post=" . $post['ID']  . "&action=edit"));
 		}		
 		exit();	
 	}
@@ -1309,7 +1312,7 @@ class controllers{
 		exit();	
 	}
 	
-	static function controller_data($o){
+/* 	static function controller_data($o){
 		self::$module=array_shift($o->pieces);
 		$app=&aw2_library::get_array_ref('app');
 		
@@ -1322,7 +1325,7 @@ class controllers{
 		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
 		echo json_encode($result);
 		exit();	
-	}
+	} */
 	
 	static function controller_pages($o, $query){
 
@@ -1333,10 +1336,9 @@ class controllers{
 		$app=&aw2_library::get_array_ref('app');
 	
 		if(isset($app['collection']['pages'])){
-			$post_type = $app['collection']['pages']['post_type'];
-			
-			
-			if(aw2_library::get_post_from_slug($slug,$post_type,$post)){
+			$check=aw2_library::get_module($app['collection']['pages'],$slug,true);
+
+			if($check){
 				array_shift($o->pieces);
 				self::set_qs($o);
 				$app['active']['collection'] = $app['collection']['pages'];
@@ -1349,15 +1351,13 @@ class controllers{
 					echo $output;
 					exit();
 				}
-				
-				
 				return;
 			}
 		}
 	
 		if(isset($app['collection']['modules'])){
-			$post_type = $app['collection']['modules']['post_type'];
-			if(aw2_library::get_post_from_slug($slug,$post_type,$post)){
+			$check=aw2_library::get_module($app['collection']['modules'],$slug,true);
+			if($check){
 				array_shift($o->pieces);
 				self::set_qs($o);
 				
@@ -1374,8 +1374,7 @@ class controllers{
 				return;
 				
 			}
-		}	
-		
+		}
 		
 		return;
 	}
@@ -1386,8 +1385,8 @@ class controllers{
 		self::$module= $o->pieces[0];
 		self::module_parts();
 		
-		$post_type = $app['collection']['modules']['post_type'];
-		if(aw2_library::get_post_from_slug(self::$module,$post_type,$post)){
+		$check=aw2_library::get_module($app['collection']['modules'],self::$module,true);
+		if($check){
 			array_shift($o->pieces);
 
 			$app['active']['collection'] = $app['collection']['modules'];
@@ -1447,13 +1446,13 @@ class controllers{
 		$app=&aw2_library::get_array_ref('app');
 		
 		if(!isset($app['collection']['posts'])) return;
-		
+			
 		$slug= $o->pieces[0];
 	
 		$post_type = $app['collection']['posts']['post_type'];
 			
 			
-		if(!aw2_library::get_post_from_slug($slug,$post_type,$post)) return;
+		if(!aw2_library::get_module($app['collection']['posts'],$slug,true)) return;
 			
 		array_shift($o->pieces);
 		self::set_qs($o);
@@ -1462,14 +1461,14 @@ class controllers{
 		$app['active']['controller'] = 'posts';	
 		$output = false;
 		
-		if(isset($app['configs'])){
+		if(isset($app['collection']['configs'])){
 			$layout='';
-			$app_config = $app['configs'];
-			
-			if(isset($app_config['layout'])){
+				
+			if(aw2_library::get_module($app['collection']['config'],'layout',true)){
 				$layout='layout';
 			}
-			if(isset($app_config['posts-single-layout'])){
+			
+			if(aw2_library::get_module($app['collection']['config'],'posts-single-layout',true) ){
 				$layout='posts-single-layout';
 			}
 			
@@ -1557,26 +1556,27 @@ class controllers{
 	
 	static function run_layout($app, $collection, $slug,$query){
 		
-		if(isset($app['configs'])){
+		if(isset($app['collection']['config'])){
 			$layout='';
-			$app_config = $app['configs'];
 			
-			if(isset($app_config['layout'])){
+			if(aw2_library::get_module($app['collection']['config'],'layout',true))
 				$layout='layout';
-			}
-			if(isset($app_config[$collection.'-layout'])){
+				
+			if(aw2_library::get_module($app['collection']['config'],$collection.'-layout',true))
 				$layout=$collection.'-layout';
 
-			}
 			if(!empty($layout)){
 				return aw2_library::module_run($app['collection']['config'],$layout,null,null);
 			}
 		}
-				
+
 		if($collection == 'modules'){
 			return 	$result=aw2_library::module_run($app['active']['collection'],$slug,'');
-
 		}
+		
+		if(!isset($app['active']['collection']['post_type'])){
+				return aw2_library::module_run(['post_type'=>'awesome_core'],'layout',null,null);
+		}	
 		
 		// well none of the layout optins exists so hand it over to page.php
 		 
@@ -1589,7 +1589,7 @@ class controllers{
 		
 		$query->query_vars['post_type']=$app['active']['collection']['post_type'];
 		$query->query_vars['pagename']=$slug;
-		
+	
 		//exit();
 		return false;
 	}

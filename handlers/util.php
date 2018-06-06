@@ -1,13 +1,10 @@
 <?php
-namespace aw2\search;
+namespace aw2\util;
 
-\aw2_library::add_service('search','Search Library',['namespace'=>__NAMESPACE__]);
-
-
-\aw2_library::add_service('search.form_data','Collect Form Data',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('util.form_data_array','Collect Form Data and return an array',['namespace'=>__NAMESPACE__]);
 
 
-function form_data($atts,$content=null,$shortcode){
+function form_data_array($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	foreach($_REQUEST as $key => $value){
@@ -20,7 +17,7 @@ function form_data($atts,$content=null,$shortcode){
 }
 
 	
-\aw2_library::add_service('search.save_csv_page','Save CSV Page',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('util.save_csv_page','Save CSV Page',['namespace'=>__NAMESPACE__]);
 function save_csv_page($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	

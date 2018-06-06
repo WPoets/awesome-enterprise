@@ -5,7 +5,7 @@ namespace aw2;
 
 
 function upload($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
 		'main' => 'attach_to_post',
@@ -100,7 +100,7 @@ function upload($atts,$content=null,$shortcode){
 		}
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
 	return $return_value;
 }	
@@ -147,7 +147,7 @@ function aw2_woo_set_prodcut_gallery($post_id,$attach_ids){
 
 \aw2_library::add_service('aw2.sideload','Download a File from URL and attach to media',['namespace'=>__NAMESPACE__]);
 function sideload($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
 		'main' => 'attach_to_post',
@@ -175,7 +175,7 @@ function sideload($atts,$content=null,$shortcode){
 	}
 	
 	if(empty($file_url)){
-		aw2_library::set_error('file_url is blank. It is required.'); 
+		\aw2_library::set_error('file_url is blank. It is required.'); 
 		return '';
 	}
 	
@@ -186,14 +186,14 @@ function sideload($atts,$content=null,$shortcode){
 	
 	if($main=='attach_to_post'){
 		if(empty($post_id)){
-			aw2_library::set_error('post_id is empty. It is required.'); 
+			\aw2_library::set_error('post_id is empty. It is required.'); 
 			return '';
 		}
 			
 		
 		$tmp = download_url( $file_url);
 		if( is_wp_error( $tmp ) ){
-			aw2_library::set_error('Failed to download : file '.$file_url.' : because '.$tmp->get_error_message()); 
+			\aw2_library::set_error('Failed to download : file '.$file_url.' : because '.$tmp->get_error_message()); 
 			return '';
 		}
 		
@@ -219,7 +219,7 @@ function sideload($atts,$content=null,$shortcode){
 		if ( is_wp_error($attachment_id ) ) {
 			@unlink($file_array['tmp_name']);
 			util::var_dump($file_array);
-			aw2_library::set_error('Media Sideload failed. '.$attachment_id->get_error_message());
+			\aw2_library::set_error('Media Sideload failed. '.$attachment_id->get_error_message());
 			return '' ;
 		}
 
@@ -238,7 +238,7 @@ function sideload($atts,$content=null,$shortcode){
 	if($main=='save_to_path'){
 		//create the folder
 		if(empty($dir_path)){
-			aw2_library::set_error('dir_path is required');
+			\aw2_library::set_error('dir_path is required');
 			return '';
 		}
 		if($attach=="true")	{
@@ -302,7 +302,7 @@ function sideload($atts,$content=null,$shortcode){
 		$return_value['url'] = site_url().'/'.$dir_path.'/'.$file_name;
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
 	return $return_value;
 }

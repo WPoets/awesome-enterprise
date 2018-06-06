@@ -1,7 +1,7 @@
 <?php
 namespace aw2\services;
 
-\aw2_library::add_service('services.add','Add a New Service',['namespace'=>'aw2\services']);
+\aw2_library::add_service('services.add','Add a New Service',['namespace'=>__NAMESPACE__]);
 
 function add($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
@@ -18,10 +18,20 @@ function add($atts,$content=null,$shortcode){
 }
 
 
+\aw2_library::add_service('services.remove','Remove a Service',['namespace'=>__NAMESPACE__]);
 
-namespace aw2\s1;
+function remove($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'desc'=>null
+	), $atts) );
+	
+	unset($atts['main']);
+	unset($atts['desc']);
+	
 
-function test1($atts,$content=null,$shortcode){
-	return 'hello';
+	\aw2_library::remove_service($main,$desc,$atts);
 }
+
 

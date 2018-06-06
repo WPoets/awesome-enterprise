@@ -1,4 +1,5 @@
 <?php
+define('AW2_ERROR','_error');
 
 class aw2_library{
 
@@ -159,7 +160,7 @@ static function shortcode_tag( $m ) {
 	if($service){	
 		if(!empty($attr))self::pre_action_parse($attr);
 		
-		$pre_compiler_check=array('c','and','or','m','o');
+		$pre_compiler_check=array('c','and','or','m','m2','o','o2');
 		$pre=array();
 		$pre['primary']=array();
 		if(!empty($attr)){
@@ -177,6 +178,7 @@ static function shortcode_tag( $m ) {
 				
 		$check_cond = true ;
 		if(isset($pre['c'])){
+			//loop and call chain which will update all atts
 			foreach ($pre['c'] as $key => $value) {
 				if(isset($handlers['c'][$key])){
 					if (isset($handlers['c'][$key]['func']))
@@ -308,7 +310,7 @@ static function shortcode_tag( $m ) {
 			
 			if($fn_name){
 				$flag = true;
-				$reply = $m[1] . call_user_func($fn_name, $pre['primary'], $content, $sc ) . $m[6];
+				$reply = call_user_func($fn_name, $pre['primary'], $content, $sc );
 			}
 		}
 		
@@ -325,6 +327,17 @@ static function shortcode_tag( $m ) {
 					}
 				}
 			}
+			if(isset($pre['m2'])){
+				foreach ($pre['m2'] as $key => $value) {
+					if(isset($handlers['m'][$key])){
+						if (isset($handlers['m'][$key]['func']))
+							$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $handlers['m'][$key]['func'];
+						else
+							$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $key;
+						$reply=call_user_func($m_fn_name, $reply, $pre['m2'] );
+					}
+				}
+			}
 			if(isset($pre['o'])){
 				//$reply=self::redirect_output($reply,$pre['o']);
 				foreach ($pre['o'] as $key => $value) {
@@ -337,7 +350,19 @@ static function shortcode_tag( $m ) {
 					}
 				}
 			}
-		return $reply;
+			if(isset($pre['o2'])){
+				//$reply=self::redirect_output($reply,$pre['o']);
+				foreach ($pre['o2'] as $key => $value) {
+					if(isset($handlers['o'][$key])){
+						if (isset($handlers['o'][$key]['func']))
+							$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $handlers['o'][$key]['func'];
+						else
+							$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $key;
+						$reply=call_user_func($o_fn_name, $reply, $pre['o2'] );
+					}
+				}
+			}
+		return $m[1] . $reply . $m[6];
 		}
 		
 			
@@ -349,6 +374,54 @@ static function shortcode_tag( $m ) {
 
 	return $m[0];
 	
+}
+
+static function resolve_chain($str,&$atts=null,$content=null){
+	
+	if(is_array($str))
+		return $str;
+	
+	if(strlen($str) <= 1)
+		return (string)$str;
+
+	if($str==='yes')
+		return (string)'yes';
+
+	if($str==='no')
+		return (string)'no';
+
+	if($str==='true')
+		return true;
+
+	if($str==='false')
+		return false;
+
+	if($str==='null')
+		return NULL;
+	
+	//Collect first 2 chars of the string to check the type.
+	$str_type = substr( $str, 0, 2 );	
+	$trunc_str = substr( $str, 2, strlen($str) );
+	
+	if($str_type === 's:')
+		return (string) $trunc_str;
+	
+	if($str_type === 'n:')
+		return (float) $trunc_str;
+	
+	if($str_type === 'i:')
+		return (int) $trunc_str;
+	
+	if($str_type === 'b:'){
+		if($trunc_str === '' || $trunc_str === 'false')
+			return (bool) false;
+		else
+			return (bool) $trunc_str;
+	}
+	
+	$str = self::get($str,$atts,$content);
+	
+	return $str;
 }
 
 
@@ -401,6 +474,21 @@ static function add_library($library,$desc=null,$alias=null) {
 	$handler['desc']=$desc;
 }
 
+static function remove_service($keys) {
+	$current=&self::get_array_ref('handlers');
+	
+	if(!is_array($keys))$keys=explode('.',$keys);	
+	
+	while(!empty($keys)){
+		$key=array_shift($keys);
+		if(count($keys)<=0){
+			unset($current[$key]);
+			return;	
+		}
+		$current=&$current[$key];
+	}
+}
+
 static function add_service($service,$desc=null,$atts=array()) {
 	$atts['desc']=$desc;
 
@@ -421,7 +509,7 @@ static function add_service($service,$desc=null,$atts=array()) {
 		return;
 	}
 	
-	if(isset($atts['post_type']) || isset($atts['url'])){
+	if(isset($atts['post_type']) || isset($atts['source'])){
 		$handler=&self::get_array_ref('handlers',$service);
 		$atts['type'] = 'collection';
 		$atts['@service'] = true;
@@ -809,7 +897,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('whitespace',$atts)){
-		if($atts['whitespace'] === '' || !(ctype_space($atts['whitespace'])))return false;
+		if($atts['whitespace'] !== '' && !(ctype_space($atts['whitespace'])))return false;
 	else
 		unset($atts['whitespace']); 
 	}
@@ -1238,6 +1326,16 @@ static function modify_output($value,&$atts){
 		return $value;
 	}	
 
+static function sentenceCase($value) { 
+    $sentences = preg_split('/([.?!]+)/', $value, -1,PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE); 
+    $return_value = ''; 
+    foreach ($sentences as $key => $sentence) { 
+        $return_value .= ($key & 1) == 0? 
+            ucfirst(strtolower(trim($sentence))) : 
+            $sentence.' '; 
+    } 
+    return trim($return_value); 
+}
 
 static function redirect_output($value,&$atts){
 		if($atts==null)return $value;
@@ -3054,9 +3152,8 @@ static function resolve_post($o){
 		case 'parse_content':
 			array_shift($o->pieces);
 			$content = $post->post_content;
-			$content= self::the_content_filter($content);
-			
 			$o->value= self::parse_shortcode($content);
+			$o->value= self::the_content_filter($o->value);
 			break;
 		case 'taxonomy':
 			array_shift($o->pieces);
@@ -3145,6 +3242,21 @@ static function simple_decrypt($text){
 
 static function d(){
 		util::var_dump(self::$stack);
+}
+
+static function env_key_exists($keys){
+	$current=self::$stack;		
+	if(!is_array($keys))$keys=explode('.',$keys);	
+	if($keys==='env')array_shift($keys);
+
+	while(!empty($keys)){
+		$key=array_shift($keys);
+		if(isset($current[$key]))	$current=$current[$key];
+		else if(isset($current->$key))$current=$current->$key;
+		else	return AW2_ERROR;
+	}
+	return $current;
+	
 }
 
 static function get_request($main=null){
@@ -3338,8 +3450,13 @@ static function get_collection($collection){
 }
 
 	
-static function get_module($collection,$module){
+static function get_module($collection,$module,$exists=null){
 	global $wpdb;
+
+	if(isset($collection['service'])){
+		$service=self::get_array_ref('handlers',$collection['service']);
+		$collection=$service;
+	}
 	
 	if(isset($collection['post_type'])){
 		$hash=$collection['post_type'] . '_' . $module;
@@ -3347,6 +3464,7 @@ static function get_module($collection,$module){
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
 			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
+			if($return_value && $exists)return true;
 		}
 		
 		if(!$return_value){
@@ -3365,6 +3483,8 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if($exists)return true;
+			
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -3381,6 +3501,7 @@ static function get_module($collection,$module){
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
 			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
+			if($return_value && $exists)return true;
 		}
 		
 		if(!$return_value){
@@ -3398,6 +3519,7 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if($exists)return true;
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -3407,29 +3529,33 @@ static function get_module($collection,$module){
 	}
 
 	
-	if(isset($collection['shared_app'])){
-		$hash=$collection['shared_app'] . '_' . $module;
+	if(isset($collection['source'])){
+		$hash=$collection['source'] . '_' . $module;
 		$return_value=null;
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
 			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
+			if($return_value && $exists)return true;
+
 		}
 		
 		if(!$return_value){
 			global $wpdb;
-			$path=self::$stack['settings']['shared_app_path'] . $collection['shared_app'] . '/modules/' . $module . '.html';
+			$path=$collection['source'] . '/' . $module;
 			$code = file_get_contents($path);
+			if($code===false)return null;
 			
 			$arr=array();
 			$arr['module']=$module;
 			$arr['title']=$module;
 			$arr['id']=$module;
 			$arr['code']=$code;
-			$arr['shared_app']=$collection['shared_app'];
+			$arr['source']=$collection['source'];
 			
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if($exists)return true;
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -3437,7 +3563,7 @@ static function get_module($collection,$module){
 		
 		return $arr;
 	}
-	
+	return null;
 }
 
 
@@ -3564,7 +3690,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 static function template_run($template,$content=null,$atts=array()){
 	$content=self::removesmartquotes($content);		
-	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found';
+	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found '.$template;
 	$template_ptr=self::$stack['module']['templates'][$template];
 	$stack_id=self::push_child('template',$template_ptr['name']);
 	
@@ -3908,3 +4034,75 @@ private function find_next_named_node($item_name){
 
 
 }
+
+
+function period_date($str){
+	if($str=="")return;
+	
+	if( strpos( $str, ":" ) === false ) {
+		return;
+	}
+	
+	$str_arr=explode(":",$str);
+	switch ($str_arr[0]) {
+		
+		case "day":
+					$period_str="-".$str_arr[1]." days";
+					
+					$period_start_str=$period_str;
+					$period_end_str=$period_str;
+						
+					if($str_arr[1]=="today" || $str_arr[1]=="yesterday"){
+						$period_start_str=$str_arr[1];
+						$period_end_str=$str_arr[1];
+					}				
+					break;
+		case "days":	
+					$period_start_str="-".$str_arr[1]." days";
+					$period_end_str="today";
+					break;		
+		case "months":
+					$period_start_str="first day of -".$str_arr[1]." months";
+					$period_end_str="today";
+					break;
+		case "month":										
+					$period_start_str="first day of -".$str_arr[1]." month";
+					$period_end_str="last day of -".$str_arr[1]." month";
+					
+					if($str_arr[1]=="last_month"){
+						$period_start_str="first day of last month";
+						$period_end_str="last day of last month";
+					}	
+					if($str_arr[1]=="this_month" ){
+						$period_start_str="first day of this month";
+						$period_end_str="today";
+					}	
+					break;
+		case "year":
+					if($str_arr[1]=="last_year"){
+						$period_start_str="last year January 1st";
+						$period_end_str="last year December 31st";
+					}	
+					if($str_arr[1]=="this_year" ){
+						$period_start_str="first day of this year";
+						$period_end_str="today";
+					}	
+					break;			
+		default:
+					$period_start_str= "today";
+					$period_end_str= "today";
+	}
+
+	\util::var_dump($period_start_str);
+	\util::var_dump($period_end_str);
+	
+	$start_time = strtotime($period_start_str);
+	$end_time = strtotime($period_end_str);
+	
+	$rs=array();
+	$rs['start_date'] = date('YmdHis',$start_time);
+	$rs['end_date'] = date('YmdHis',$end_time);
+	\util::var_dump($rs);
+	return $rs;
+}	
+

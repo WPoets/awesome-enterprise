@@ -89,7 +89,6 @@ class Monoframe
 		require(  $plugin_path . '/libraries/menu-walkers/navwalkers.php' ); 
 		
 		// Include Module Distributable files.
-		require_once( $plugin_path . '/libraries/module-distribution/code-distributables.php' );
 		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
 		
 		//Apps Inclusion
@@ -130,7 +129,8 @@ class Monoframe
 			foreach($app['collection'] as $collection_name => $collection){
 				if($collection_name == 'posts')
 					continue;
-				$app_post_types[]=$collection['post_type'];
+				if(isset($collection['post_type']))
+					$app_post_types[]=$collection['post_type'];
 			}
 		}
 		

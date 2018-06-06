@@ -12,10 +12,16 @@ function unhandled($atts,$content=null,$shortcode){
 	$ctr=$pieces[1];
 	$stack_id=\aw2_library::push_child($ctr,$ctr);
 	$call_stack=&\aw2_library::get_array_ref('call_stack',$stack_id);
+	\aw2_library::add_service($ctr,'Added by do',['env_key'=>$ctr]);
 
 	$return_value = \aw2_library::parse_shortcode($content);
 
 	\aw2_library::pop_child($stack_id);	
+	$ref=&\aw2_library::get_array_ref();
+	if(!isset($ref[$ctr]))
+		\aw2_library::remove_service($ctr);
+		
+		
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
