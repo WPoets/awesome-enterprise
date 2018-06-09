@@ -2,30 +2,57 @@
 
 namespace aw2\o;
 
-//run
+//exit
 \aw2_library::add_service('o.exit','Dump the value and exit. Use o.exit',['func'=>'_exit','namespace'=>__NAMESPACE__]);
 function _exit($value, $atts){
 	exit(\util::var_dump($value,true));
 }
 
+//die
+\aw2_library::add_service('o.die','Dump the value and die. Use o.die',['func'=>'_die','namespace'=>__NAMESPACE__]);
+function _die($value, $atts){
+	die(\util::var_dump($value,true));
+}
+
+//echo
+\aw2_library::add_service('o.echo','Echo the value. Use o.echo',['func'=>'_echo','namespace'=>__NAMESPACE__]);
+function _echo($value, $atts){
+	\util::var_dump($value);
+	return $value;
+}
+
+//dump
+\aw2_library::add_service('o.dump','Dump the value. Use o.dump',['namespace'=>__NAMESPACE__]);
+function dump($value, $atts){	
+	$value = \util::var_dump($value,true);
+	return $value;
+}
+
 //console
 \aw2_library::add_service('o.console','Output the value in console log. Use o.console',['namespace'=>__NAMESPACE__]);
 function console($value, $atts){
-	echo('<script type="text/spa" spa_activity="core:console_log">Memory Usage ' . \util::var_dump($value,true) .'</script>');
+	echo('<script type="text/spa" spa_activity="core:console_log">' . \util::var_dump($value,true) .'</script>');
+	return $value;
 }
 
 //log
-\aw2_library::add_service('o.log','Output the value in log.html file in uploads directory. Use o.log',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('o.log','Output the value in log file in defined directory. Use o.log',['namespace'=>__NAMESPACE__]);
 function log($value, $atts){
-	$upload_dir = wp_upload_dir();
-	$path= $upload_dir['path'] . '/log.html';
+	if($atts['log'] === 'yes')
+		$filename = "log.html";
+	else
+		$filename = $atts['log'];
+	
+	//LOG_PATH - Defined in wp-config	
+	$path= LOG_PATH . '/' . $filename;
 	$fp = fopen($path, 'a');
 	fwrite($fp, \util::var_dump($value,true));
+	return $value;
 }
 
-//no_output
-\aw2_library::add_service('o.no_output','Do not output the value. Use o.no_output',['namespace'=>__NAMESPACE__]);
-function no_output($value, $atts){
+//destroy
+\aw2_library::add_service('o.destroy','Do not output the value. Use o.destroy',['namespace'=>__NAMESPACE__]);
+function destroy($value, $atts){
 	$value='';
 	return $value;
 }

@@ -480,24 +480,18 @@ class aw2_apps_library{
 		}
 		
 		$app = &aw2_library::get_array_ref('app');
-		
-		if(isset($app['configs']['scripts'])){
-			$scipts = $app['configs']['scripts'];
-			echo aw2_library::parse_shortcode($scipts['code']);
+		if(isset($app['collection']['config']) && aw2_library::get_module($app['collection']['config'],'scripts',true)){
+			echo aw2_library::module_run($app['collection']['config'],'scripts');
 		}
 		
 		//not sure about collections 
 		foreach($app['collection'] as $name=>$collection){
 			$collection_post = $collection['post_type'];
 			
-			if(isset($app['configs'][$collection_post.'-scripts'])){
-				$scipts = $app['configs'][$collection_post.'-scripts'];
-				echo aw2_library::parse_shortcode($scipts['code']);
+			if( aw2_library::get_module($collection,$collection_post.'-scripts',true)){
+				echo aw2_library::module_run($collection,$collection_post.'-scripts');
 			}
 		}
-		
-		
-		
 	}	
 	
 	static function wp_footer(){
@@ -1300,10 +1294,8 @@ class controllers{
 		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
 		header ('Pragma: public'); // HTTP/1.0
 		
-		$redis = new Redis();
-		$redis->connect('127.0.0.1', 6379);
-		$database_number = 12;
-		$redis->select($database_number);
+		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
 		if($redis->exists($csv_ticket)){
 			$result = $redis->zRange($csv_ticket, 0, -1);
 			$output=implode('',$result);

@@ -1,9 +1,12 @@
 <?php
+namespace aw2\woo;
 
-aw2_library::add_shortcode('woo','get', 'awesome2_woo_get','Run WooCommerce actions');
+\aw2_library::add_service('woo','WooCommerce Library.',['namespace'=>__NAMESPACE__]);
+
+\aw2_library::add_service('woo.get','Run WooCommerce actions',['namespace'=>__NAMESPACE__]);
 
 function awesome2_woo_get($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	), $atts) );
@@ -42,7 +45,7 @@ function awesome2_woo_get($atts,$content=null,$shortcode){
 			break;
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
@@ -75,7 +78,7 @@ class aw2_woo_product{
 			}
 			
 			if(method_exists($this->product,$this->action) && is_callable(array($this->product,$this->action))){
-				$parameters = aw2_library::get_parameters($this->atts);
+				$parameters = \aw2_library::get_parameters($this->atts);
 				$return_value= call_user_func_array(array($this->product, $this->action), $parameters);
 			}
 		}
@@ -148,8 +151,8 @@ class aw2_woo_order {
 		if (method_exists($this, $this->action))
 			$return_value = call_user_func(array($this, $this->action));
 		else {
-			$args=aw2_library::get_clean_args($this->content,$this->atts);
-			$this->order = new WC_Order($this->atts['order_id']);
+			$args=\aw2_library::get_clean_args($this->content,$this->atts);
+			$this->order = new \WC_Order($this->atts['order_id']);
 			
 			
 			if(isset($this->order,$this->action)){
@@ -157,7 +160,7 @@ class aw2_woo_order {
 			}
 			
 			if(method_exists($this->order,$this->action) && is_callable(array($this->order,$this->action))){
-				$parameters = aw2_library::get_parameters($this->atts);
+				$parameters = \aw2_library::get_parameters($this->atts);
 				$return_value= call_user_func_array(array($this->order, $this->action), $parameters);
 			}
 		}
@@ -166,17 +169,17 @@ class aw2_woo_order {
 	
 	private function display_item_meta(){
 		if(!isset($this->atts['order_id'])){
-			aw2_library::set_error('order_id is required');
+			\aw2_library::set_error('order_id is required');
 			return;
 		}
 		
 		if(!isset( $this->atts['item_id'])){
-			aw2_library::set_error('item_id is required');
+			\aw2_library::set_error('item_id is required');
 			return;
 		}
 			
 			
-		$this->order = new WC_Order($this->atts['order_id']);
+		$this->order = new \WC_Order($this->atts['order_id']);
 	   
 		
 		
@@ -185,24 +188,24 @@ class aw2_woo_order {
 			return;
 		
 		$product   = $this->order->get_product_from_item( $order_item );
-		$item_meta = new WC_Order_Item_Meta( $order_item, $product );
+		$item_meta = new \WC_Order_Item_Meta( $order_item, $product );
 		
 		return $item_meta->display(false, true); // return 
 	}
 	
 	private function get_formatted_line_subtotal(){
 		if(!isset($this->atts['order_id'])){
-			aw2_library::set_error('order_id is required');
+			\aw2_library::set_error('order_id is required');
 			return;
 		}
 		
 		if(!isset( $this->atts['item_id'])){
-			aw2_library::set_error('item_id is required');
+			\aw2_library::set_error('item_id is required');
 			return;
 		}
 			
 			
-		$this->order = new WC_Order($this->atts['order_id']);
+		$this->order = new \WC_Order($this->atts['order_id']);
 	   
 		
 		
@@ -216,7 +219,7 @@ class aw2_woo_order {
 	private function create(){
 		
 		wc_transaction_query( 'start' );
-		$args=aw2_library::get_clean_args($this->content,$this->atts);
+		$args=\aw2_library::get_clean_args($this->content,$this->atts);
 		$return_value=array();
 		
 		try {
@@ -318,7 +321,7 @@ class aw2_woo_order {
 				foreach ( $args[ 'shipping_lines' ] as $shipping ) {
 					if ( ! empty( $shipping['total'] ) && 0 <= floatval( $shipping['total'] ) && !empty( $shipping['method_id'] )) {
 						
-						$rate = new WC_Shipping_Rate( $shipping['method_id'], isset( $shipping['method_title'] ) ? $shipping['method_title'] : '', isset( $shipping['total'] ) ? floatval( $shipping['total'] ) : 0, array(), $shipping['method_id'] );
+						$rate = new \WC_Shipping_Rate( $shipping['method_id'], isset( $shipping['method_title'] ) ? $shipping['method_title'] : '', isset( $shipping['total'] ) ? floatval( $shipping['total'] ) : 0, array(), $shipping['method_id'] );
 
 						$shipping_id = $order->add_shipping( $rate );
 					}
@@ -334,7 +337,7 @@ class aw2_woo_order {
 						throw new Exception('Fee name is required.');
 					}
 					
-					$fee_data            = new stdClass();
+					$fee_data            = new \stdClass();
 					$fee_data->id        = sanitize_title( $fee['name'] );
 					$fee_data->name      = $fee['name'];
 					$fee_data->amount    = isset( $fee['total'] ) ? floatval( $fee['total'] ) : 0;
@@ -454,13 +457,13 @@ class aw2_woo_cart {
 		if (method_exists($this, $this->action))
 			return call_user_func(array($this, $this->action));
 		else {
-			$args=aw2_library::get_clean_args($this->content,$this->atts);
+			$args=\aw2_library::get_clean_args($this->content,$this->atts);
 			if(isset($this->cart,$this->action)){
 				$return_value=$this->cart->{$this->action};
 			}
 			
 			if(method_exists($this->cart,$this->action) && is_callable(array($this->cart,$this->action))){
-				$parameters = aw2_library::get_parameters($this->atts);
+				$parameters = \aw2_library::get_parameters($this->atts);
 				$return_value= call_user_func_array(array($this->cart, $this->action), $parameters);
 			}
 		}
@@ -484,7 +487,7 @@ class aw2_woo_cart {
 		 $this->cart->add_to_cart($this->atts['product_id'], 1);
 		}	
 		$cart_key = key($this->cart->cart_contents);
-		$coupon = new WC_Coupon($this->atts['coupon']);
+		$coupon = new \WC_Coupon($this->atts['coupon']);
 		
 		$product = get_product($this->atts['product_id']);
 		
@@ -539,16 +542,16 @@ class aw2_woo {
 		if (method_exists($this, $this->action))
 			return call_user_func(array($this, $this->action));
 		else {
-			/*$args=aw2_library::get_clean_args($this->content,$this->atts);
+			/*$args=\aw2_library::get_clean_args($this->content,$this->atts);
 			 if(isset($this->cart,$this->action)){
 				$return_value=$this->cart->{$this->action};
 			}
 			
 			if(method_exists($this->cart,$this->action) && is_callable(array($this->cart,$this->action))){
-				$parameters = aw2_library::get_parameters($this->atts);
+				$parameters = \aw2_library::get_parameters($this->atts);
 				$return_value= call_user_func_array(array($this->cart, $this->action), $parameters);
 			} */
-			$parameters = aw2_library::get_parameters($this->atts);
+			$parameters = \aw2_library::get_parameters($this->atts);
 			
 			if(function_exists($this->action)){
 				ob_start();

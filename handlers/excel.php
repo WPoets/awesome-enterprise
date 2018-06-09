@@ -1,9 +1,12 @@
 <?php
 
-aw2_library::add_shortcode('excel','write_bulk', 'excel_write_bulk');
+namespace aw2\excel;
 
-function excel_write_bulk($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel','Excel Library',['namespace'=>__NAMESPACE__]);
+
+\aw2_library::add_service('excel.write_bulk','Bulk write in the excel file. Use excel.write_bulk',['namespace'=>__NAMESPACE__]);
+function write_bulk($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_name'    =>'',
 		'folder'		=>'',
@@ -14,10 +17,10 @@ function excel_write_bulk($atts,$content=null,$shortcode){
 		
 		), $atts) );
 		
-	$xlsdata=aw2_library::get($data);	
+	$xlsdata=\aw2_library::get($data);	
 
 	/** Include PHPExcel */
-	$path = aw2_library::$plugin_path . "/libraries";
+	$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	$file_path=$folder . $file_name;
@@ -30,10 +33,10 @@ function excel_write_bulk($atts,$content=null,$shortcode){
 	if($pageno==1){
 		if($template_file){
 			$template_path=$template_folder . $template_file;
-			$objPHPExcel = PHPExcel_IOFactory::load($template_path);
+			$objPHPExcel = \PHPExcel_IOFactory::load($template_path);
 		}
 		else{
-			$objPHPExcel = new PHPExcel();
+			$objPHPExcel = new \PHPExcel();
 		// Set document properties
 			//$objPHPExcel->getProperties()->setCreator("Excel by Awesome")
 			// ->setLastModifiedBy("Excel by Awesome")
@@ -47,7 +50,7 @@ function excel_write_bulk($atts,$content=null,$shortcode){
 		}
 	}
 	else{
-		$objPHPExcel = PHPExcel_IOFactory::load($file_path);
+		$objPHPExcel = \PHPExcel_IOFactory::load($file_path);
 		$objPHPExcel->setActiveSheetIndex(0);
 	}
 	
@@ -61,15 +64,13 @@ function excel_write_bulk($atts,$content=null,$shortcode){
 				
 	$objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
 
-	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $file_format);
+	$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, $file_format);
 	$objWriter->save($file_path);
 }
 
-
-aw2_library::add_shortcode('excel','read', 'excel_file_reader');
-
-function excel_file_reader($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.file_reader','Read the excel file. Use excel.file_reader',['namespace'=>__NAMESPACE__]);
+function file_reader($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_path'    =>'',
 		'folder'		=>'',
@@ -79,20 +80,20 @@ function excel_file_reader($atts,$content=null,$shortcode){
 		), $atts) );
 
 	if (!is_readable($file_path)){
-		aw2_library::set_error('File '.$file_path.' is not readable'); 
+		\aw2_library::set_error('File '.$file_path.' is not readable'); 
 		return;
 	}
 
-	$path = aw2_library::$plugin_path . "/libraries";
+	$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
 	
 	/**  Identify the type of $inputFileName  **/
-	$inputFileType = PHPExcel_IOFactory::identify($file_path);
+	$inputFileType = \PHPExcel_IOFactory::identify($file_path);
 	/**  Create a new Reader of the type that has been identified  **/
 	
-	$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+	$objReader = \PHPExcel_IOFactory::createReader($inputFileType);
 
 	$fileObj = $objReader->load( $file_path );
 	$sheetObj = $fileObj->getActiveSheet();
@@ -108,7 +109,7 @@ function excel_file_reader($atts,$content=null,$shortcode){
 		}
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
 	return $return_value;
 }
@@ -124,42 +125,39 @@ function isExcelRowEmpty($row)
     return true;
 }
 
-aw2_library::add_shortcode('excel','info', 'excel_file_info');
-
-function excel_file_info($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.info','Read and return the excel info. Use excel.info',['namespace'=>__NAMESPACE__]);
+function info($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_path'    =>'',
 		'file_format'    =>'Excel2007'	
 		), $atts) );
 	if (!is_readable($file_path)){
-		aw2_library::set_error('File '.$file_path.' is not readable'); 
+		\aw2_library::set_error('File '.$file_path.' is not readable'); 
 		return;
 	}
 	
-		$path = aw2_library::$plugin_path . "/libraries";
+		$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
 	
 	/**  Identify the type of $inputFileName  **/
-	$inputFileType = PHPExcel_IOFactory::identify($file_path);
+	$inputFileType = \PHPExcel_IOFactory::identify($file_path);
 	/**  Create a new Reader of the type that has been identified  **/
 	
-	$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+	$objReader = \PHPExcel_IOFactory::createReader($inputFileType);
 	$worksheetData = $objReader->listWorksheetInfo($file_path);
-	aw2_library::set('worksheets',$worksheetData);
+	\aw2_library::set('worksheets',$worksheetData);
 	$total_rows=$worksheetData[0]['totalRows'];
-	$total_rows=aw2_library::post_actions('all',$total_rows,$atts);
+	$total_rows=\aw2_library::post_actions('all',$total_rows,$atts);
 	return $total_rows;
 	
 }
 
-
-aw2_library::add_shortcode('excel','dataset_write', 'excel_dataset_write');
-
-function excel_dataset_write($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.dataset_write','Write the excel file. Use excel.dataset_write',['namespace'=>__NAMESPACE__]);
+function write($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_name'    =>'',
 		'folder'		=>'',
@@ -171,7 +169,7 @@ function excel_dataset_write($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-		$path = aw2_library::$plugin_path . "/libraries";
+		$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
@@ -187,10 +185,10 @@ function excel_dataset_write($atts,$content=null,$shortcode){
 	if($pageno==1){
 		if($template_file){
 			$template_path=$template_folder . $template_file;
-			$objPHPExcel = PHPExcel_IOFactory::load($template_path);
+			$objPHPExcel = \PHPExcel_IOFactory::load($template_path);
 		}
 		else{
-			$objPHPExcel = new PHPExcel();
+			$objPHPExcel = new \PHPExcel();
 		// Set document properties
 			//$objPHPExcel->getProperties()->setCreator("Excel by Awesome")
 			// ->setLastModifiedBy("Excel by Awesome")
@@ -204,7 +202,7 @@ function excel_dataset_write($atts,$content=null,$shortcode){
 		}
 	}
 	else{
-		$objPHPExcel = PHPExcel_IOFactory::load($file_path);
+		$objPHPExcel = \PHPExcel_IOFactory::load($file_path);
 		$objPHPExcel->setActiveSheetIndex(0);
 	}
 	
@@ -218,20 +216,20 @@ function excel_dataset_write($atts,$content=null,$shortcode){
 				
 	$objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
 
-	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $file_format);
+	$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, $file_format);
 	$objWriter->save($file_path);
 }
 
-aw2_library::add_shortcode('excel','write_bulk_csv', 'excel_write_bulk_csv');
-function excel_write_bulk_csv($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.write_bulk_csv','Bulk write the excel file as csv. Use excel.write_bulk_csv',['namespace'=>__NAMESPACE__]);
+function write_bulk_csv($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_name'    =>'',
 		'folder'		=>'',
 		'data' => '',
 		), $atts) );
 		
-	$xlsdata=aw2_library::get($data);	
+	$xlsdata=\aw2_library::get($data);	
 	$file_path=$folder . $file_name;
 
 	if(!array_key_exists('pageno',$xlsdata))
@@ -257,30 +255,28 @@ function excel_write_bulk_csv($atts,$content=null,$shortcode){
 	fclose($fp);
 }
 
-
-aw2_library::add_shortcode('excel','read_header', 'excel_read_header');
-
-function excel_read_header($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.read_header','Read the header info of the excel file. Use excel.read_header',['namespace'=>__NAMESPACE__]);
+function read_header($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'filename'    =>'',
 		'folder'		=>''
 		), $atts) );
 		
 	/** Include PHPExcel */
-		$path = aw2_library::$plugin_path . "/libraries";
+		$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
 
 	$file_path=$folder . $filename;
-	$objReader = PHPExcel_IOFactory::createReaderForFile($file_path);
+	$objReader = \PHPExcel_IOFactory::createReaderForFile($file_path);
 	$objReader->setReadDataOnly(true);
 
 	$objPHPExcel = $objReader->load($file_path);
 
 	$highestColumm = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
-	$highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumm);
+	$highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumm);
 
 
 	$arr=array();
@@ -291,15 +287,13 @@ function excel_read_header($atts,$content=null,$shortcode){
 		$cell = $objPHPExcel->setActiveSheetIndex(0)->getCellByColumnAndRow($col, $row);
 		$arr[]=$cell->getValue();	
 	}
-	$return_value=aw2_library::post_actions('all',$arr,$atts);
+	$return_value=\aw2_library::post_actions('all',$arr,$atts);
 	return $return_value;
 }
 
-
-aw2_library::add_shortcode('excel','read_post_data', 'excel_read_post_data');
-
-function excel_read_post_data($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.read_post_data','Read the post data. Use excel.read_post_data',['namespace'=>__NAMESPACE__]);
+function read_post_data($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'filename'    =>'',
 		'folder'		=>'',
@@ -308,19 +302,19 @@ function excel_read_post_data($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-		$path = aw2_library::$plugin_path . "/libraries";
+		$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
 
 	$file_path=$folder . $filename;
-	$objReader = PHPExcel_IOFactory::createReaderForFile($file_path);
+	$objReader = \PHPExcel_IOFactory::createReaderForFile($file_path);
 	$objReader->setReadDataOnly(true);
 
 	$objPHPExcel = $objReader->load($file_path);
 
 	$highestColumm = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
-	$highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumm);
+	$highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumm);
 	$highestRow = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();
 	
 	$arr=array();
@@ -378,16 +372,13 @@ function excel_read_post_data($atts,$content=null,$shortcode){
 		$arr['data'][]=$cols;
 	}
 	
-	$return_value=aw2_library::post_actions('all',$arr,$atts);
+	$return_value=\aw2_library::post_actions('all',$arr,$atts);
 	return $return_value;
 }
 
-
-
-aw2_library::add_shortcode('excel','read_bulk', 'excel_read_bulk');
-
-function excel_read_bulk($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('excel.read_bulk','Bulk read the excel file. Use excel.read_bulk',['namespace'=>__NAMESPACE__]);
+function read_bulk($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 		'file_name'    =>'',
 		'folder'		=>'',
@@ -399,23 +390,23 @@ function excel_read_bulk($atts,$content=null,$shortcode){
 		), $atts) );
 		
 	/** Include PHPExcel */
-		$path = aw2_library::$plugin_path . "/libraries";
+		$path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/PHPExcel/PHPExcel.php';
 	
 	
 
-	$objReader = PHPExcel_IOFactory::createReader('Excel2007');
+	$objReader = \PHPExcel_IOFactory::createReader('Excel2007');
 	$inputFileType = 'Excel2007';
 	//$inputFileName = 'c://temp//bs1.xlsx';
 	$sheetname = 'Page 1'; // I DON'T WANT TO USE SHEET NAME HERE
 	
-	$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+	$objReader = \PHPExcel_IOFactory::createReader($inputFileType);
 	$objReader->setLoadSheetsOnly($sheetname);
 	$objPHPExcel = $objReader->load($file_name);
 	$sheetData = $objPHPExcel->getActiveSheet()->toArray(null, true, true, true);
 	echo ' Highest Column ' . $getHighestColumn = $objPHPExcel->setActiveSheetIndex()->getHighestColumn(); // Get Highest Column
 	echo ' Get Highest Row ' . $getHighestRow = $objPHPExcel->setActiveSheetIndex()->getHighestRow(); // Get Highest Row
 
-	util::var_dump($sheetData);
+	\util::var_dump($sheetData);
 
 }

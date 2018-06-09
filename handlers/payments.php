@@ -1,11 +1,10 @@
 <?php
 
-use Razorpay\Api\Api;
+namespace aw2;
 
-aw2_library::add_shortcode('aw2','pay', 'awesome2_payments','Excutes Payment API for various paymentgateways');
-
-function awesome2_payments($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('aw2.pay','Payments Library',['namespace'=>__NAMESPACE__]);
+function pay($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	), $atts) );
@@ -32,7 +31,7 @@ function awesome2_payments($atts,$content=null,$shortcode){
 		$pay=new aw2_razor_payments($pieces['1'],$atts,$content);
 		$return_value=$pay->run();
 	}
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	unset($pieces);
 	
 	return $return_value;
@@ -56,22 +55,22 @@ class aw2_sbi_payments{
 		if(!empty($atts['iv']))
 			$this->iv=$atts['iv'];
 		else
-			$this->iv=aw2_library::get('site_settings.sbi_iv');	
+			$this->iv=\aw2_library::get('site_settings.sbi_iv');	
 		
 		if(!empty($atts['merchant_code']))
 			$this->merchant_code=$atts['merchant_code'];
 		else
-			$this->merchant_code=aw2_library::get('site_settings.sbi_merchant_code');	
+			$this->merchant_code=\aw2_library::get('site_settings.sbi_merchant_code');	
 		
 		if(!empty($atts['key']))
 			$this->key_path=$atts['key'];
 		else
-			$this->key_path=aw2_library::get('site_settings.sbi_secret_key');	
+			$this->key_path=\aw2_library::get('site_settings.sbi_secret_key');	
 
 		if(!empty($atts['dev_mode']))
 			$this->dev_mode=$atts['dev_mode'];
 		else
-			$this->dev_mode=aw2_library::get('site_settings.sbi_staging_mode');	
+			$this->dev_mode=\aw2_library::get('site_settings.sbi_staging_mode');	
 	
 	}
 	
@@ -86,7 +85,7 @@ class aw2_sbi_payments{
 	
 	private function pay(){
 		if(empty($this->key_path)){
-			aw2_library::set_error('Secret Key is Missing'); 
+			\aw2_library::set_error('Secret Key is Missing'); 
 			return;
 		}
 		
@@ -110,7 +109,7 @@ class aw2_sbi_payments{
 	
 	private function decrypt(){
 		if(empty($this->key_path)){
-			aw2_library::set_error('Secret Key is Missing'); 
+			\aw2_library::set_error('Secret Key is Missing'); 
 			return;
 		}
 		
@@ -137,7 +136,7 @@ class aw2_sbi_payments{
 			}
 		}
 		else{
-			aw2_library::set_error('checksum failed'); 
+			\aw2_library::set_error('checksum failed'); 
 			return ;
 		}
 
@@ -169,11 +168,11 @@ class aw2_sbi_payments{
 			$return_value=array();	
 		}
 		else{
-			$json=aw2_library::clean_specialchars($this->content);
-			$json=aw2_library::parse_shortcode($json);		
+			$json=\aw2_library::clean_specialchars($this->content);
+			$json=\aw2_library::parse_shortcode($json);		
 			$return_value=json_decode($json, true);
 			if(is_null($return_value)){
-				aw2_library::set_error('Invalid JSON' . $content); 
+				\aw2_library::set_error('Invalid JSON' . $content); 
 				$return_value=array();	
 			}
 		}
@@ -198,22 +197,22 @@ class aw2_razor_payments{
 		if(!empty($atts['iv']))
 			$this->iv=$atts['iv'];
 		else
-			$this->iv=aw2_library::get('site_settings.sbi_iv');	
+			$this->iv=\aw2_library::get('site_settings.sbi_iv');	
 		
 		if(!empty($atts['api_key']))
 			$this->api_key=$atts['api_key'];
 		else
-			$this->api_key=aw2_library::get('site_settings.razor_api_key');	
+			$this->api_key=\aw2_library::get('site_settings.razor_api_key');	
 		
 		if(!empty($atts['api_secret']))
 			$this->api_secret=$atts['api_secret'];
 		else
-			$this->api_secret=aw2_library::get('site_settings.razor_api_secret');	
+			$this->api_secret=\aw2_library::get('site_settings.razor_api_secret');	
 
 		if(!empty($atts['dev_mode']))
 			$this->dev_mode=$atts['dev_mode'];
 		else
-			$this->dev_mode=aw2_library::get('site_settings.razor_staging_mode');	
+			$this->dev_mode=\aw2_library::get('site_settings.razor_staging_mode');	
 	
 	}
 	
@@ -230,8 +229,8 @@ class aw2_razor_payments{
 		
 		$args = $this->args();
 		
-		$api = new Api($this->api_key, $this->api_secret);
 		
+		$api = new \Razorpay\Api\Api($this->api_key, $this->api_secret);
 		$data = array(
 					'receipt' => $args['receipt'], 
 					'amount' => $this->getOrderAmountAsInteger($args['amount']),
@@ -302,7 +301,7 @@ class aw2_razor_payments{
 	private function verify(){
 		
 		$args = $this->args();
-		$api = new Api($this->api_key, $this->api_secret);
+		$api = new \Razorpay\Api\Api($this->api_key, $this->api_secret);
 		
 		$success=false;
 		$error='';
@@ -322,7 +321,7 @@ class aw2_razor_payments{
 		catch (Exception $e)
 		{
 			$error = 'ERROR: Payment to Razorpay Failed. ' . $e->getMessage();
-			aw2_library::set_error($error); 
+			\aw2_library::set_error($error); 
 		}
         
 		$order = $api->order->fetch($_COOKIE['razorpay_order_id']);	
@@ -350,11 +349,11 @@ class aw2_razor_payments{
 			$return_value=array();	
 		}
 		else{
-			$json=aw2_library::clean_specialchars($this->content);
-			$json=aw2_library::parse_shortcode($json);		
+			$json=\aw2_library::clean_specialchars($this->content);
+			$json=\aw2_library::parse_shortcode($json);		
 			$return_value=json_decode($json, true);
 			if(is_null($return_value)){
-				aw2_library::set_error('Invalid JSON' . $content); 
+				\aw2_library::set_error('Invalid JSON' . $content); 
 				$return_value=array();	
 			}
 		}

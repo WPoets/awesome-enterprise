@@ -1,14 +1,16 @@
 <?php
-aw2_library::add_shortcode('aw2','push', 'awesome2_push','Send a Push notification from your site.');
+namespace aw2;
 
-function awesome2_push($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('aw2.push','Send a Push notification from your site.',['namespace'=>__NAMESPACE__]);
+
+function push($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( shortcode_atts( array(
 		'main' => null,
-		'pem_path' => aw2_library::get("site_settings.apple-pem-path"),
-		'passphrase' => aw2_library::get("site_settings.apple-pem-passphrase"),
-		'google_api_key' => aw2_library::get("site_settings.google-push-api-key"),
+		'pem_path' => \aw2_library::get("site_settings.apple-pem-path"),
+		'passphrase' => \aw2_library::get("site_settings.apple-pem-passphrase"),
+		'google_api_key' => \aw2_library::get("site_settings.google-push-api-key"),
 		'device_tokens' => null,
 		'topic' => null
 	), $atts, 'aw2.push' ) );
@@ -18,7 +20,7 @@ function awesome2_push($atts,$content=null,$shortcode){
 	}
 
 	$apn=new awesome2_push_notification();
-	$apn->push_message = aw2_library::parse_shortcode($content);
+	$apn->push_message = \aw2_library::parse_shortcode($content);
 	$apn->push_device_tokens = $device_tokens;
 	$apn->topic = $topic;
 
@@ -48,7 +50,7 @@ function awesome2_push($atts,$content=null,$shortcode){
 		break;
 	}
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 	
 }
@@ -100,7 +102,7 @@ class awesome2_push_notification{
 		$return_value= 'success';
 		
 		if ($result === FALSE) {
-			aw2_library::set_error('Android Curl failed: ' . curl_error($ch));
+			\aw2_library::set_error('Android Curl failed: ' . curl_error($ch));
 			$return_value= 'fail';
 		}
 		curl_close($ch);
@@ -128,7 +130,7 @@ class awesome2_push_notification{
 		
 		if (!$fp){
 			
-			aw2_library::set_error("Failed to connect: $err $errstr");
+			\aw2_library::set_error("Failed to connect: $err $errstr");
 			return 'fail';
 		}
 			
@@ -156,7 +158,7 @@ class awesome2_push_notification{
 		fclose($fp);
 		$return_value= 'success';
 		if (!$result){
-			aw2_library::set_error('ios notification failed: Message not delivered ');
+			\aw2_library::set_error('ios notification failed: Message not delivered ');
 			$return_value= 'fail';
 			
 		}

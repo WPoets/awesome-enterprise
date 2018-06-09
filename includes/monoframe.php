@@ -144,7 +144,7 @@ class Monoframe
 			if(!isset($handler['post_type']))
 				continue;
 			
-			if(isset($handler['service']) && strtolower($handler['service']) === 'yes'){
+			if(isset($handler['@service']) && $handler['@service'] === true){
 				$service_post_type[] =  $handler['post_type'];
 			}	
 		}

@@ -7,8 +7,8 @@ namespace aw2\pdf;
 \aw2_library::add_service('pdf.generate','PDF Generate',['namespace'=>__NAMESPACE__]);
 
 
-function pdf($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+function generate($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( shortcode_atts( array(
 		'part'=>null
@@ -16,20 +16,20 @@ function pdf($atts,$content=null,$shortcode){
 
 	$aw2_pdf=new awesome2_pdf_handler($atts,$content);
 	if($aw2_pdf->status==false){
-		return aw2_library::get('errors');
+		return \aw2_library::get('errors');
 	}
 	if(is_null($part)){
-		aw2_library::set_error('Part attribute is required for aw2.pdf'); 
-		return aw2_library::get('errors');
+		\aw2_library::set_error('Part attribute is required for aw2.pdf'); 
+		return \aw2_library::get('errors');
 	}
 	
 	 if(!method_exists($aw2_pdf, $part)){
-		 aw2_library::set_error('Part type does not exist'); 
+		 \aw2_library::set_error('Part type does not exist'); 
 	 }
 		
 	
 	$return_value =call_user_func(array($aw2_pdf, $part));
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
 	return $return_value;
 }
@@ -59,11 +59,11 @@ class awesome2_pdf_handler{
 			$return_value=array();	
 		}
 		else{
-			$json=aw2_library::clean_specialchars($this->content);
-			$json=aw2_library::parse_shortcode($json);		
+			$json=\aw2_library::clean_specialchars($this->content);
+			$json=\aw2_library::parse_shortcode($json);		
 			$return_value=json_decode($json, true);
 			if(is_null($return_value)){
-				aw2_library::set_error('Invalid JSON' . $content); 
+				\aw2_library::set_error('Invalid JSON' . $content); 
 				$return_value=array();	
 			}
 		}
@@ -79,7 +79,7 @@ class awesome2_pdf_handler{
 
 	
 	function setup(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		$args = $this->args();
 		//set defaults
 
@@ -108,7 +108,7 @@ class awesome2_pdf_handler{
 	}
 	
 	function header(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		$args = $this->args();
 				
 		$pdf['header']=$args;
@@ -118,7 +118,7 @@ class awesome2_pdf_handler{
 	}
 	
 	function footer(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		$args = $this->args();
 				
 		$pdf['footer']=$args;
@@ -128,10 +128,10 @@ class awesome2_pdf_handler{
 	}
 	
 	function content(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		
-		$content=aw2_library::clean_specialchars($this->content);
-		$content=aw2_library::parse_shortcode($content);
+		$content=\aw2_library::clean_specialchars($this->content);
+		$content=\aw2_library::parse_shortcode($content);
 		
 		$pdf['content']=$content;
 		
@@ -141,12 +141,12 @@ class awesome2_pdf_handler{
 
 	
 	function download(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		
 		$pdf['filename']=$this->att('filename');
 		if(empty($pdf['filename'])){
-			aw2_library::set_error('filename is required for part=download aw2.pdf'); 
-			return aw2_library::get('errors');
+			\aw2_library::set_error('filename is required for part=download aw2.pdf'); 
+			return \aw2_library::get('errors');
 		}
 		$return_value = $this->generate_pdf($pdf,true);
 		
@@ -155,14 +155,14 @@ class awesome2_pdf_handler{
 
 	
 	function save(){
-		$pdf=&aw2_library::get_array_ref('pdf_setup');
+		$pdf=&\aw2_library::get_array_ref('pdf_setup');
 		
 		$pdf['filename']=$this->att('filename');
 		$pdf['dir_path']=$this->att('dir_path');
 		
 		if(empty($pdf['filename'])){
-			aw2_library::set_error('filename is required for part=save aw2.pdf'); 
-			return aw2_library::get('errors');
+			\aw2_library::set_error('filename is required for part=save aw2.pdf'); 
+			return \aw2_library::get('errors');
 		}
 		
 		$return_value = $this->generate_pdf($pdf,false);
@@ -189,7 +189,7 @@ class awesome2_pdf_handler{
 	}
 	
 	function app_option(){
-		$app_setting_sections=&aw2_library::get_array_ref('app_setting_sections');
+		$app_setting_sections=&\aw2_library::get_array_ref('app_setting_sections');
 		$part = $this->att('part');
 		$args = $this->args();
 		$id = $args['id'];

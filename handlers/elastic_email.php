@@ -1,8 +1,13 @@
 <?php
-//elastic_email
-aw2_library::add_shortcode('elastic_email','send', 'elastic_email_send','Send a Mail using Elastic Mail');
 
-function elastic_email_send($atts,$content=null,$shortcode){
+namespace aw2\elastic_email;
+
+//elastic_email
+
+\aw2_library::add_service('elastic_email','Elastic Mail Library',['namespace'=>__NAMESPACE__]);
+
+\aw2_library::add_service('elastic_email.send','Send a Mail using Elastic Mail. Use elastic_email.send',['namespace'=>__NAMESPACE__]);
+function send($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract( shortcode_atts( array(
@@ -10,8 +15,7 @@ function elastic_email_send($atts,$content=null,$shortcode){
 	), $atts, 'elastic_email_send' ) );
 
 
-	$ref=aw2_library::get($array);	
-	//$ref['to']="gopi@amiworks.com";
+	$ref=aw2_library::get($array);
 	$apiKey = $ref['key'];
 		
 	$log_messages=aw2_library::get("site_settings.log_messages");

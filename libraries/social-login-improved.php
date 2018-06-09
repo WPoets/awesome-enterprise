@@ -68,7 +68,7 @@ Class awesome_social{
 						"enabled" => true,
 						"keys"    => array ( "id" => $monomyth_options['opt-facebook-id'], "secret" => $monomyth_options['opt-facebook-secret']),
 						"trustForwarded" => false,
-						"scope"          => "email, user_about_me, user_birthday", // optional
+						"scope"          => "email,user_birthday,public_profile", // optional
 					),
 
 					"Twitter" => array (

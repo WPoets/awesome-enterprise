@@ -1,20 +1,5 @@
 <?php
 
-/*
-	if(array_key_exists('modify_output',$atts)){
-			$arr=self::get($atts['modify_output']);
-			$value=self::modify_output($value,$arr);
-		}
-
-		//last
-		if(array_key_exists('last',$atts)){
-			if(is_array($value)){
-				$value=end($value);
-				reset($arr);
-			}
-		}
-*/
-
 namespace aw2\m;
 
 //run
@@ -41,49 +26,88 @@ function _do_shortcode($value, $atts){
 	return $value;
 }
 
-//strtolower
-\aw2_library::add_service('m.strtolower','Return the value as lowercase. Use m.strtolower',['func'=>'lower','namespace'=>__NAMESPACE__]);
+//lower
 \aw2_library::add_service('m.lower','Return the value as lowercase. Use m.lower',['namespace'=>__NAMESPACE__]);
 function lower($value, $atts){
-	$value = strtolower($value);
+	$value = strtolower((string)$value);
 	return $value;
 }
 
-//strtoupper
-\aw2_library::add_service('m.strtoupper','Return the value as lowercase. Use m.strtoupper',['func'=>'upper','namespace'=>__NAMESPACE__]);
-\aw2_library::add_service('m.upper','Return the value as lowercase. Use m.upper',['namespace'=>__NAMESPACE__]);
+//upper
+\aw2_library::add_service('m.upper','Return the value as uppercase. Use m.upper',['namespace'=>__NAMESPACE__]);
 function upper($value, $atts){
-	$value = strtoupper($value);
+	$value = strtoupper((string)$value);
+	return $value;
+}
+
+//capitalize
+\aw2_library::add_service('m.capitalize','Return the value as capitalized. Use m.capitalize',['namespace'=>__NAMESPACE__]);
+function capitalize($value, $atts){
+	$value = ucfirst((string)$value);
+	return $value;
+}
+
+//sentenceCase
+\aw2_library::add_service('m.sentence','Return the value as sentenceCase. Use m.sentence',['namespace'=>__NAMESPACE__]);
+function sentence($value, $atts){
+	$value = \aw2_library::sentenceCase((string)$value);
 	return $value;
 }
 
 //trim
 \aw2_library::add_service('m.trim','Trim the value of any whitespaces and return. Use m.trim',['func'=>'_trim','namespace'=>__NAMESPACE__]);
 function _trim($value, $atts){
-	$value = trim($value);
+	$value = trim((string)$value);
+	return $value;
+}
+
+//ltrim
+\aw2_library::add_service('m.ltrim','Trim the value of any whitespaces from left and return. Use m.ltrim',['func'=>'_ltrim','namespace'=>__NAMESPACE__]);
+function _ltrim($value, $atts){
+	$value = ltrim((string)$value);
+	return $value;
+}
+
+//rtrim
+\aw2_library::add_service('m.rtrim','Trim the value of any whitespaces from right and return. Use m.rtrim',['func'=>'_rtrim','namespace'=>__NAMESPACE__]);
+function _rtrim($value, $atts){
+	$value = rtrim((string)$value);
+	return $value;
+}
+
+//left
+\aw2_library::add_service('m.left','Truncate the characters from left of the value and return. Use m.left=n:<char length>',['namespace'=>__NAMESPACE__]);
+function left($value, $atts){
+	$length = substr( $atts['left'], 2, strlen($atts['left']) );
+	$value = substr((string)$value ,0, $length);
+	return $value;
+}
+
+//right
+\aw2_library::add_service('m.right','Truncate the characters from right of the value and return. Use m.right=n:<char length>',['namespace'=>__NAMESPACE__]);
+function right($value, $atts){
+	$length = substr( $atts['right'], 2, strlen($atts['right']) );
+	$value = substr((string)$value , -$length);
+	return $value;
+}
+
+//substr
+\aw2_library::add_service('m.substr','Truncate the value and return. Use m.substr=yes m.start=n:<char length> m.chars=n:<char length>',['func'=>'_substr','namespace'=>__NAMESPACE__]);
+function _substr($value, $atts){
+	$start = substr( $atts['start'], 2, strlen($atts['start']) );
+	$chars = substr( $atts['chars'], 2, strlen($atts['chars']) );
+	$value = substr((string)$value ,$start, $chars);
 	return $value;
 }
 
 //length
-\aw2_library::add_service('m.strlen','Return the length of the value. Use m.strlen',['func'=>'_strlen','namespace'=>__NAMESPACE__]);
-function _strlen($value, $atts){
-	$value = strlen($value);
-	return $value;
-}
-
-//10 digit number
-\aw2_library::add_service('m.ten_digit','Slice the value to 10 digit and return. Use m.ten_digit',['namespace'=>__NAMESPACE__]);
-function ten_digit($value, $atts){
-	$value = str_replace(' ','',$value);
-	if(strlen($value)>10)
-		$value =substr ( $value , -10 ,10);
-	return $value;
-}
-
-//json_decode
-\aw2_library::add_service('m.json_decode','Decode the JSON value and return. Use m.json_decode',['func'=>'_json_decode','namespace'=>__NAMESPACE__]);
-function _json_decode($value, $atts){
-	$value = json_decode($value,true);
+\aw2_library::add_service('m.length','Return the length of the value. Use m.length',['namespace'=>__NAMESPACE__]);
+function length($value, $atts){
+	if(is_array($value))
+		$value=count($value);
+	else
+		$value = strlen((string)$value);
+	
 	return $value;
 }
 
@@ -92,6 +116,13 @@ function _json_decode($value, $atts){
 function _json_encode($value, $atts){
 	if(is_array($value))
 		$value = json_encode($value,true);
+	return $value;
+}
+
+//json_decode
+\aw2_library::add_service('m.json_decode','Decode the JSON value and return. Use m.json_decode',['func'=>'_json_decode','namespace'=>__NAMESPACE__]);
+function _json_decode($value, $atts){
+	$value = json_decode((string)$value,true);
 	return $value;
 }
 
@@ -109,31 +140,116 @@ function _stripslashes_deep($value, $atts){
 	return $value;
 }
 
+//strip_tags
+\aw2_library::add_service('m.strip_tags','Use m.strip_tags',['func'=>'_strip_tags','namespace'=>__NAMESPACE__]);
+function _strip_tags($value, $atts){
+	$value = strip_tags($value);
+	return $value;
+}
+
 //encrypt
 \aw2_library::add_service('m.encrypt','Encrypt the value and return. Use m.encrypt',['namespace'=>__NAMESPACE__]);
 function encrypt($value, $atts){
-	$value = \aw2_library::simple_encrypt($value);
+	$value = \aw2_library::simple_encrypt((string)$value);
 	return $value;
 }
 
 //decrypt
 \aw2_library::add_service('m.decrypt','Decrypt the value and return. Use m.decrypt',['namespace'=>__NAMESPACE__]);
 function decrypt($value, $atts){
-	$value = \aw2_library::simple_decrypt($value);
+	$value = \aw2_library::simple_decrypt((string)$value);
 	return $value;
 }
 
-//explode
-\aw2_library::add_service('m.explode','Explode the value and return. Use m.explode="<delimiter>"',['func'=>'_explode','namespace'=>__NAMESPACE__]);
-function _explode($value, $atts){
-	$value = explode($atts['explode'],$value);
+//explode_on
+\aw2_library::add_service('m.explode_on','Explode the value and return. Use m.explode_on="s:<delimiter>"',['namespace'=>__NAMESPACE__]);
+function explode_on($value, $atts){
+	if($atts['explode_on'] === 'yes' ){
+		$value = explode(',',(string)$value);
+		return $value;
+	}
+
+	$delimiter = substr( $atts['explode_on'], 2, strlen($atts['explode_on']) );
+	
+	switch($delimiter){
+		case 'comma':
+			$delimiter = ",";
+		break;
+		case 'space':
+			$delimiter = " ";
+		break;
+		case 'dot':
+			$delimiter = ".";
+		break;
+	}
+	
+	$value = explode($delimiter,(string)$value);
 	return $value;
+	
+}
+
+//implode_on
+\aw2_library::add_service('m.implode_on','Explode the value and return. Use m.implode_on="<glue>"',['namespace'=>__NAMESPACE__]);
+function implode_on($value, $atts){
+	
+	if (!is_array($value)) return array();
+	
+	if($atts['implode_on'] === 'yes' ){
+		$value = implode(',',$value);
+		return $value;
+	}
+
+	$glue = substr( $atts['implode_on'], 2, strlen($atts['implode_on']) );
+	
+	switch($glue){
+		case 'comma':
+			$value = implode(',',$value);
+			break;
+		case 'space':
+			$value = implode(' ',$value);
+			break;
+		case 'quote_comma':
+			if(count($value)<1)
+				$value='';
+			
+			if(count($value)===1)
+				$value="'" . $value[0] . "'";
+				
+			if(count($value)>1)
+				$value="'" . implode ( "','" , $value ) . "'";
+			break;
+		case 'dot':
+			$value = implode('.',$value);
+			break;
+		default:
+			$value = implode($glue,$value);
+		break;
+	}
+	
+	return $value;
+	
 }
 
 //format number
-\aw2_library::add_service('m.comma_separator','Format the value as number and return. Use m.comma_separator',['namespace'=>__NAMESPACE__]);
-function comma_separator($value, $atts){
-	$value = number_format($value,0, '.', ',');
+\aw2_library::add_service('m.number_format','Format the value as number and return. Use m.number_format=yes m.decimals=n:<integer>',['func'=>'_number_format','namespace'=>__NAMESPACE__]);
+function _number_format($value, $atts){
+	$decimals = substr( $atts['decimals'], 2, strlen($atts['decimals']) );
+	$value = number_format($value,$decimals, '.', ',');
+	return $value;
+}
+
+//money_format
+\aw2_library::add_service('m.money_format','Format the value as Money and return. Use m.money_format="<format>"',['func'=>'_money_format','namespace'=>__NAMESPACE__]);
+function _money_format($value, $atts){
+	$format = $atts['money_format'];
+	if(empty($format)){
+		$format = 'en_IN';
+	}
+	if($format=="yes"){
+		$format = 'en_IN';
+	}
+	setlocale(LC_MONETARY, $format);
+    $value = money_format('%!i', (float)$value);
 	return $value;
 }
 
@@ -141,7 +257,7 @@ function comma_separator($value, $atts){
 \aw2_library::add_service('m.date_format','Format the value as Date and return. Use m.date_format="<format>"',['func'=>'_date_format','namespace'=>__NAMESPACE__]);
 function _date_format($value, $atts){
 	$format = $atts['date_format'];
-	if($format==''){
+	if($format==='yes'){
 		$format = 'M d, Y';
 	}
 	
@@ -164,88 +280,66 @@ function _date_format($value, $atts){
 }
 
 //words
-\aw2_library::add_service('m.words','Break the value as words and return. Use m.words',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('m.words','Break the value as words and return. Use m.words=yes or m.words="n:<no of words>"',['namespace'=>__NAMESPACE__]);
 function words($value, $atts){
-	$value = \aw2_library::break_words($value, $atts['words']);
-	return $value;
-}
-
-//separator
-\aw2_library::add_service('m.separator','Explode the value using the seperator, if value is array, else implode, and return. Use m.separator',['namespace'=>__NAMESPACE__]);
-function separator($value, $atts){
-	if(is_array($value))
-		$value=implode ( $atts['separator'] , $value );
+	if($atts['words'] === 'yes')
+		$words = -1;
 	else
-		$value=explode ($atts['separator'] , $value );
-	return $value;
-}
-
-//comma
-\aw2_library::add_service('m.comma','Implode the value using comma, if value is array, else explode, and return. Use m.comma',['namespace'=>__NAMESPACE__]);
-function comma($value, $atts){
-	if(is_array($value)) 
-		$value=implode ( ',' , $value );
-	else
-		$value=explode ( ',' , $value );
-	return $value;
-}
-
-//space
-\aw2_library::add_service('m.space','Implode the value using space, if value is array, else explode, and return. Use m.space',['namespace'=>__NAMESPACE__]);
-function space($value, $atts){
-	if(is_array($value)) 
-		$value=implode ( ' ' , $value );
-	else
-		$value=explode ( ' ' , $value );
+		$words = substr( $atts['words'], 2, strlen($atts['words']) );
+	
+	$value = \aw2_library::break_words((string)$value, $words);
 	return $value;
 }
 
 //url_encode
 \aw2_library::add_service('m.url_encode','Encode the URL and return. Use m.url_encode',['namespace'=>__NAMESPACE__]);
 function url_encode($value, $atts){
-	$value = urlencode($value);
+	$value = urlencode((string)$value);
 	return $value;
 }
 
 //url_decode
 \aw2_library::add_service('m.url_decode','Decode the URL and return. Use m.url_decode',['namespace'=>__NAMESPACE__]);
 function url_decode($value, $atts){
-	$value = urldecode($value);
+	$value = urldecode((string)$value);
 	return $value;
 }
 
-//count
-\aw2_library::add_service('m.count','Return the count of the value, if value is an array. Use m.count',['func'=>'_count','namespace'=>__NAMESPACE__]);
-function _count($value, $atts){
+//arr_item
+\aw2_library::add_service('m.arr_item','If the value is an array, return the nth element. Use m.arr_item=<s:first|s:last|n:<nth element>|s:<key>>',['namespace'=>__NAMESPACE__]);
+function arr_item($value, $atts){
 	if(is_array($value)){
-		$value=count($value);
-	}
-	return $value;
-}
-
-//first
-\aw2_library::add_service('m.first','If the value is an array, set the value as first element. Use m.first',['namespace'=>__NAMESPACE__]);
-function first($value, $atts){
-	if(is_array($value)){
-		reset($value);
-		$value= current($value);
-	}
-	return $value;
-}
-
-//last
-\aw2_library::add_service('m.last','If the value is an array, set the value as last element. Use m.last',['namespace'=>__NAMESPACE__]);
-function last($value, $atts){
-	if(is_array($value)){
-		$value=end($value);
-		reset($value);
+		
+		$type = substr( $atts['arr_item'], 0, 2 );	
+		$element = substr( $atts['arr_item'], 2, strlen($atts['arr_item']) );
+		
+		if($type === 's:'){
+			switch ($element) {
+				case 'first':
+					reset($value);
+					$value= current($value);
+					break;
+				case 'last':
+					$arr=$value;
+					$value=end($value);
+					reset($arr);
+					break;
+				default:
+					$value=$value[$element];
+					break;
+			}
+		}
+		if($type === 'n:'){
+			$keys = array_keys($value);
+			$value= $value[$keys[$element-1]]; //We do this to get the nth element of the array.
+		}
 	}
 	return $value;
 }
 
 //shuffle
-\aw2_library::add_service('m.shuffle','If the value is an array, shuffle the elements and return. Use m.shuffle',['namespace'=>__NAMESPACE__]);
-function shuffle($value, $atts){
+\aw2_library::add_service('m.shuffle','If the value is an array, shuffle the elements and return. Use m.shuffle',['func'=>'_shuffle','namespace'=>__NAMESPACE__]);
+function _shuffle($value, $atts){
 	if(is_array($value)){
 		 // Initialize
 		$shuffled_array = array();
@@ -272,5 +366,51 @@ function entities_encode($value, $atts){
 \aw2_library::add_service('m.entities_decode','Decode the HTML Entities in the value and return. Use m.entities_decode',['namespace'=>__NAMESPACE__]);
 function entities_decode($value, $atts){
 	$value = html_entity_decode($value, ENT_QUOTES);
+	return $value;
+}
+
+//esc_sql
+\aw2_library::add_service('m.esc_sql','Use m.esc_sql',['func'=>'_esc_sql','namespace'=>__NAMESPACE__]);
+function _esc_sql($value, $atts){
+	$value = esc_sql((string)$value);
+	return $value;
+}
+
+//math solve
+\aw2_library::add_service('m.solve','Solve a math string. Use m.solve=""',['namespace'=>__NAMESPACE__]);
+function solve($value, $atts){
+	$pattern = '/([^-\d.\(\)\+\*\/ \^%])/';
+	$replacement = '';
+	$result= preg_replace($pattern, $replacement, $value);
+	$value=eval('return ' . $result .  ' ;');
+	return $value;
+}
+
+//to string
+\aw2_library::add_service('m.to_str','Typecast the value to string and return. Use m.to_str',['namespace'=>__NAMESPACE__]);
+function to_str($value, $atts){
+	$value = (string) $value;
+	return $value;
+}
+
+//to number
+\aw2_library::add_service('m.to_num','Typecast the value to float and return. Use m.to_num',['namespace'=>__NAMESPACE__]);
+function to_num($value, $atts){
+	echo $value;
+	$value = (float) $value;
+	return $value;
+}
+
+//to interger
+\aw2_library::add_service('m.to_int','Typecast the value to integer and return. Use m.to_int',['namespace'=>__NAMESPACE__]);
+function to_int($value, $atts){
+	$value = (int) $value;
+	return $value;
+}
+
+//to boolean
+\aw2_library::add_service('m.to_bool','Typecast the value to boolean and return. Use m.to_bool',['namespace'=>__NAMESPACE__]);
+function to_bool($value, $atts){
+	$value = (bool) $value;
 	return $value;
 }

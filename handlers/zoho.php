@@ -1,16 +1,18 @@
 <?php
+namespace aw2\zoho;
 
-aw2_library::add_shortcode('zoho','crm', 'awesome2_zoho_crm','Runs Zoho.com CRM API Actions');
+\aw2_library::add_service('zoho','Zoho Library.',['namespace'=>__NAMESPACE__]);
 
-function awesome2_zoho_crm($atts,$content=null,$shortcode){
-	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+\aw2_library::add_service('zoho.crm','Runs Zoho.com CRM API Actions',['namespace'=>__NAMESPACE__]);
+function crm($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
 	'main'=>null,
 	), $atts) );
 	
 	unset($atts['main']);
 
-	if(empty(aw2_library::get('site_settings.zoho-crm-authcode')))
+	if(empty(\aw2_library::get('site_settings.zoho-crm-authcode')))
 		return 'Zoho.com CRM Authcode not set.';
 	
 	$return_value='';
@@ -19,7 +21,7 @@ function awesome2_zoho_crm($atts,$content=null,$shortcode){
 	$zoho=new aw2_zoho_crm($pieces['0'],$pieces['1'],$atts,$content);
 	$return_value=$zoho->run();
 	
-	$return_value=aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	unset($pieces);
 	return $return_value;
 }
@@ -39,7 +41,7 @@ class aw2_zoho_crm{
 		$this->atts=$atts;
 		$this->content=trim($content);
 		
-		$this->zoho_crm = new awesome_zoho_crm(aw2_library::get('site_settings.zoho-crm-authcode'));
+		$this->zoho_crm = new \awesome_zoho_crm(\aw2_library::get('site_settings.zoho-crm-authcode'));
 	}
 	
 	public function run(){
@@ -71,7 +73,7 @@ class aw2_zoho_crm{
 		$xml=$this->zoho_crm->request($this->module, $this->action, $args);
 		
 		if(isset($xml->error)){
-			aw2_library::set_error($xml->error); 
+			\aw2_library::set_error($xml->error); 
 			return false;
 		}
 			
@@ -96,7 +98,7 @@ class aw2_zoho_crm{
 		$xml=$this->zoho_crm->request($this->module, $this->action, $params);
 		
 		if(isset($xml->error)){
-			aw2_library::set_error($xml->error); 
+			\aw2_library::set_error($xml->error); 
 			return false;
 		}
 			
@@ -127,11 +129,11 @@ class aw2_zoho_crm{
 			$return_value=array();	
 		}
 		else{
-			$json=aw2_library::clean_specialchars($this->content);
-			$json=aw2_library::parse_shortcode($json);		
+			$json=\aw2_library::clean_specialchars($this->content);
+			$json=\aw2_library::parse_shortcode($json);		
 			$return_value=json_decode($json, true);
 			if(is_null($return_value)){
-				aw2_library::set_error('Invalid JSON' . $content); 
+				\aw2_library::set_error('Invalid JSON' . $content); 
 				$return_value=array();	
 			}
 		}

@@ -3458,57 +3458,34 @@ static function get_module($collection,$module,$exists=null){
 		$collection=$service;
 	}
 	
-	if(isset($collection['post_type'])){
-		$hash=$collection['post_type'] . '_' . $module;
-		$return_value=null;
-		//check cache
-		if(!current_user_can('develop_for_awesomeui')){
-			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
-			if($return_value && $exists)return true;
-		}
-		
-		if(!$return_value){
-			global $wpdb;
-			$sql="select post_content,post_type,ID,post_name,post_title from  ".$wpdb->posts."  where post_type='" . $collection['post_type'] . "' and post_name='" . $module . "'";
-			$results = $wpdb->get_results($sql,'ARRAY_A');	
-
-			if(count($results)!==1)return null;
-			$arr=array();
-			$arr['module']=$results[0]['post_name'];
-			$arr['title']=$results[0]['post_title'];
-			$arr['id']=$results[0]['ID'];
-			$arr['code']=$results[0]['post_content'];
-			$arr['post_type']=$results[0]['post_type'];
-			
-			$arr['collection']=$collection;
-			$arr['hash']=$hash;		
-			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
-			if($exists)return true;
-			
-		}
-		else{
-			$arr=json_decode($return_value,true);
-		}
-		
-		return $arr;
-	}
-
 	if(isset($collection['app'])){
 		$post_type=self::$stack['apps'][$collection['app']]['collection']['modules']['post_type'];
-		
-		$hash=$post_type . '_' . $module;
-		$return_value=null;
+		$collection=['post_type'=>$post_type];
+	}
+	
+	
+	
+	if(isset($collection['post_type'])){
+		$hash=$collection['post_type'] . '_' . $module;
+		$check=false;
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
-			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
-			if($return_value && $exists)return true;
+			$check=aw2\global_cache\exists(["main"=>$hash,"prefix"=>"module"],null,null);
+			
+			if($check){
+				if($exists)return true;
+				$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
+				$arr=json_decode($return_value,true);
+				return $arr;
+			}
 		}
 		
-		if(!$return_value){
-			global $wpdb;
-			$sql="select post_content,post_type,ID,post_name,post_title from  ".$wpdb->posts."  where post_type='" . $post_type . "' and post_name='" . $module . "'";
-			$results = $wpdb->get_results($sql,'ARRAY_A');	
-			if(count($results)!==1)return null;
+		global $wpdb;
+		$sql="select post_content,post_type,ID,post_name,post_title from  ".$wpdb->posts."  where post_type='" . $collection['post_type'] . "' and post_name='" . $module . "'";
+		$results = $wpdb->get_results($sql,'ARRAY_A');	
+
+		if(count($results)>0){
+			//found code
 			$arr=array();
 			$arr['module']=$results[0]['post_name'];
 			$arr['title']=$results[0]['post_title'];
@@ -3520,31 +3497,27 @@ static function get_module($collection,$module,$exists=null){
 			$arr['hash']=$hash;		
 			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
 			if($exists)return true;
+			return $arr;
 		}
-		else{
-			$arr=json_decode($return_value,true);
-		}
-		
-		return $arr;
 	}
 
-	
 	if(isset($collection['source'])){
 		$hash=$collection['source'] . '_' . $module;
-		$return_value=null;
 		//check cache
 		if(!current_user_can('develop_for_awesomeui')){
-			$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
-			if($return_value && $exists)return true;
-
+			$check=aw2\global_cache\exists(["main"=>$hash,"prefix"=>"module"],null,null);
+			
+			if($check){
+				if($exists)return true;
+				$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"module"],null,null);
+				$arr=json_decode($return_value,true);
+				return $arr;
+			}
 		}
 		
-		if(!$return_value){
-			global $wpdb;
-			$path=$collection['source'] . '/' . $module;
-			$code = file_get_contents($path);
-			if($code===false)return null;
-			
+		$path=$collection['source'] . '/' . $module;
+		$code = file_get_contents($path);
+		if($code!==false){
 			$arr=array();
 			$arr['module']=$module;
 			$arr['title']=$module;
@@ -3556,14 +3529,10 @@ static function get_module($collection,$module,$exists=null){
 			$arr['hash']=$hash;		
 			aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
 			if($exists)return true;
+			return $arr;
 		}
-		else{
-			$arr=json_decode($return_value,true);
-		}
-		
-		return $arr;
 	}
-	return null;
+	return false;
 }
 
 
@@ -3658,8 +3627,8 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	$content=parse the string  
 
 	*/
-	
-	if(!$arr)return 'Module not found in Collection';
+		
+	if(!$arr)return "$module Module not found in Collection";
 	$stack_id=self::module_push($arr);
 
 	if(!$template){
@@ -3709,14 +3678,14 @@ static function template_run($template,$content=null,$atts=array()){
 
 static function module_include($collection,$module){
 	$arr=self::get_module($collection,$module);
-	if(!$arr)return 'Module not found in Collection';
+	if(!$arr)return "$module Module not found in Collection";
 	$return_value=self::parse_shortcode($arr['code']);	
 	return $return_value;	
 }
 
 static function module_include_raw($collection,$module){
 	$arr=self::get_module($collection,$module);
-	if(!$arr)return 'Module not found in Collection';
+	if(!$arr)return "$module Module not found in Collection";
 	$return_value=$arr['code'];	
 	return $return_value;	
 }
@@ -4093,8 +4062,6 @@ function period_date($str){
 					$period_end_str= "today";
 	}
 
-	\util::var_dump($period_start_str);
-	\util::var_dump($period_end_str);
 	
 	$start_time = strtotime($period_start_str);
 	$end_time = strtotime($period_end_str);
@@ -4102,7 +4069,7 @@ function period_date($str){
 	$rs=array();
 	$rs['start_date'] = date('YmdHis',$start_time);
 	$rs['end_date'] = date('YmdHis',$end_time);
-	\util::var_dump($rs);
+	
 	return $rs;
 }	
 

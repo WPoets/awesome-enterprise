@@ -1,9 +1,9 @@
 <?php
-namespace aw2\wpmail;
+namespace aw2\notify;
 
-\aw2_library::add_service('wpmail.send','Send wp mail',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('notify.wpmail','Send wp mail',['namespace'=>__NAMESPACE__]);
 
-function send($atts,$content=null,$shortcode){
+function wpmail($atts,$content=null,$shortcode){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract( shortcode_atts( array(
@@ -38,13 +38,9 @@ function send($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('notify.sendgrid','Send Sendgrid mail',['namespace'=>__NAMESPACE__]);
 
-
-namespace aw2\sendgrid;
-\aw2_library::add_service('sendgrid.send','Send Sendgrid mail',['namespace'=>__NAMESPACE__]);
-
- 
-function awesome2_sendgrid($atts,$content=null,$shortcode){
+function sendgrid($atts,$content=null,$shortcode){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     //including SENDGRID library
@@ -70,7 +66,7 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
     $apiKey = $email['provider']['key'];
 
     if(empty($apiKey) || strlen($apiKey) === 0){
-        $return_value=\aw2_library::post_actions('all','No api key is not provided, check you settings for default api key!',$atts);
+        $return_value=\aw2_library::post_actions('all','No api key is not provided, check your settings for default api key!',$atts);
         return $return_value;
     }
 
@@ -130,13 +126,9 @@ function awesome2_sendgrid($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('notify.kookoo','Send Kookoo SMS',['namespace'=>__NAMESPACE__]);
 
-
-namespace aw2\kookoo;
-
-\aw2_library::add_service('kookoo.send','Send Kookoo SMS',['namespace'=>__NAMESPACE__]);
-
-function awesome2_kookoo($atts,$content=null,$shortcode){
+function kookoo($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract( shortcode_atts( array(

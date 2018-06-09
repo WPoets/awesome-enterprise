@@ -70,7 +70,7 @@ function create($atts,$content=null,$shortcode){
 
 namespace aw2\num;
 
-\aw2_library::add_service('num','String Functions',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('num','Numeric Functions',['namespace'=>__NAMESPACE__]);
 
 \aw2_library::add_service('num.get','Returns value as a Float',['namespace'=>__NAMESPACE__]);
 function get($atts,$content=null,$shortcode){
@@ -178,6 +178,73 @@ function create($atts,$content=null,$shortcode){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
+
+\aw2_library::add_service('date.diff','returns the differnce between two dates',['namespace'=>__NAMESPACE__]);
+function diff($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'type'=>'mins',
+	'date_from'=>null,
+	'date_to'=>null
+	), $atts, 'aw2_get' ) );
+	
+	if(is_null($date_from) || is_null($date_to)) return ;
+	
+	if(!is_a($date_from, 'DateTime')) {
+	  $date_from = new \DateTime($date_from);
+	}
+	
+	if(!is_a($date_to, 'DateTime')) {
+	  $date_to = new \DateTime($date_to);
+	}
+	
+	//$date_diff= $date_from->diff($date_to, true);
+	
+	//$date_diff_seconds = $date_diff->days * 24 * 60 * 60 + $date_diff->h * 60 *60 + $date_diff->i * 60 + $date_diff->s;
+	
+	if($type=='mins'){
+		$interval = new \DateInterval('PT1M');
+		$periods = new \DatePeriod($date_from, $interval, $date_to);
+		$return_value=iterator_count($periods);
+	}
+	
+	if($type=='hours'){
+		$interval = new \DateInterval('PT1H');
+		$periods = new \DatePeriod($date_from, $interval, $date_to);
+		$return_value=iterator_count($periods);
+	}
+	
+	if($type=='days'){
+		$interval = new \DateInterval('P1D');
+		$periods = new \DatePeriod($date_from, $interval, $date_to);
+		$return_value=iterator_count($periods);
+	}
+	
+	if($type=='english'){
+		$date_diff= $date_from->diff($date_to, true);
+		
+		$return_value = '';
+		
+		  if ( $date_diff->y >= 1 ) $return_value = pluralize( $date_diff->y, 'year' ).' ' ;
+		  if ( $date_diff->m >= 1 ) $return_value .= pluralize( $date_diff->m, 'month' ).' ' ;
+		  if ( $date_diff->d >= 1 ) $return_value .= pluralize( $date_diff->d, 'day' ).' ' ;
+		  if ( $date_diff->h >= 1 ) $return_value .= pluralize( $date_diff->h, 'hour' ) .' ';
+		  if ( $date_diff->i >= 1 ) $return_value .= pluralize( $date_diff->i, 'minute' ).' ' ;
+		  if ( $date_diff->s >= 1 ) $return_value .= pluralize( $date_diff->s, 'second' ).' ' ;
+		
+	}
+
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
+function pluralize( $count, $text ){ 
+    return $count . ( ( $count == 1 ) ? ( " $text" ) : ( " ${text}s" ) );
+}
+
 
 namespace aw2\arr;
 
