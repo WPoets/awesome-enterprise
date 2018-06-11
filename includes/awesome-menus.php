@@ -14,7 +14,10 @@ class aw2_menu{
 		$handlers=&aw2_library::get_array_ref('handlers');
 		
 		foreach($handlers as $key => $handler){
-			if(isset($handler['post_type']) && isset($handler['service']) && $handler['service'] === 'yes'){
+			
+			if(isset($handler['post_type']) && isset($handler['@service']) && $handler['@service'] === true ){
+				if(!isset($handler['service_label'])) continue;
+				
 				add_submenu_page('awesome-services', $handler['service_label'], $handler['service_label'],  'develop_for_awesomeui','edit.php?post_type='.$handler['post_type']);
 			}
 		}
@@ -63,7 +66,9 @@ class aw2_menu{
 			ksort($handlers);			
 			echo "<ul class='inline'>";
 			foreach($handlers as $key => $handler){
-				if(isset($handler['post_type']) && isset($handler['service']) && $handler['service'] === 'yes'){
+				if(isset($handler['post_type']) && isset($handler['@service']) && $handler['@service'] === true ){
+					if(!isset($handler['service_label'])) continue;
+				
 					echo "<li style='float:left; width:33%;'>";
 						echo "<a href='edit.php?post_type=".$handler['post_type']."'>".$handler['service_label']."</a>";
 					echo "</li>";
@@ -78,6 +83,7 @@ class aw2_menu{
 			ksort($registered_apps);			
 			echo "<ul class='inline'>";
 			foreach($registered_apps as $key => $app){
+				
 				echo "<li style='float:left; width:33%;'>";
 					echo "<a href='edit.php?post_type=".$app['collection']['modules']['post_type']."'>".$app['name']." App"."</a>";
 				echo "</li>";
