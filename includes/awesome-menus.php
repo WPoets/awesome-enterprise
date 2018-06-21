@@ -48,8 +48,8 @@ class aw2_menu{
 		$nginx_purge_url = add_query_arg( array( 'nginx_helper_action' => 'purge', 'nginx_helper_urls' => 'all' ) ); 
 		
 		$nginx_nonced_url = wp_nonce_url( $nginx_purge_url, 'nginx_helper-purge_all' );
-		$global_nonced_url = wp_nonce_url( admin_url('admin.php?page=awesome-enterprise-cache&awesome_purge=global'), 'global_nonced-purge_all' );
-		$session_nonced_url = wp_nonce_url(admin_url('admin.php?page=awesome-enterprise-cache&awesome_purge=session'), 'session_nonced-purge_all' );
+		$global_nonced_url = wp_nonce_url( admin_url('admin.php?page=awesome-enterprise&awesome_purge=global'), 'global_nonced-purge_all' );
+		$session_nonced_url = wp_nonce_url(admin_url('admin.php?page=awesome-enterprise&awesome_purge=session'), 'session_nonced-purge_all' );
 		
 		echo '<div class="wrap" style="float: left; width: 100%;">'; 
 			echo '<h2>Awesome Enterprise</h2><hr>';
