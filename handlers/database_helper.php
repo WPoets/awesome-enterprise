@@ -65,9 +65,8 @@ class awesome2_query{
 	
 	function get_post_meta(){
 		return get_post_meta($this->att('post_id'), $this->att('key'), $this->att('single',true) );
-	}	
-	
-	
+	}
+
 	function all_post_meta(){
 		$post_id = $this->att('post_id');
 		
@@ -88,8 +87,8 @@ class awesome2_query{
 		
 		unset($temp);
 		return $return_value;
-	}	
-	
+	}		
+
 	function insert_post(){
 		if($this->att('args'))
 			$return_value= wp_insert_post($this->att('args'),true);

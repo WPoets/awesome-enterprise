@@ -174,7 +174,14 @@ function create($atts,$content=null,$shortcode){
 	'main'=>null,
 	), $atts, 'aw2_get' ) );
 	
-	$return_value=new \DateTime($main);
+	
+	try {
+		$return_value=new \DateTime($main);
+	}
+	catch (Exception $ex) {
+		$return_value = '';
+		aw2_library::set_error($ex->getMessage());
+	}
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
@@ -235,6 +242,83 @@ function diff($atts,$content=null,$shortcode){
 		  if ( $date_diff->s >= 1 ) $return_value .= pluralize( $date_diff->s, 'second' ).' ' ;
 		
 	}
+
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
+\aw2_library::add_service('date.aw2_period','Given a period, returns start_date and end_date',['namespace'=>__NAMESPACE__]);
+function aw2_period($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'period'=>null
+	), $atts, 'aw2_get' ) );
+	
+	if(is_null($period)) return ;
+	
+	if( strpos( $period, ":" ) === false ) {
+		return;
+	}
+	
+	$str_arr=explode(":",$period);
+	switch ($str_arr[0]) {
+		
+		case "day":
+					$period_str="-".$str_arr[1]." days";
+					
+					$period_start_str=$period_str;
+					$period_end_str=$period_str;
+						
+					if($str_arr[1]=="today" || $str_arr[1]=="yesterday"){
+						$period_start_str=$str_arr[1];
+						$period_end_str=$str_arr[1];
+					}				
+					break;
+		case "days":	
+					$period_start_str="-".$str_arr[1]." days";
+					$period_end_str="today";
+					break;		
+		case "months":
+					$period_start_str="first day of -".$str_arr[1]." months";
+					$period_end_str="today";
+					break;
+		case "month":										
+					$period_start_str="first day of -".$str_arr[1]." month";
+					$period_end_str="last day of -".$str_arr[1]." month";
+					
+					if($str_arr[1]=="last_month"){
+						$period_start_str="first day of last month";
+						$period_end_str="last day of last month";
+					}	
+					if($str_arr[1]=="this_month" ){
+						$period_start_str="first day of this month";
+						$period_end_str="today";
+					}	
+					break;
+		case "year":
+					if($str_arr[1]=="last_year"){
+						$period_start_str="last year January 1st";
+						$period_end_str="last year December 31st";
+					}	
+					if($str_arr[1]=="this_year" ){
+						$period_start_str="this year January 1st";
+						$period_end_str="today";
+					}	
+					break;			
+		default:
+					$period_start_str= "today";
+					$period_end_str= "today";
+	}
+	
+	$start_time = new \DateTime($period_start_str);
+	$end_time = new \DateTime($period_end_str);
+	
+	$return_value=array();
+	$return_value['start_date'] = $start_time->format('YmdHis');
+	$return_value['end_date'] = $end_time->format('YmdHis');
 
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);

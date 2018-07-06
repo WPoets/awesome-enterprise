@@ -36,6 +36,7 @@ function check($ticket,$otp_value,$validation){
 \aw2_library::add_service('session_ticket.create','Create a ticket',['namespace'=>__NAMESPACE__]);
 
 
+
 function create($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
@@ -44,7 +45,8 @@ function create($atts,$content=null,$shortcode){
 	'nonce'=>'no',
 	'otp_value'=>null,
 	'user'=>null,
-	'app'=>null
+	'app'=>null,
+	'main'=>null
 	), $atts) );
 
 	$validation=array();	
@@ -58,9 +60,14 @@ function create($atts,$content=null,$shortcode){
 		$ticket=uniqid();
 	}
 	
+	if($main)$ticket=$main;
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
 
-	if($redis->exists($ticket))die ('Ticket already Exists');
+	if($redis->exists($ticket)){
+		$return_value='_error';
+		$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+		return $return_value;
+	}
 	
 	
 	//do i need a nonce
@@ -88,7 +95,10 @@ function create($atts,$content=null,$shortcode){
 	}	
 	$json=json_encode($validation);
 	$redis->hSet($ticket,'validation',$json);
-	$redis->setTimeout($ticket, $time*60);
+	$redis->hSet($ticket,'ticket_id',$ticket);
+	
+	if((float)$time >=0)
+		$redis->setTimeout($ticket, $time*60);
 	$return_value=$ticket;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
@@ -96,7 +106,7 @@ function create($atts,$content=null,$shortcode){
 
 
 
-\aw2_library::add_service('session_ticket.alidate','Validate a ticket',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('session_ticket.validate','Validate a ticket',['namespace'=>__NAMESPACE__]);
 
 function validate($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
@@ -140,6 +150,7 @@ function set_activity($atts,$content=null,$shortcode){
 	'app'=>null,
 	'collection'=>null,
 	'module'=>null,
+	'service'=>null
 	), $atts) );
 
 	if(!$main)return 'Main must be set';
@@ -151,6 +162,7 @@ function set_activity($atts,$content=null,$shortcode){
 	if($app)$ticket_activity['app']=$app;
 	if($collection)$ticket_activity['collection']=$collection;
 	if($module)$ticket_activity['module']=$module;
+	if($service)$ticket_activity['service']=$service;
 	
 	$json=json_encode($ticket_activity);
 	$redis->hSet($ticket,'ticket_activity',$json);

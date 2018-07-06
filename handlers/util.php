@@ -48,6 +48,50 @@ function save_csv_page($atts,$content=null,$shortcode){
 	
 }
 
+\aw2_library::add_service('util.async_url','Run async url',['namespace'=>__NAMESPACE__]);
+function async_url($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'url'=>''
+	), $atts) );
+	
+
+	$cron_request = array(
+		'args' => array(
+			'blocking'  => false,
+			'sslverify' => false 
+		)
+	);
+	
+	if(defined('HTTP_AUTH')){
+		$cron_request['args']['headers'] = array('Authorization' => 'Basic ' . base64_encode( HTTP_AUTH )); // HTTP_AUTH='easyengine:q5jgE6'
+	}
+	
+	
+	wp_remote_post($url, $cron_request['args'] );	
+
+	return 'success';
+}
+
+\aw2_library::add_service('util.nonce','creates nonce value for given string',['namespace'=>__NAMESPACE__]);
+function nonce($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	), $atts) );
+	
+	if(!$main)return 'Main must be set';
+	
+	$return_value = wp_create_nonce($main);
+	echo 'RET';
+	\util::var_dump($return_value);
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	
+	return $return_value;
+}
 
 
 /*

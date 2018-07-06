@@ -83,6 +83,7 @@ class aw2_menu{
 			ksort($registered_apps);			
 			echo "<ul class='inline'>";
 			foreach($registered_apps as $key => $app){
+				if(!isset($app['collection']['modules'])) continue;
 				
 				echo "<li style='float:left; width:33%;'>";
 					echo "<a href='edit.php?post_type=".$app['collection']['modules']['post_type']."'>".$app['name']." App"."</a>";

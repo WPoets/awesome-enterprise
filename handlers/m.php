@@ -414,3 +414,21 @@ function to_bool($value, $atts){
 	$value = (bool) $value;
 	return $value;
 }
+
+//append to value
+\aw2_library::add_service('m.append','Append the given string and return. Use m.append',['namespace'=>__NAMESPACE__]);
+function append($value, $atts){
+	$append = $atts['append'];
+	$value = $value.$append;
+	
+	return $value;
+}
+
+//prepend to value
+\aw2_library::add_service('m.prepend','Prepend the given string and return. Use m.prepend',['namespace'=>__NAMESPACE__]);
+function prepend($value, $atts){
+	$prepend = $atts['prepend'];
+	$value = $prepend.$value;
+	
+	return $value;
+}

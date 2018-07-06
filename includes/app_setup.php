@@ -337,22 +337,6 @@ class aw2_apps_library{
 	}
 	
 	
-	static function manage_cache(){
-		
-		$nginx_purge_url = add_query_arg( array( 'nginx_helper_action' => 'purge', 'nginx_helper_urls' => 'all' ) ); 
-		
-		$nginx_nonced_url = wp_nonce_url( $nginx_purge_url, 'nginx_helper-purge_all' );
-		$global_nonced_url = wp_nonce_url( admin_url('admin.php?page=awesome-studio-cache&awesome_purge=global'), 'global_nonced-purge_all' );
-		$session_nonced_url = wp_nonce_url(admin_url('admin.php?page=awesome-studio-cache&awesome_purge=session'), 'session_nonced-purge_all' );
-		
-		echo '<div class="wrap ">'; 
-		echo '<h2>Manage Awesome Cache</h2><hr>';
-		echo "<a href='".$global_nonced_url."' class='page-title-action'>Purge Global Cache (Modules & Taxonomy etc)</a> <br /><br />"; //11       	
-		echo "<a href='".$nginx_nonced_url."' class='page-title-action'>Purge NGINX Cache</a> <br /><br />";
-		echo "<a href='".$session_nonced_url."' class='page-title-action'>Purge Session Cache (Search. OTP & self expiry)</a> <br /><br />";//12
-		echo '</div>';	
-	}
-	
 	static function purge_cache(){
 		if ( !isset( $_REQUEST['awesome_purge'] ) )
 				return;
@@ -841,14 +825,15 @@ class awesome_app{
 
 	public function get_app_ticket($ticket){
 		$json=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
+		
 		if(!$json){
-			echo 'Ticket is invalid: ' . $ticket;
+			echo 'Ticket is invalid in get_app_ticket: ' . $ticket;
 			exit();			
 		}
 		$ticket_activity=json_decode($json,true);
 		
 		if(!isset($ticket_activity['app'])){
-			echo 'Ticket is invalid: ' . $ticket;
+			echo 'App is not set in ticket: ' . $ticket;
 			exit();			
 		}
 		return $ticket_activity['app'];
@@ -1406,17 +1391,27 @@ class controllers{
 		}
 		$ticket_activity=json_decode($hash['ticket_activity'],true);
 		
-		if(!isset($ticket_activity['module'])){
-			echo 'Ticket is invalid for module: ' . $ticket;
-			exit();			
-		}		
-		
-		self::$module= $ticket_activity['module'];
-		self::module_parts();
+				
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
 		
+		if(isset($ticket_activity['service'])){
+			$hash['main']=$ticket_activity['service'];
+			$result=\aw2\service\run($hash,null,[]);
+			echo $result;
+			exit();	
+		}
+		
+		if(!isset($ticket_activity['module'])){
+			echo 'Ticket is invalid for module: ' . $ticket;
+			exit();			
+		}
+		
+		
+		self::$module= $ticket_activity['module'];
+		self::module_parts();
+
 		if(isset($ticket_activity['collection']))
 			$app['active']['collection'] = $ticket_activity['collection'];
 		else

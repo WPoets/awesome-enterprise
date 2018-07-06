@@ -1,4 +1,5 @@
 <?php
+
 define('AW2_ERROR','_error');
 
 class aw2_library{
@@ -14,6 +15,22 @@ static function setup(){
 	{
 		include $filename;
 	}
+}
+
+static function user_notice($message) {
+	$x=debug_backtrace();
+	$caller = next($x);
+	$fn = isset($caller['function']) ? $caller['function'] : 'no func';
+	$file = isset($caller['file']) ? $caller['file'] : 'no file';
+	$line = isset($caller['line']) ? $caller['line'] : 'no line';
+
+	$data='[';
+	if(isset(self::$stack['module']['slug']))
+		$data.='module::' . self::$stack['module']['slug'] . ' ';
+	if(isset(self::$stack['module']['collection']['post_type']))
+		$data.='post_type::' . self::$stack['module']['collection']['post_type'];
+	$data.=']';
+	trigger_error($data . $message . ' in <strong>'.$fn.'</strong> called from <strong>'.$file.'</strong> on line <strong>'.$line.'</strong>'."\n<br />Awesome Notice ", E_USER_NOTICE); 
 }
 
 static function redis_connect($database_number){
@@ -208,7 +225,7 @@ static function shortcode_tag( $m ) {
 			}
 		}
 	
-		if(isset($pre['or'])){
+		if(isset($pre['or']) && ($check_cond === false)){
 			foreach ($pre['or'] as $key => $value) {
 				if(isset($handlers['c'][$key])){
 					if (isset($handlers['c'][$key]['func']))
@@ -362,6 +379,10 @@ static function shortcode_tag( $m ) {
 					}
 				}
 			}
+		if(is_array($reply) || is_object($reply)){
+			self::user_notice("[A Shortcode ($tag) has replied with an array/object and there is no set command]");
+			return;
+		}	
 		return $m[1] . $reply . $m[6];
 		}
 		
@@ -1210,10 +1231,8 @@ static function modify_output($value,&$atts){
 		//format date
 		if(array_key_exists('date_format',$atts) && $value!='' ){
 			$format = $atts['date_format'];
-			if($format==''){
-				$format = 'M d, Y';
-			}
-			
+			if($format=='')$format = 'M d, Y';
+
 			if(is_object($value) && get_class($value)==='DateTime'){
 				$value = date_format($value,$format);
 			}
@@ -1611,7 +1630,9 @@ static function set_cookie($key,$value,$overwrite='yes'){
 	
 		if($flag){
 			$_COOKIE[$key]=$value;
-			setcookie($key, $value,time()+60*60*24*30,'/');
+			if (!headers_sent()) {
+				setcookie($key, $value,time()+60*60*24*30,'/');
+			}
 			echo('<script type=text/spa spa_activity=core:create_cookie days=30 key="' . $key . '" value="' . $value .  '"></script>');
 		}	
 }
@@ -1772,6 +1793,11 @@ static function get_start($o){
 			array_shift($o->pieces);
 			self::get_unique_number($o); 
 			break;			
+		case 'unique_number_risky':
+			array_shift($o->pieces);
+			self::get_unique_number_risky($o); 
+			break;			
+			
 		case 'function':
 			array_shift($o->pieces);
 			self::get_function($o);
@@ -2266,10 +2292,16 @@ static function get_aw2_secret( $o) {
 
 
 static function get_unique_number( $o) {
-	$m=microtime(true);
-	$s=substr ( $m , 0, 10);
-	$t=mt_rand(0, 9999);
+	
+	$s=hexdec(uniqid());
+	$t=mt_rand(1000000, 9999999);
 	$o->value=$s . $t;	
+	return;
+} 
+
+
+static function get_unique_number_risky( $o) {
+	$o->value=hexdec(uniqid());	
 	return;
 }
 
@@ -3592,7 +3624,7 @@ static function module_push($arr){
 	
 static function module_forced_run($collection,$module,$template,$content,$atts){
 	$arr=self::get_module($collection,$module);
-	if(!$arr)return 'Module not found in Collection';
+	if(!$arr)return "$module Module not found in Collection";
 	$stack_id=self::module_push($arr);
 	if($content){
 		$content=self::removesmartquotes($content);	
@@ -3627,7 +3659,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	$content=parse the string  
 
 	*/
-		
+	
 	if(!$arr)return "$module Module not found in Collection";
 	$stack_id=self::module_push($arr);
 
@@ -3659,7 +3691,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 static function template_run($template,$content=null,$atts=array()){
 	$content=self::removesmartquotes($content);		
-	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found '.$template;
+	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found - '.$template ;
 	$template_ptr=self::$stack['module']['templates'][$template];
 	$stack_id=self::push_child('template',$template_ptr['name']);
 	
@@ -4053,7 +4085,7 @@ function period_date($str){
 						$period_end_str="last year December 31st";
 					}	
 					if($str_arr[1]=="this_year" ){
-						$period_start_str="first day of this year";
+						$period_start_str="this year January 1st";
 						$period_end_str="today";
 					}	
 					break;			
@@ -4061,7 +4093,6 @@ function period_date($str){
 					$period_start_str= "today";
 					$period_end_str= "today";
 	}
-
 	
 	$start_time = strtotime($period_start_str);
 	$end_time = strtotime($period_end_str);
@@ -4069,7 +4100,7 @@ function period_date($str){
 	$rs=array();
 	$rs['start_date'] = date('YmdHis',$start_time);
 	$rs['end_date'] = date('YmdHis',$end_time);
-	
+
 	return $rs;
 }	
 

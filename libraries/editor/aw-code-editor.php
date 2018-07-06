@@ -42,6 +42,9 @@ function awesome_init_codemirror( $post ) {
 	$codemirror_js_url = plugins_url( 'editor/codemirror/lib/codemirror.min.js' , dirname(__FILE__) );
 	$codemirror_css_url = plugins_url( 'editor/codemirror/lib/codemirror.css' , dirname(__FILE__));
 	
+	$iao_alert_js_url = plugins_url( 'editor/codemirror/lib/iao-alert.jquery.min.js' , dirname(__FILE__) );
+	$iao_alert_css_url = plugins_url( 'editor/codemirror/lib/iao-alert.min.css' , dirname(__FILE__));
+	
 	$codemirror_addon_simple = plugins_url( 'editor/codemirror/addon/mode/simple.js' , dirname(__FILE__) );
 	
 	$codemirror_mode_xml = plugins_url( 'editor/codemirror/mode/xml/xml.js' , dirname(__FILE__) );
@@ -86,8 +89,10 @@ function awesome_init_codemirror( $post ) {
 	//  $value = get_post_meta( $post->ID, '_my_meta_value_key', true );
 	echo '<link rel="stylesheet" href="'.$codemirror_css_url.'">
 		 <link rel="stylesheet" href="'.$codemirror_theme.'">
+		 <link rel="stylesheet" href="'.$iao_alert_css_url.'">
 		 
 		 <script src="'.$codemirror_js_url.'"></script>
+		 <script src="'.$iao_alert_js_url.'"></script>
 		 <script src="'.$codemirror_addon_simple.'"></script>
 		 <script src="'.$codemirror_mode_xml.'"></script>
 		 <script src="'.$codemirror_mode_css.'"></script>
@@ -214,7 +219,7 @@ function awesome_init_codemirror( $post ) {
 							  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
 							},
 							"Esc": function(cm) {
-							  if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+							  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
 							},
 							"Ctrl-Q": function(cm){ 
 								cm.foldCode(cm.getCursor()); 
@@ -345,9 +350,14 @@ function awesome_custom_button(){
 							{action:'codeeditor_update',awesome_code:aw_ui_code,post_id:post_id},
 							function(data){
 									jQuery('#uwrspin').removeClass('is-active');
+									$.iaoAlert({msg: 'Saved',
+										type: 'success',
+										mode: 'light'}
+									);
 								}
 							);
 					}
+					jQuery('a.current').parents('li.wp-has-submenu').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
 				</script>
 				
 				";

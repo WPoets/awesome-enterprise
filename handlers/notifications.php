@@ -20,7 +20,7 @@ function wpmail($atts,$content=null,$shortcode){
     if(!isset($email['subject']))$email['subject']='';
     if(!isset($email['message']))$email['message']='';
 	if(!isset($email['headers']))$email['headers']='';
-    if(!isset($email['attachment']))$email['attachment']='';
+    if(!isset($email['attachments']))$email['attachments']=array();
 
     // Log data in db
     \notification_log('mail', 'wpmail', $email, $log, $notification_object_type, $notification_object_id);
@@ -30,7 +30,7 @@ function wpmail($atts,$content=null,$shortcode){
         $email['subject'], 
         $email['message'], 
         $email['headers'], 
-        $email['attachment'] 
+        $email['attachments'] 
     );
 
     $return_value = "success";
