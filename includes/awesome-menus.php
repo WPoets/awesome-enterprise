@@ -83,10 +83,42 @@ class aw2_menu{
 			ksort($registered_apps);			
 			echo "<ul class='inline'>";
 			foreach($registered_apps as $key => $app){
-				if(!isset($app['collection']['modules'])) continue;
-				
-				echo "<li style='float:left; width:33%;'>";
-					echo "<a href='edit.php?post_type=".$app['collection']['modules']['post_type']."'>".$app['name']." App"."</a>";
+				echo "<li style='float:left; width:33%;margin-bottom:15px;'>";
+					echo "<a href='".$app['path']."'>".$app['name']."</a><br />";
+					if(!empty($app['collection']['modules']['post_type'])){
+						echo "<a href='edit.php?post_type=".$app['collection']['modules']['post_type']."'>Open Modules</a>";
+					}else{
+						echo "No Modules";
+					}
+					if(!empty($app['collection']['config']['post_type'])){
+						echo " | <a href='edit.php?post_type=".$app['collection']['config']['post_type']."'>Open Config</a>";
+					}else{
+						echo " | No Config";
+					}
+					if(!empty($app['collection']['pages']['post_type'])){
+						echo " | <a href='edit.php?post_type=".$app['collection']['pages']['post_type']."'>Open Pages</a>";
+					}else{
+						echo " | No Pages";
+					}
+					
+					if(!empty($app['collection']['config']['post_type'])){
+						
+						$args=array(
+							'name' => 'rights',
+							'post_type' => $app['collection']['config']['post_type'],
+							'post_status'=>'any'
+						);
+						$rights_post = get_posts( $args );
+						
+						if(!empty($rights_post)){
+							$rights_post = $rights_post[0];
+							echo "<br /><a href='post.php?post=".$rights_post->ID."&action=edit'>Open Rights</a>";
+						}else{
+							echo "<br />No Rights";
+						}						
+					}else{
+						echo "<br />No Rights";
+					}
 				echo "</li>";
 			}
 			echo "</ul>";			
