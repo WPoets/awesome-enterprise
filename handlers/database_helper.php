@@ -339,7 +339,7 @@ class awesome2_query{
 	}
 
 	function get_user_by(){
-		return get_user_by($this->att('field'),$this->att('value'));
+			return get_user_by($this->att('field'),$this->att('value'));
 	}
 	
 	function update_user_meta(){

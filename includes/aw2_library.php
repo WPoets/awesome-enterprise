@@ -1,5 +1,4 @@
 <?php
-
 define('AW2_ERROR','_error');
 
 class aw2_library{
@@ -7,6 +6,7 @@ class aw2_library{
 static $conn=null;
 static $stack=array();
 static $plugin_path=null;
+static $redis_conn=null;
 
 static function setup(){
 	self::$plugin_path=plugin_dir_path( __DIR__ );
@@ -34,10 +34,12 @@ static function user_notice($message) {
 }
 
 static function redis_connect($database_number){
-	$redis = new Redis();
-	$redis->connect(REDIS_HOST, REDIS_PORT);
-	$redis->select($database_number);
-	return $redis;	
+	if(!self::$redis_conn){
+		self::$redis_conn = new Redis();
+		self::$redis_conn->connect(REDIS_HOST, REDIS_PORT);
+	}
+	self::$redis_conn->select($database_number);
+	return self::$redis_conn;	
 }
 // takes a json and returns back an array
 static function get_clean_args($content,&$atts=null){
@@ -2292,9 +2294,9 @@ static function get_aw2_secret( $o) {
 
 
 static function get_unique_number( $o) {
-	
-	$s=hexdec(uniqid());
-	$t=mt_rand(1000000, 9999999);
+	$m=microtime(true);
+	$s=substr ( $m , 0, 10);
+	$t=mt_rand(0, 9999);
 	$o->value=$s . $t;	
 	return;
 } 

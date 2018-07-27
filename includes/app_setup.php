@@ -21,7 +21,11 @@ require_once('awesome-menus.php');
 class aw2_apps_library{
 	
 	static function initialize(){
-		header("Cache-Control: no-cache, must-revalidate");
+
+		if(current_user_can('develop_for_awesomeui')){
+			setcookie("wordpress_no_cache", 'yes', time()+3600);  /* expire in 1 hour */
+		}
+	
 		self::load_apps();
 		self::setup_services();
 		self::run_core('config');
@@ -29,9 +33,8 @@ class aw2_apps_library{
 		
 		//time/zone
 		$time_zone = aw2_library::get('settings.time_zone');
-		if(!empty($time_zone))
-			date_default_timezone_set($time_zone);
-
+		if(!empty($time_zone))date_default_timezone_set($time_zone);
+		
 	}
 	
 	static function setup_services(){
@@ -200,9 +203,18 @@ class aw2_apps_library{
 	
 	static function load_apps(){
 		
-		$registered_apps=&aw2_library::get_array_ref('apps');
-		$apphelp=&aw2_library::get_array_ref('apphelp');
-		
+	$registered_apps=&aw2_library::get_array_ref('apps');
+	$apphelp=&aw2_library::get_array_ref('apphelp');
+
+	
+	$app_key='registered_apps';
+	$return_value=null;
+	
+	if(!current_user_can('develop_for_awesomeui')){
+			$return_value=aw2\global_cache\get(["main"=>$app_key,"prefix"=>""],null,null);
+	}
+	
+	if(!$return_value){
 		$app_posts= aw2_library::get_collection(["post_type"=>"aw2_app"]);
 		foreach($app_posts as $app_post){
 			$app = array();
@@ -214,8 +226,7 @@ class aw2_apps_library{
 			$app['post_id']=$app_post['id'];
 			$app['hash']=$app_post['hash'];
 			$app['collection']=array();
-
-
+			
 			$app_config=aw2_library::get_post_meta($app_post['id'],'config_collection');
 			if($app_config){
 				$decode=json_decode($app_config,true);
@@ -254,14 +265,15 @@ class aw2_apps_library{
 				$app['collection']['apphelp']['post_type']=$app_help;
 				$apphelp[]=$app_help;
 			}
-				
-			
-			$ptr=&aw2_library::get_array_ref('');
-			$ptr['app']=$app;
-			
-			$registered_apps[$app_post['module']]=$ptr['app'];
+			$registered_apps[$app_post['module']]=$app;
 		}
- 	
+		aw2\global_cache\set(["key"=>$app_key,"prefix"=>""],json_encode($registered_apps),null);
+	}
+	else{
+		$decoded=json_decode($return_value,true);
+		$registered_apps=$decoded;
+	}	
+		
 		//load all config post, as they are used they will be consumed.
 		$awesome_core=&aw2_library::get_array_ref('awesome_core');
 		
@@ -813,6 +825,7 @@ class awesome_app{
 			$login_url .= '&title='. urlencode($rights['access']['title']);
 		}
 		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		wp_redirect( $login_url );
 		exit();
 		
@@ -825,7 +838,6 @@ class awesome_app{
 
 	public function get_app_ticket($ticket){
 		$json=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
-		
 		if(!$json){
 			echo 'Ticket is invalid in get_app_ticket: ' . $ticket;
 			exit();			
@@ -988,8 +1000,6 @@ class controllers{
 			
 			call_user_func(array('controllers', 'controller_'.$controller),$o, $query);
 		}
-		if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes')
-			header("Cache-Control: public, must-revalidate");
 		
 		if($ajax != true){
 			self::controller_pages($o, $query);
@@ -1116,15 +1126,11 @@ class controllers{
 		}			
 		
 		header('Content-Disposition: attachment;filename="' . $filename);
-		header('Cache-Control: max-age=0');
-		// If you're serving to IE 9, then the following may be needed
-		header('Cache-Control: max-age=1');
-
-		// If you're serving to IE over SSL, then the following may be needed
-		header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-		header ('Pragma: public'); // HTTP/1.0
+		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
+		
 		$result=file_get_contents($path);	
 		echo $result;
 		exit();	
@@ -1144,22 +1150,18 @@ class controllers{
 
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Disposition: attachment;filename="' . $filename);
-		header('Cache-Control: max-age=0');
-		// If you're serving to IE 9, then the following may be needed
-		header('Cache-Control: max-age=1');
+		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
 
-		// If you're serving to IE over SSL, then the following may be needed
-		header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-		header ('Pragma: public'); // HTTP/1.0
 		$result=file_get_contents($path);	
 		echo $result;
 		exit();	
 	}
 	
 	static function controller_z($o){
-		
+		//not cached since only admin has rights
 		if(!current_user_can("develop_for_awesomeui")) exit;
 		
 		self::$module='';	
@@ -1269,15 +1271,10 @@ class controllers{
 		
 		header("Content-type: application/csv");
 		header('Content-Disposition: attachment;filename="' . $filename);
-		header('Cache-Control: max-age=0');
-		// If you're serving to IE 9, then the following may be needed
-		header('Cache-Control: max-age=1');
-
-		// If you're serving to IE over SSL, then the following may be needed
-		header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-		header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-		header ('Pragma: public'); // HTTP/1.0
+		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
 		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
 		
@@ -1288,29 +1285,20 @@ class controllers{
 		}
 		exit();	
 	}
-	
-/* 	static function controller_data($o){
-		self::$module=array_shift($o->pieces);
-		$app=&aw2_library::get_array_ref('app');
-		
-		self::module_parts();
-		self::set_qs($o);
-		
-		$app['active']['module'] = self::$module;
-		$app['active']['template'] = self::$template;
-		
-		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
-		echo json_encode($result);
-		exit();	
-	} */
+
 	
 	static function controller_pages($o, $query){
-
 		if(empty($o->pieces))return;
 		
 		$slug= $o->pieces[0];
 		
 		$app=&aw2_library::get_array_ref('app');
+		
+	if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes'){
+			header("Cache-Control: public, must-revalidate");
+	}
+	else	
+			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 	
 		if(isset($app['collection']['pages'])){
 			$check=aw2_library::get_module($app['collection']['pages'],$slug,true);
@@ -1358,6 +1346,9 @@ class controllers{
 	
 	static function controller_modules($o){ 
 		if(empty($o->pieces))return;
+
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		
 		$app=&aw2_library::get_array_ref('app');
 		self::$module= $o->pieces[0];
 		self::module_parts();
@@ -1381,6 +1372,8 @@ class controllers{
 
 	static function controller_t($o){ 
 		if(empty($o->pieces))return;
+
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		
 		$app=&aw2_library::get_array_ref('app');
 		$ticket=array_shift($o->pieces);
@@ -1391,7 +1384,7 @@ class controllers{
 		}
 		$ticket_activity=json_decode($hash['ticket_activity'],true);
 		
-				
+		
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
@@ -1406,7 +1399,7 @@ class controllers{
 		if(!isset($ticket_activity['module'])){
 			echo 'Ticket is invalid for module: ' . $ticket;
 			exit();			
-		}
+		}		
 		
 		
 		self::$module= $ticket_activity['module'];
@@ -1431,9 +1424,14 @@ class controllers{
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
+
+		if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes')
+				header("Cache-Control: public, must-revalidate");
+		else	
+				header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		
 		if(!isset($app['collection']['posts'])) return;
-			
+		
 		$slug= $o->pieces[0];
 	
 		$post_type = $app['collection']['posts']['post_type'];
@@ -1482,7 +1480,12 @@ class controllers{
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
-	
+
+		if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes')
+				header("Cache-Control: public, must-revalidate");
+		else	
+				header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		
 		if(!isset($app['settings']['default_taxonomy'])) return;
 		
 		$slug= $o->pieces[0];
@@ -1510,6 +1513,12 @@ class controllers{
 		if(empty($o->pieces))return;
 		
 		$app=&aw2_library::get_array_ref('app');
+		
+		if(isset($app['settings']['enable_cache']) && $app['settings']['enable_cache']==='yes')
+				header("Cache-Control: public, must-revalidate");
+		else	
+				header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		
 		$post_type = $app['collection']['modules']['post_type'];
 		
 		if(isset($app['settings']['unhandled_module'])){
