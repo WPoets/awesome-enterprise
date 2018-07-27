@@ -96,6 +96,9 @@ function upload($atts,$content=null,$shortcode){
 				$return_value['error'] = "Unable to save file.";
 			}else{
 				$return_value['success'] = 'File uploaded';
+				$return_value['filename'] = $file_name;
+				$return_value['path'] = $upload_dir.'/'.$file_name;
+				$return_value['url'] = site_url().'/'.$upload_dir.'/'.$file_name;
 			}			
 		}
 	}
@@ -298,6 +301,7 @@ function sideload($atts,$content=null,$shortcode){
 			util::var_dump($attach_data);
 			wp_update_attachment_metadata( $attach_id, $attach_data );
 		}
+		$return_value['filename'] = $file_name;
 		$return_value['path'] = $dir_path.'/'.$file_name;
 		$return_value['url'] = site_url().'/'.$dir_path.'/'.$file_name;
 	}
