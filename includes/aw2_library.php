@@ -2294,9 +2294,9 @@ static function get_aw2_secret( $o) {
 
 
 static function get_unique_number( $o) {
-	$m=microtime(true);
-	$s=substr ( $m , 0, 10);
-	$t=mt_rand(0, 9999);
+	
+	$s=hexdec(uniqid());
+	$t=mt_rand(1000000, 9999999);
 	$o->value=$s . $t;	
 	return;
 } 
