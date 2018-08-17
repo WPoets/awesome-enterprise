@@ -1503,6 +1503,8 @@ class controllers{
 		
 		unset($query->query_vars['attachment']);
 		unset($query->query_vars['name']);
+		unset($query->query_vars['page']);
+		unset($query->query_vars[$app['collection']['posts']['post_type']]);
 		unset($query->query_vars[$app['collection']['pages']['post_type']]);
 
 		return;
