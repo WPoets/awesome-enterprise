@@ -11,8 +11,12 @@ function update($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	if(!\aw2_library::$conn)\aw2_library::$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+	
+	
 	// Check connection
 	if (\aw2_library::$conn->connect_error)die("Connection failed: ");
+	
+	\aw2_library::$conn->set_charset("utf8mb4_unicode_ci");
 	
 	$sql=\aw2_library::parse_shortcode($content);
 	
@@ -53,6 +57,8 @@ function select($atts,$content=null,$shortcode){
 	if(!\aw2_library::$conn)\aw2_library::$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
 	// Check connection
 	if (\aw2_library::$conn->connect_error)die("Connection failed: ");
+	\aw2_library::$conn->set_charset("utf8mb4_unicode_ci");
+	
 	
 	$sql=\aw2_library::parse_shortcode($content);
 	

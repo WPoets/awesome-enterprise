@@ -206,7 +206,12 @@ function sideload($atts,$content=null,$shortcode){
 		// Set variables for storage
 		// fix file filename for query strings
 		preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png|pdf|doc|docx|xls|xlsx|csv)/i', $file_url, $matches);
-		$file_array['name'] = basename($matches[0]);
+		
+		if($file_name){
+			$file_array['name'] = $file_name.".".pathinfo(parse_url($file_url)['path'], PATHINFO_EXTENSION);
+		}else{
+			$file_array['name'] = basename($matches[0]);
+		}
 
 		$file_array['tmp_name'] = $tmp;
 		// If error storing temporarily, unlink
