@@ -16,7 +16,9 @@ function update($atts,$content=null,$shortcode){
 	// Check connection
 	if (\aw2_library::$conn->connect_error)die("Connection failed: ");
 	
-	\aw2_library::$conn->set_charset("utf8mb4_unicode_ci");
+	\aw2_library::$conn->set_charset("utf8mb4");
+	\aw2_library::$conn->query("SET collation_connection = utf8_unicode_ci");
+	
 	
 	$sql=\aw2_library::parse_shortcode($content);
 	
