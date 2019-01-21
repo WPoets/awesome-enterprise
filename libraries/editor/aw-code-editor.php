@@ -66,6 +66,7 @@ function awesome_init_codemirror( $post ) {
 		plugins_url("editor/codemirror/addon/hint/html-hint.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/javascript-hint.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/sql-hint.js", dirname(__FILE__)),
+		plugins_url( 'editor/codemirror/lib/iao-alert.jquery.min.js' , dirname(__FILE__) ),
 		plugins_url("editor/codemirror/addon/hint/xml-hint.js", dirname(__FILE__))
 	);
 
@@ -73,6 +74,7 @@ function awesome_init_codemirror( $post ) {
 	$codemirror_css = array(
 		plugins_url("editor/codemirror/lib/codemirror.css", dirname(__FILE__)),
 		plugins_url("editor/codemirror/theme/monokai-aw.css", dirname(__FILE__)),
+		plugins_url( 'editor/codemirror/lib/iao-alert.min.css' , dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/foldgutter.css", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/show-hint.css", dirname(__FILE__))
 	);
