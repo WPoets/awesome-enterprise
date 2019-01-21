@@ -70,6 +70,7 @@ class aw2_apps_library{
 
 	static function wp_init(){
 		self::register_app_cpts();
+		self::register_service_cpts();
 		self::run_core('register');
 		
 		$registered_apps=&aw2_library::get_array_ref('apps');
@@ -84,6 +85,23 @@ class aw2_apps_library{
 			return;
 		
 		self::run_core('init');
+		
+	}
+		
+	static function register_service_cpts(){
+		
+		$handlers=&aw2_library::get_array_ref('handlers');
+		
+		foreach($handlers as $key => $handler){
+			if(!isset($handler['post_type']))
+				continue;
+			
+			if(isset($handler['@service']) && $handler['@service'] === true){
+				//$service_post_type[] =  $handler['post_type'];
+				if(!post_type_exists( $handler['post_type'] ))
+					self::register_cpt($handler['post_type'],$handler['service_label'],'',false);
+			}	
+		}
 		
 	}
 	
@@ -1126,6 +1144,45 @@ class controllers{
 		}			
 		
 		header('Content-Disposition: attachment;filename="' . $filename);
+		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
+		
+		$result=file_get_contents($path);	
+		echo $result;
+		exit();	
+	}
+	
+	static function controller_fileviewer($o){
+		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
+		self::module_parts();
+		self::set_qs($o);
+		$app['active']['module'] = self::$module;
+		$app['active']['template'] = self::$template;
+		
+		$filename=$_REQUEST['filename'];	
+		$folder=aw2_library::get('realpath.app_folder');
+		$path=$folder . $filename;
+	
+		switch ($extension) {
+			case 'excel':
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
+				break;				
+			case 'xls':
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
+				break;
+			case 'xlsx':
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
+				break;
+			case 'pdf':
+				header('Content-Type: application/pdf');	
+				break;
+			default:
+				header('Content-Type: '.mime_content_type($filename));
+				break;	
+		}			
 		
 		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		header("Pragma: no-cache"); // HTTP 1.0.

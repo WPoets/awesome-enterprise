@@ -18,6 +18,7 @@ aw2_library::setup();
 if(!class_exists('Monoframe')) {
 	require_once 'includes/monoframe.php';
 }
+require 'vendor/autoload.php';
 require_once 'includes/app_setup.php';
 
 register_activation_hook( __FILE__,'awesome2_trigger::activation' );

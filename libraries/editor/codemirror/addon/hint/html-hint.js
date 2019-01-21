@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -27,7 +27,12 @@
         href: null, ping: null, type: null,
         media: media,
         target: targets,
-        hreflang: langs
+        hreflang: langs,
+        axn: [""],
+        bind: ["click"],
+        route_ajax: [""],
+        ajax_selector: [""]
+        
       }
     },
     abbr: s,
@@ -228,11 +233,25 @@
     samp: s,
     script: {
       attrs: {
-        type: ["text/javascript"],
+        type: ["text/javascript","spa/axn"],
+        axn: ["core.run_script","form.ajax","form_upload.ajax","ga.load","ga.event"],
+        bind: ["click","change","submit"],
+        bind_selector: ["form[role='']"],
+        ajax_selector: [""],
+        ga_tracking_id: ["[env.get settings.ga_code /]"],
+        disable_selector: [".submit"],
+        route_ajax: ["t/[module.ticket_id /]"],
         src: null,
         async: ["", "async"],
         defer: ["", "defer"],
         charset: charsets
+      }
+    },
+    template: {
+      attrs: {
+        axn: ["selector.replace","selector.update"],
+        get: ["me.html"],
+        selector: [""]
       }
     },
     section: s,

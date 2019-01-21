@@ -38,125 +38,97 @@ function awesome_add_custom_box() {
 	 */
 function awesome_init_codemirror( $post ) {
 
-	
-	$codemirror_js_url = plugins_url( 'editor/codemirror/lib/codemirror.min.js' , dirname(__FILE__) );
-	$codemirror_css_url = plugins_url( 'editor/codemirror/lib/codemirror.css' , dirname(__FILE__));
-	
-	$iao_alert_js_url = plugins_url( 'editor/codemirror/lib/iao-alert.jquery.min.js' , dirname(__FILE__) );
-	$iao_alert_css_url = plugins_url( 'editor/codemirror/lib/iao-alert.min.css' , dirname(__FILE__));
-	
-	$codemirror_addon_simple = plugins_url( 'editor/codemirror/addon/mode/simple.js' , dirname(__FILE__) );
-	
-	$codemirror_mode_xml = plugins_url( 'editor/codemirror/mode/xml/xml.js' , dirname(__FILE__) );
-	$codemirror_mode_css = plugins_url( 'editor/codemirror/mode/css/css.js' , dirname(__FILE__) );
-	$codemirror_mode_js = plugins_url( 'editor/codemirror/mode/javascript/javascript.js' , dirname(__FILE__) );
-	$codemirror_mode_mixed = plugins_url( 'editor/codemirror/mode/htmlmixed/htmlmixed.js' , dirname(__FILE__) );
-	$codemirror_mode_awcode = plugins_url( 'editor/codemirror/mode/awcode/awcode.js' , dirname(__FILE__) );
-	
-	$codemirror_addon_jump = plugins_url( 'editor/codemirror/addon/search/jump-to-line.js' , dirname(__FILE__) );
-	$codemirror_addon_match = plugins_url( 'editor/codemirror/addon/edit/matchbrackets.js' , dirname(__FILE__) );
-	$codemirror_addon_foldcode = plugins_url( 'editor/codemirror/addon/fold/foldcode.js' , dirname(__FILE__) );
-	$codemirror_addon_hint = plugins_url( 'editor/codemirror/addon/hint/show-hint.js' , dirname(__FILE__) );
-	$codemirror_addon_jshint = plugins_url( 'editor/codemirror/addon/hint/javascript-hint.js' , dirname(__FILE__) );
-	$codemirror_addon_htmlhint = plugins_url( 'editor/codemirror/addon/hint/html-hint.js' , dirname(__FILE__) );
-	$codemirror_addon_csshint = plugins_url( 'editor/codemirror/addon/hint/css-hint.js' , dirname(__FILE__) );
-	$codemirror_addon_anyhint = plugins_url( 'editor/codemirror/addon/hint/anyword-hint.js' , dirname(__FILE__) );
-	$codemirror_addon_highlighter = plugins_url( 'editor/codemirror/addon/search/match-highlighter.js' , dirname(__FILE__) );
-	$codemirror_addon_lint = plugins_url( 'editor/codemirror/addon/lint/lint.js' , dirname(__FILE__) );
-	$codemirror_addon_jslint = plugins_url( 'editor/codemirror/addon/lint/javascript-lint.js' , dirname(__FILE__) );
-	$codemirror_addon_jsonlint = plugins_url( 'editor/codemirror/addon/lint/json-lint.js' , dirname(__FILE__) );
-	$codemirror_addon_activeline = plugins_url( 'editor/codemirror/addon/selection/active-line.js' , dirname(__FILE__) );
-	$codemirror_addon_fullscreen = plugins_url( 'editor/codemirror/addon/display/fullscreen.js' , dirname(__FILE__) );
-	$codemirror_addon_foldgutter = plugins_url( 'editor/codemirror/addon/fold/foldgutter.js' , dirname(__FILE__) );
-	
-	$codemirror_addon_bracefold = plugins_url( 'editor/codemirror/addon/fold/brace-fold.js' , dirname(__FILE__) );
-	$codemirror_addon_xmlfold = plugins_url( 'editor/codemirror/addon/fold/xml-fold.js' , dirname(__FILE__) );
-	$codemirror_addon_indentfold = plugins_url( 'editor/codemirror/addon/fold/indent-fold.js' , dirname(__FILE__) );
-	$codemirror_addon_commentfold = plugins_url( 'editor/codemirror/addon/fold/comment-fold.js' , dirname(__FILE__) );
-	
-	$codemirror_addon_keymap = plugins_url( 'editor/codemirror/keymap/sublime.js' , dirname(__FILE__) );
-	
-	
-	$codemirror_theme = plugins_url( 'editor/codemirror/theme/monokai-aw.css' , dirname(__FILE__) );
-	
-	  // Add an nonce field so we can check for it later.
-	  wp_nonce_field( 'awesome_cm_custom_box', 'awesome_cm_custom_box_nonce' );
+	$codemirror_js = array(
+		plugins_url("editor/codemirror/lib/codemirror.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/css/css.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/javascript/javascript.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/xml/xml.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/xml/shortcode.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/sql/sql.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/htmlmixed/htmlmixed.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/htmlmixed/shortcodemixed.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/mode/htmlmixed/awesome.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/keymap/sublime.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/selection/active-line.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/selection/selection-pointer.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/display/fullscreen.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/edit/matchtags.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/edit/closetag.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/foldcode.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/foldgutter.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/brace-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/xml-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/indent-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/markdown-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/comment-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/show-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/css-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/html-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/javascript-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/sql-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/xml-hint.js", dirname(__FILE__))
+	);
+
+
+	$codemirror_css = array(
+		plugins_url("editor/codemirror/lib/codemirror.css", dirname(__FILE__)),
+		plugins_url("editor/codemirror/theme/monokai-aw.css", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/foldgutter.css", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/show-hint.css", dirname(__FILE__))
+	);
+
+	// Add an nonce field so we can check for it later.
+  	wp_nonce_field( 'awesome_cm_custom_box', 'awesome_cm_custom_box_nonce' );
 
 	  /*
 	   * Use get_post_meta() to retrieve an existing value
 	   * from the database and use the value for the form.
 	   */
 	//  $value = get_post_meta( $post->ID, '_my_meta_value_key', true );
-	echo '<link rel="stylesheet" href="'.$codemirror_css_url.'">
-		 <link rel="stylesheet" href="'.$codemirror_theme.'">
-		 <link rel="stylesheet" href="'.$iao_alert_css_url.'">
-		 
-		 <script src="'.$codemirror_js_url.'"></script>
-		 <script src="'.$iao_alert_js_url.'"></script>
-		 <script src="'.$codemirror_addon_simple.'"></script>
-		 <script src="'.$codemirror_mode_xml.'"></script>
-		 <script src="'.$codemirror_mode_css.'"></script>
-		 <script src="'.$codemirror_mode_js.'"></script>
-		 <script src="'.$codemirror_mode_mixed.'"></script>
-		 <script src="'.$codemirror_mode_awcode.'"></script>
-		 <script src="'.$codemirror_addon_jump.'"></script>
-		 <script src="'.$codemirror_addon_match.'"></script>
-		 <script src="'.$codemirror_addon_foldcode.'"></script>
-		 <script src="'.$codemirror_addon_hint.'"></script>
-		 <script src="'.$codemirror_addon_jshint.'"></script>
-		 <script src="'.$codemirror_addon_htmlhint.'"></script>
-		 <script src="'.$codemirror_addon_csshint.'"></script>
-		 <script src="'.$codemirror_addon_anyhint.'"></script>
-		 <script src="'.$codemirror_addon_highlighter.'"></script>
-		 <script src="'.$codemirror_addon_lint.'"></script>
-		 <script src="'.$codemirror_addon_jslint.'"></script>
-		 <script src="'.$codemirror_addon_jsonlint.'"></script>
-		 <script src="'.$codemirror_addon_activeline.'"></script>
-		 <script src="'.$codemirror_addon_fullscreen.'"></script>	 
-		 <script src="'.$codemirror_addon_foldgutter.'"></script>	 
-		 <script src="'.$codemirror_addon_bracefold.'"></script>	 
-		 <script src="'.$codemirror_addon_xmlfold.'"></script>	 
-		 <script src="'.$codemirror_addon_xmlfold.'"></script>	 
-		 <script src="'.$codemirror_addon_indentfold.'"></script>	 
-		 <script src="'.$codemirror_addon_commentfold.'"></script>	 
-		 <script src="'.$codemirror_addon_keymap.'"></script>	 
-		 
-		 ';
-		
-		$apphelp=&aw2_library::get_array_ref('apphelp');
-		if(!in_array($post->post_type, $apphelp)){
-				echo '<style>.postarea{display:none} </style>';
-		}
+	
+	foreach ($codemirror_css as $css) {
+    	echo '<link rel="stylesheet" href='.$css.'>';
+	}
+
+	foreach ($codemirror_js as $js) {
+		echo '<script src='.$js.'></script>';
+	}
+
+	$apphelp=&aw2_library::get_array_ref('apphelp');
+
+	if(!in_array($post->post_type, $apphelp)){
+		echo '<style>.postarea{display:none} </style>';
+	}
 		
 		
-	  echo'<style>
-	  
-	  .CodeMirror-fullscreen {
-			 position: fixed;
-			  top: 0; left: 0; right: 0; bottom: 0;
-			  height: auto;
+	  echo
+	  '<style>
+	  	.CodeMirror-fullscreen {
+			position: fixed;
+			top: 0; left: 0; right: 0; bottom: 0;
+			height: auto;
 			z-index: 100000;
 		}
 		
 		.CodeMirror-foldmarker {
-		  color: blue;
-		  text-shadow: #b9f 1px 1px 2px, #b9f -1px -1px 2px, #b9f 1px -1px 2px, #b9f -1px 1px 2px;
-		  font-family: arial;
-		  line-height: .3;
-		  cursor: pointer;
+			color: blue;
+			text-shadow: #b9f 1px 1px 2px, #b9f -1px -1px 2px, #b9f 1px -1px 2px, #b9f -1px 1px 2px;
+			font-family: arial;
+			line-height: .3;
+			cursor: pointer;
 		}
 		.CodeMirror-foldgutter {
-		  width: .7em;
+			width: .7em;
 		}
 		.CodeMirror-foldgutter-open,
 		.CodeMirror-foldgutter-folded {
-		  cursor: pointer;
+			cursor: pointer;
 		}
 		.CodeMirror-foldgutter-open:after {
-		  content: "\25BE";
+			content: "\25BE";
 		}
 		.CodeMirror-foldgutter-folded:after {
-		  content: "\25B8";
+			content: "\25B8";
 		}
 		
 		.fullScreen {
@@ -164,7 +136,7 @@ function awesome_init_codemirror( $post ) {
 		}
 		.CodeMirror {
 			height: auto;
-		  }
+		}
 		</style>';
 		
 	//  echo'<pre id="ace_ui_code" style="width:100%;height:30em" ></pre>';
@@ -203,30 +175,40 @@ function awesome_init_codemirror( $post ) {
 	  echo'
 	  <script>
 	    var textarea = jQuery("#awesome_code");
-		var myCodeEditor = CodeMirror.fromTextArea(document.getElementById("awesome_code"), {
-						lineNumbers: true,
-						lineWrapping: true,
-						styleActiveLine: true,
-						matchBrackets: true,
-						viewportMargin: Infinity,
-						keyMap: "sublime",
-						theme: "monokai",
-						mode: "awcode",
-						foldGutter: true,
-						gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-						extraKeys: {
-							"F11": function(cm) {
-							  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-							},
-							"Esc": function(cm) {
-							  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-							},
-							"Ctrl-Q": function(cm){ 
-								cm.foldCode(cm.getCursor()); 
-							}
-						}
-					  });
-		
+
+	    var mixedMode = {
+    	    name: "awesome"
+	  	};
+	  	var myCodeEditor = CodeMirror.fromTextArea(document.getElementById("awesome_code"), {
+		  	mode: mixedMode,
+			theme: "monokai",
+			lineNumbers: true,
+			lineWrapping: true,
+			styleActiveLine: true,
+			selectionPointer: true,
+			matchBrackets: true,
+			viewportMargin: Infinity,
+			keyMap: "sublime",
+			foldGutter: true,
+			matchTags: {bothTags: true},
+	  		autoCloseTags: true,
+			gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+			tabSize: 2,
+			smartIndent: false,
+			extraKeys: {
+				"Ctrl-Space": "autocomplete",
+				"F11": function(cm) {
+					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				},
+				"Esc": function(cm) {
+					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				},
+				"Ctrl-Q": function(cm){ 
+					cm.foldCode(cm.getCursor()); 
+				}
+			}
+		});
+
 		CodeMirror.commands.save = function(cm) { 
 				cm.save();
 				var b = false;
@@ -246,8 +228,8 @@ function awesome_init_codemirror( $post ) {
 		};
 		var content=textarea.val();
 		content=content.replace(/__lt__/g, "<");
-		
 		myCodeEditor.setValue(content);
+		myCodeEditor.clearHistory();
 		textarea.val(myCodeEditor.getValue());
 	</script>';
 }

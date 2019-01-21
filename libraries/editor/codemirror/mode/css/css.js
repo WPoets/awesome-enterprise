@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -63,7 +63,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       if (/[\d.]/.test(stream.peek())) {
         stream.eatWhile(/[\w.%]/);
         return ret("number", "unit");
-      } else if (stream.match(/^-[\w\\\-]+/)) {
+      } else if (stream.match(/^-[\w\\\-]*/)) {
         stream.eatWhile(/[\w\\\-]/);
         if (stream.match(/^\s*:/, false))
           return ret("variable-2", "variable-definition");
@@ -95,6 +95,10 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     return function(stream, state) {
       var escaped = false, ch;
       while ((ch = stream.next()) != null) {
+        if(/[\[\]]/.test(ch)){
+          stream.eatWhile(/\]/);
+          return ret("string","string");
+        }
         if (ch == quote && !escaped) {
           if (quote == ")") stream.backUp(1);
           break;
@@ -388,6 +392,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       return override;
     },
 
+    /*
     indent: function(state, textAfter) {
       var cx = state.context, ch = textAfter && textAfter.charAt(0);
       var indent = cx.indent;
@@ -408,6 +413,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     },
 
     electricChars: "}",
+    */
     blockCommentStart: "/*",
     blockCommentEnd: "*/",
     blockCommentContinue: " * ",
@@ -501,7 +507,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     "margin-bottom", "margin-left", "margin-right", "margin-top",
     "marks", "marquee-direction", "marquee-loop",
     "marquee-play-count", "marquee-speed", "marquee-style", "max-height",
-    "max-width", "min-height", "min-width", "move-to", "nav-down", "nav-index",
+    "max-width", "min-height", "min-width", "mix-blend-mode", "move-to", "nav-down", "nav-index",
     "nav-left", "nav-right", "nav-up", "object-fit", "object-position",
     "opacity", "order", "orphans", "outline",
     "outline-color", "outline-offset", "outline-style", "outline-width",

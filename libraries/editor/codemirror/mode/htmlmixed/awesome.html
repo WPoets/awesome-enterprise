@@ -1,0 +1,183 @@
+<!doctype html>
+
+<title>CodeMirror: HTML mixed mode</title>
+<meta charset="utf-8"/>
+
+<link rel=stylesheet href="../../theme/monokai-aw.css">
+<link rel="stylesheet" href="../../lib/codemirror.css">
+<link rel="stylesheet" href="../../addon/fold/foldgutter.css" />
+<link rel="stylesheet" href="../../addon/hint/show-hint.css"></script>
+
+<script src="../../lib/codemirror.js"></script>
+<script src="../css/css.js"></script>
+<script src="../javascript/javascript.js"></script>
+<script src="../xml/xml.js"></script>
+<script src="../xml/shortcode.js"></script>
+<script src="../sql/sql.js"></script>
+<script src="htmlmixed.js"></script>
+<script src="shortcodemixed.js"></script>
+<script src="awesome.js"></script>
+
+<script src="../../keymap/sublime.js"></script>
+
+<script src="../../addon/selection/active-line.js"></script>
+<script src="../../addon/selection/selection-pointer.js"></script>
+<script src="../../addon/display/fullscreen.js"></script>
+<script src="../../addon/edit/matchtags.js"></script>
+<script src="../../addon/edit/closetag.js"></script>
+<script src="../../addon/fold/foldcode.js"></script>
+<script src="../../addon/fold/foldgutter.js"></script>
+<script src="../../addon/fold/brace-fold.js"></script>
+<script src="../../addon/fold/xml-fold.js"></script>
+<script src="../../addon/fold/indent-fold.js"></script>
+<script src="../../addon/fold/markdown-fold.js"></script>
+<script src="../../addon/fold/comment-fold.js"></script>
+<script src="../../addon/hint/show-hint.js"></script>
+<script src="../../addon/hint/css-hint.js"></script>
+<script src="../../addon/hint/html-hint.js"></script>
+<script src="../../addon/hint/javascript-hint.js"></script>
+<script src="../../addon/hint/sql-hint.js"></script>
+<script src="../../addon/hint/xml-hint.js"></script>
+<style>
+	.CodeMirror-fullscreen {
+		position: fixed;
+		top: 0; left: 0; right: 0; bottom: 0;
+		height: auto;
+		z-index: 100000;
+	}
+		
+		.CodeMirror-foldmarker {
+			color: blue;
+			text-shadow: #b9f 1px 1px 2px, #b9f -1px -1px 2px, #b9f 1px -1px 2px, #b9f -1px 1px 2px;
+			font-family: arial;
+			line-height: .3;
+			cursor: pointer;
+		}
+		.CodeMirror-foldgutter {
+			width: .7em;
+		}
+		.CodeMirror-foldgutter-open,
+		.CodeMirror-foldgutter-folded {
+			cursor: pointer;
+		}
+		.CodeMirror-foldgutter-open:after {
+			content: "\25BE";
+		}
+		.CodeMirror-foldgutter-folded:after {
+			content: "\25B8";
+		}
+		
+		.fullScreen {
+			overflow: hidden
+		}
+		.CodeMirror {
+			height: auto;
+			}
+</style>
+<div>
+	<h2>Awesome mode</h2>
+	<form>
+		<textarea id="code" name="code">
+			[templates.add main]
+			<div>
+			<p>I am Swapnil G. Kuwar</p>
+			</div>
+			  <!-- this is a comment -->
+			  <div>
+			<p>test</p>
+			</div>
+				[title]Mixed HTML Example[/title]
+				[css.less]
+				  h1 {font-family: comic sans; color: #f0f;}
+				  div {background: yellow !important;}
+				  body {
+						background-image: url('[aw2.get module.res /]');
+					margin: 1em 2em 1em 5em;
+				  }
+				[/css.less]
+
+				<style>
+					  h1 {font-family: comic sans; color: #f0f;}
+					  div {background: yellow !important;}
+					  body {
+							background-image: url('[aw2.get module.res /]');
+						margin: 1em 2em 1em 5em;
+					  }
+				</style>
+
+			[body]
+				[module.set res]Mixed HTML Example[/module.set]
+				<script>
+				  function jsFunc(arg1, arg2) {
+                  	var test = '[aw2.get module.res /]';
+					if (arg1 && arg2) document.body.innerHTML = "[aw2.get module.res /] [aw2.get module.res]";
+				  }
+                  var end = true;
+				</script>
+			  [/body]
+			<div><p>sdf</p></div>
+			[multi.update]
+				-- SQL Mode for CodeMirror
+				SELECT SQL_NO_CACHE DISTINCT
+						@var1 AS `val1`, @'val2', @global.'sql_mode',
+						1.1 AS `float_val`, .14 AS `another_float`, 0.09e3 AS `int_with_esp`,
+						0xFA5 AS `hex`, x'fa5' AS `hex2`, 0b101 AS `bin`, b'101' AS `bin2`,
+						DATE '1994-01-01' AS `sql_date`, { T "1994-01-01" } AS `odbc_date`,
+						'[aw2.get module.res /]', _utf8'your string', N'her string',
+								TRUE, FALSE, UNKNOWN
+					FROM DUAL
+					-- space needed after '--'
+					# 1 line comment
+					/* multiline
+					comment! */
+					LIMIT 1 OFFSET 0;
+			[/multi.update]
+		[if.equal lhs='thisiscondition' rhs='{request.rhs}']
+          [if.equal lhs='thisiscondition' rhs='{request.rhs}']
+          
+          [/if.equal]
+        [/if.equal]
+		</textarea>
+	</form>
+	<script>
+      // Define an extended mixed-mode that understands vbscript and
+      // leaves mustache/handlebars embedded templates in html mode
+      var mixedMode = {
+        name: "awesome"
+      };
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+		  mode: mixedMode,
+		  theme: "monokai",
+		
+			lineNumbers: true,
+			lineWrapping: true,
+			styleActiveLine: true,
+			selectionPointer: true,
+			matchBrackets: true,
+			viewportMargin: Infinity,
+			keyMap: "sublime",
+			foldGutter: true,
+			
+			
+			
+			matchTags: {bothTags: true},
+		  autoCloseTags: true,
+			gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+			tabSize: 2,
+			smartIndent: false,
+			
+			extraKeys: {
+				"Ctrl-Space": "autocomplete",
+				"F11": function(cm) {
+					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				},
+				"Esc": function(cm) {
+					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				},
+				"Ctrl-Q": function(cm){ 
+					cm.foldCode(cm.getCursor()); 
+				}
+			}
+			});
+    </script>
+</div>

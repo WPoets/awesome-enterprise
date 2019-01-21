@@ -1685,6 +1685,7 @@ static function get($main,&$atts=null,$content=null){
 		}
 		elseif(is_string($o->value) || is_bool($o->value) || is_numeric($o->value)){
 			$return_value=self::resolve_string($o);
+			$return_value = translate($return_value,'awesome_enterprise');
 		}
 		else{
 			$o->value='_error';

@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -95,18 +95,8 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
         state.tokenize = inTag;
         return "tag bracket";
       }
-    } else if (ch == "&") {
-      var ok;
-      if (stream.eat("#")) {
-        if (stream.eat("x")) {
-          ok = stream.eatWhile(/[a-fA-F\d]/) && stream.eat(";");
-        } else {
-          ok = stream.eatWhile(/[\d]/) && stream.eat(";");
-        }
-      } else {
-        ok = stream.eatWhile(/[\w\.\-:]/) && stream.eat(";");
-      }
-      return ok ? "atom" : "error";
+    } else if(ch == '/' && stream.match('/**')){
+        return chain(inBlock("comment", "**//"));
     } else {
       stream.eatWhile(/[^&<]/);
       return null;
@@ -163,8 +153,9 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
         stream.next();
       }
       return style;
-    };
+    }
   }
+
   function doctype(depth) {
     return function(stream, state) {
       var ch;
@@ -332,6 +323,7 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
       return style;
     },
 
+    /*
     indent: function(state, textAfter, fullLine) {
       var context = state.context;
       // Indent multi-line strings (e.g. css).
@@ -380,8 +372,9 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
     },
 
     electricInput: /<\/[\s\w:]+>$/,
-    blockCommentStart: "<!--",
-    blockCommentEnd: "-->",
+    */
+    blockCommentStart: "//**",
+    blockCommentEnd: "**//",
 
     configuration: config.htmlMode ? "html" : "xml",
     helperType: config.htmlMode ? "html" : "xml",
