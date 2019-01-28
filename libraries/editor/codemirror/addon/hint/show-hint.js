@@ -375,6 +375,7 @@
 
   function resolveAutoHints(cm, pos) {
     var helpers = cm.getHelpers(pos, "hint"), words
+    helpers.push(CodeMirror.hint.shortcodemixed);
     if (helpers.length) {
       var resolved = function(cm, callback, options) {
         var app = applicableHelpers(cm, helpers);
@@ -426,7 +427,7 @@
 
   var defaultOptions = {
     hint: CodeMirror.hint.auto,
-    completeSingle: true,
+    completeSingle: false,
     alignWithWord: true,
     closeCharacters: /[\s()\[\]{};:>,]/,
     closeOnUnfocus: true,

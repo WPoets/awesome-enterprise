@@ -102,4 +102,3 @@ function super_admin_control($caps, $cap, $user_id, $args){
 	}
 	return $caps;
 }
-

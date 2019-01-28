@@ -11,71 +11,7 @@
 })(function(CodeMirror) {
 "use strict";
 
-var htmlConfig = {
-  //No need to close. Can be closed inline. you cant close it on next line.
-  autoSelfClosers: {'aw2.get': true, 'module.get': true, 'template.get': true,
-  'env.get': true,'query.get_post': true,'query.get_post_terms': true,'query.get_post_meta': true
-  ,'query.all_post_meta': true,'query.update_post_status': true,'query.delete_post': true,'query.trash_post': true,
-  'query.set_post_terms': true,'query.get_posts': true,'query.get_pages': true,'query.get_term_by': true,
-  'query.get_term_meta': true, 'query.insert_term': true, 'query.delete_term': true, 'query.get_terms': true,
-  'query.get_comment': true, 'query.get_user_by': true, 'query.get_user_meta': true, 
-  'query.get_users': true, 'query.delete_revisions': true, 'query.term_exists': true
-},
-  //No need to close. Can be closed inline. Can be close on next line.
-  implicitlyClosed: {'aw2.set': true, 'module.set': true, 'template.set': true,
-  'env.set': true, 'query.get_results': true, 'query.get_var': true, 'query.get_row': true, 'query.get_col': true,
-  'query.query': true, 'query.insert_post': true,
-  'query.update_post': true, 'query.update_post_meta': true, 'query.delete_post_meta': true,
-  'query.add_non_unique_post_meta': true, 'query.wp_query': true, 'query.get_comments': true,
-  'query.update_user_meta': true, 'query.users_builder': true, 'query.posts_builder': true, 'query.insert_comment': true
- },
-  contextGrabbers: {
-    'if.equal': {'if.equal': true},
-    'if.not_equal': {'if.not_equal': true},
-    'if.greater_equal': {'if.greater_equal': true},
-    'if.greater_than': {'if.greater_than': true},
-    'if.less_equal': {'if.less_equal': true},
-    'if.less_than': {'if.less_than': true},
-    'if.whitespace': {'if.whitespace': true},
-    'if.not_whitespace': {'if.not_whitespace': true},
-    'if.false': {'if.false': true},
-    'if.true': {'if.true': true},
-    'if.yes': {'if.yes': true},
-    'if.no': {'if.no': true},
-    'if.not_empty': {'if.not_empty': true},
-    'if.empty': {'if.empty': true},
-    'if.odd': {'if.odd': true},
-    'if.even': {'if.even': true},
-    'if.arr': {'if.arr': true},
-    'if.not_arr': {'if.not_arr': true},
-    'if.str': {'if.str': true},
-    'if.not_str': {'if.not_str': true},
-    'if.bool': {'if.bool': true},
-    'if.not_bool': {'if.not_bool': true},
-    'if.greater_than_zero': {'if.greater_than_zero': true},
-    'if.num': {'if.num': true},
-    'if.not_num': {'if.not_num': true},
-    'if.int': {'if.int': true},
-    'if.not_int': {'if.not_int': true},
-    'if.date_obj': {'if.date_obj': true},
-    'if.not_date_obj': {'if.not_date_obj': true},
-    'if.obj': {'if.obj': true},
-    'if.not_obj': {'if.not_obj': true},
-    'if.user_can': {'if.user_can': true},
-    'if.user_cannot': {'if.user_cannot': true},
-    'if.logged_in': {'if.logged_in': true},
-    'if.not_logged_in': {'if.not_logged_in': true},
-    'if.request': {'if.request': true},
-    'if.not_request': {'if.not_request': true},
-    'if.device': {'if.device': true},
-    'if.contains': {'if.contains': true},
-    'if.not_contains': {'if.not_contains': true},
-  },
-  doNotIndent: {"pre": true},
-  allowUnquoted: true,
-  allowMissing: true,
-  caseFold: true
-}
+var htmlConfig = shortcodeConfigTags;
 
 var xmlConfig = {
   autoSelfClosers: {},

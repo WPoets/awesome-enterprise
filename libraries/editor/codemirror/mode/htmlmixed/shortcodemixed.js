@@ -11,71 +11,7 @@
 })(function(CodeMirror) {
   "use strict";
 
-  var defaultTags = {
-    "query.get_results": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "query.get_var": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "query.get_row": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "query.get_col": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "query.query": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "multi.update": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "multi.select": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "sql": [
-      [null, null, "text/x-mariadb"]
-    ],
-    "css.less":  [
-      [null, null, "text/x-scss"]
-    ],
-    "css.style":  [
-      [null, null, "text/x-scss"]
-    ],
-    "query.insert_post":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.update_post":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.update_post_meta":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.delete_post_meta":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.add_non_unique_post_meta":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.wp_query":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.get_comments":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.update_user_meta":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.users_builder":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.posts_builder":  [
-      [null, null, "application/ld+json"]
-    ],
-    "query.query.insert_comment":  [
-      [null, null, "application/ld+json"]
-    ]
-  };
+  var defaultTags = shortcodeModeTags;
 
   function maybeBackup(stream, pat, style) {
     var cur = stream.current(), close = cur.search(pat);

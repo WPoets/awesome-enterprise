@@ -39,7 +39,9 @@ function awesome_add_custom_box() {
 function awesome_init_codemirror( $post ) {
 
 	$codemirror_js = array(
+		"https://cdn.getawesomestudio.com/lib/awesome-shortcodes/shortcode-tags.js",
 		plugins_url("editor/codemirror/lib/codemirror.js", dirname(__FILE__)),
+		plugins_url( 'editor/codemirror/lib/iao-alert.jquery.min.js' , dirname(__FILE__) ),
 		plugins_url("editor/codemirror/mode/css/css.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/mode/javascript/javascript.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/mode/xml/xml.js", dirname(__FILE__)),
@@ -58,23 +60,23 @@ function awesome_init_codemirror( $post ) {
 		plugins_url("editor/codemirror/addon/fold/foldgutter.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/brace-fold.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/xml-fold.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/fold/shortcode-fold.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/indent-fold.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/markdown-fold.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/comment-fold.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/show-hint.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/css-hint.js", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/html-hint.js", dirname(__FILE__)),
-		plugins_url("editor/codemirror/addon/hint/javascript-hint.js", dirname(__FILE__)),
-		plugins_url("editor/codemirror/addon/hint/sql-hint.js", dirname(__FILE__)),
-		plugins_url( 'editor/codemirror/lib/iao-alert.jquery.min.js' , dirname(__FILE__) ),
-		plugins_url("editor/codemirror/addon/hint/xml-hint.js", dirname(__FILE__))
+		plugins_url("editor/codemirror/addon/hint/xml-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/shortcode-hint.js", dirname(__FILE__)),
+		plugins_url("editor/codemirror/addon/hint/shortcodemixed-hint.js", dirname(__FILE__))
 	);
 
 
 	$codemirror_css = array(
+		plugins_url( 'editor/codemirror/lib/iao-alert.min.css' , dirname(__FILE__)),
 		plugins_url("editor/codemirror/lib/codemirror.css", dirname(__FILE__)),
 		plugins_url("editor/codemirror/theme/monokai-aw.css", dirname(__FILE__)),
-		plugins_url( 'editor/codemirror/lib/iao-alert.min.css' , dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/fold/foldgutter.css", dirname(__FILE__)),
 		plugins_url("editor/codemirror/addon/hint/show-hint.css", dirname(__FILE__))
 	);
@@ -105,12 +107,12 @@ function awesome_init_codemirror( $post ) {
 		
 	  echo
 	  '<style>
-	  	.CodeMirror-fullscreen {
-			position: fixed;
-			top: 0; left: 0; right: 0; bottom: 0;
-			height: auto;
-			z-index: 100000;
-		}
+	  .CodeMirror-fullscreen {
+		position: fixed;
+		top: 0; left: 0; right: 0; bottom: 0;
+		height: auto;
+		z-index: 100000;
+	}
 		
 		.CodeMirror-foldmarker {
 			color: blue;
@@ -139,7 +141,54 @@ function awesome_init_codemirror( $post ) {
 		.CodeMirror {
 			height: auto;
 		}
-		</style>';
+		
+		.shortcode-doc p {
+			margin: 0px;
+			border-bottom: 1px solid #40403e;
+			padding: 8px;
+		}
+		.shortcode-doc span {
+			color: #c7c7c7;
+	    font-size: 13px;
+		}
+		.shortcode-doc .sh-title{
+			font-size: 13px;
+    	color: #e2e2e2;
+		}
+		.shortcode-doc{
+			margin: 0;
+			font-family: monospace;
+			position: absolute;
+			color: #7d8486;
+			background: #2e2f28;
+			border: 0.5px solid #40403e;
+			max-height: 300px;
+			z-index: 100001;
+			max-width: 240px;
+			overflow: auto;
+		}
+
+		.shortcode-doc::-webkit-scrollbar-track
+		{
+				-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+				background-color: #8d8d8d;
+				box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+				border-radius: 10px;
+		}
+		.shortcode-doc::-webkit-scrollbar
+		{
+			width: 5px;
+			height: 5px;
+			border-radius: 10px;
+			background-color: #8d8d8d;
+		}
+
+		.shortcode-doc::-webkit-scrollbar-thumb
+		{
+			border-radius: 10px;
+			background-color: #424242;
+		}
+	  </style>';
 		
 	//  echo'<pre id="ace_ui_code" style="width:100%;height:30em" ></pre>';
 	  
@@ -174,40 +223,105 @@ function awesome_init_codemirror( $post ) {
 	  <div id="cm_editor"></div>
 	  <textarea id="awesome_code" name="awesome_code" rows="20" cols="100">'.$content.'</textarea>';
 	  
-	  echo'
+	  ?>
 	  <script>
-	    var textarea = jQuery("#awesome_code");
+		var textarea = jQuery("#awesome_code");
+		
+		var show_doc = function(instance){
+			var cur = instance.getCursor();
+			var token = instance.getTokenAt(cur);
+			var cur_tag = shortcodes[token.string];
+			if(cur_tag){
+				jQuery(".shortcode-doc").fadeOut("slow", function(){ jQuery(".shortcode-doc").remove(); });
+
+				var doc_div = document.createElement("div");
+				doc_div.classList.add("shortcode-doc");
+				
+				doc_div.innerHTML = "<p class='sh-title'>[" + token.string + "]</p>";
+				if(cur_tag.doc){
+					doc_div.innerHTML += "<p><span>Description:</span> " + cur_tag.doc + "</p>";
+				}
+				if(cur_tag.params){
+					doc_div.innerHTML += "<p><span>Attributes:</span> " + cur_tag.params + "</p>";
+				}
+				if(cur_tag.return){
+					doc_div.innerHTML += "<p><span>Return Type:</span> " + cur_tag.return + "</p>";
+				}
+				document.body.appendChild(doc_div);
+
+				jQuery('.shortcode-doc').css('display','block');	
+				jQuery('.shortcode-doc').css('left',myCodeEditor.cursorCoords().left);	
+				jQuery('.shortcode-doc').css('top',myCodeEditor.cursorCoords().bottom);
+
+
+				setTimeout(function(){
+					if (jQuery('.shortcode-doc').is(":hover")) {
+						jQuery('.shortcode-doc').mouseleave(function(){
+							jQuery('.shortcode-doc').fadeOut('slow', function(){ jQuery('.shortcode-doc').remove(); });
+						});							
+					} else {
+						jQuery('.shortcode-doc').fadeOut('slow', function(){ jQuery('.shortcode-doc').remove(); });
+					}
+					},3000);
+			}
+		}
+		
+		var showHintContainer = document.body;
+		CodeMirror.commands.autocomplete = function(cm) {
+		cm.showHint({
+			hint: CodeMirror.hint.auto,
+			container: showHintContainer
+		});
+		};
 
 	    var mixedMode = {
     	    name: "awesome"
 	  	};
 	  	var myCodeEditor = CodeMirror.fromTextArea(document.getElementById("awesome_code"), {
-		  	mode: mixedMode,
+			mode: mixedMode,
 			theme: "monokai",
-			lineNumbers: true,
-			lineWrapping: true,
-			styleActiveLine: true,
-			selectionPointer: true,
-			matchBrackets: true,
-			viewportMargin: Infinity,
-			keyMap: "sublime",
-			foldGutter: true,
-			matchTags: {bothTags: true},
-	  		autoCloseTags: true,
-			gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-			tabSize: 2,
-			smartIndent: false,
-			extraKeys: {
-				"Ctrl-Space": "autocomplete",
-				"F11": function(cm) {
-					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-				},
-				"Esc": function(cm) {
-					cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-				},
-				"Ctrl-Q": function(cm){ 
-					cm.foldCode(cm.getCursor()); 
-				}
+			  shortcodes: shortcodes,
+			  lineNumbers: true,
+			  lineWrapping: true,
+			  styleActiveLine: true,
+			  selectionPointer: true,
+			  matchBrackets: true,
+			  viewportMargin: Infinity,
+			  keyMap: "sublime",
+			  foldGutter: true,
+			  
+			  
+			  matchTags: {bothTags: true},
+			autoCloseTags: true,
+			  gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+			  tabSize: 2,
+			  smartIndent: false,
+			  
+			  extraKeys: {
+				  "Ctrl-Space": "autocomplete",
+				  "Ctrl-I": show_doc,
+				  "F11": function(cm) {
+					  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				  },
+				  "Esc": function(cm) {
+					  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+				  },
+				  "Ctrl-Q": function(cm){ 
+					  cm.foldCode(cm.getCursor()); 
+				  }
+			  }
+		});
+		
+		myCodeEditor.on("inputRead", function(instance) {
+			var cur = instance.getCursor();
+			var token = instance.getTokenAt(cur);
+			if (instance.state.completionActive) {
+					return;
+			}
+			var cur = instance.getCursor();
+			var token = instance.getTokenAt(cur);
+			if (token.type && token.type != "comment" && token.string != "]") {
+					CodeMirror.commands.autocomplete(instance);
 			}
 		});
 
@@ -233,7 +347,8 @@ function awesome_init_codemirror( $post ) {
 		myCodeEditor.setValue(content);
 		myCodeEditor.clearHistory();
 		textarea.val(myCodeEditor.getValue());
-	</script>';
+	</script>
+	<?php
 }
 
 	/**
@@ -346,7 +461,7 @@ function awesome_custom_button(){
 				
 				";
 			}
-		}	
+		}
 }
 
 
@@ -366,6 +481,3 @@ function awesome_save_without_refersh(){
 		aw2_library::get_module(['post_type'=>$new_post->post_type],$new_post->post_name);
 	}  
 }
-
-
-

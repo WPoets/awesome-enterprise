@@ -121,6 +121,7 @@
 
   CodeMirror.registerHelper("fold", "auto", function(cm, start) {
     var helpers = cm.getHelpers(start, "fold");
+    helpers.push(CodeMirror.fold.shortcode)
     for (var i = 0; i < helpers.length; i++) {
       var cur = helpers[i](cm, start);
       if (cur) return cur;
