@@ -150,6 +150,9 @@
   });
   CodeMirror.findMatchingTag = function(cm, pos, range) {
     var iter = new Iter(cm, pos.line, pos.ch, range);
+    if (iter.text.indexOf("]") != -1 && iter.text.indexOf("[") != -1)
+      return CodeMirror.findMatchingShortcodeTag(cm, pos, range);
+    
     if (iter.text.indexOf(">") == -1 && iter.text.indexOf("<") == -1) return;
     var end = toTagEnd(iter), to = end && Pos(iter.line, iter.ch);
     var start = end && toTagStart(iter);

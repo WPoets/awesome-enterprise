@@ -47,8 +47,8 @@
 
   var htmlDontClose = ["area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param",
                        "source", "track", "wbr"];
-  var htmlIndent = ["applet", "blockquote", "body", "button", "div", "dl", "fieldset", "form", "frameset", "h1", "h2", "h3", "h4",
-                    "h5", "h6", "head", "html", "iframe", "layer", "legend", "object", "ol", "p", "select", "table", "ul"];
+  var htmlIndent = ["applet", "blockquote", "body", "button", "template", "article", "section", "dl", "fieldset", "form", "frameset",
+                    "head", "html", "iframe", "layer", "legend", "object", "ol", "select", "table", "ul"];
 
   function autoCloseGT(cm) {
     if (cm.getOption("disableInput")) return CodeMirror.Pass;

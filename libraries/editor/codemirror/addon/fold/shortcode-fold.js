@@ -148,9 +148,8 @@
       }
     }
   });
-  CodeMirror.findMatchingTag = function(cm, pos, range) {
+  CodeMirror.findMatchingShortcodeTag = function(cm, pos, range) {
     var iter = new Iter(cm, pos.line, pos.ch, range);
-    if (iter.text.indexOf("]") == -1 && iter.text.indexOf("[") == -1) return;
     var end = toTagEnd(iter), to = end && Pos(iter.line, iter.ch);
     var start = end && toTagStart(iter);
     if (!end || !start || cmp(iter, pos) > 0) return;
@@ -163,22 +162,5 @@
       iter = new Iter(cm, to.line, to.ch, range);
       return {open: here, close: findMatchingClose(iter, start[2]), at: "open"};
     }
-  };
-
-  CodeMirror.findEnclosingTag = function(cm, pos, range, tag) {
-    var iter = new Iter(cm, pos.line, pos.ch, range);
-    for (;;) {
-      var open = findMatchingOpen(iter, tag);
-      if (!open) break;
-      var forward = new Iter(cm, pos.line, pos.ch, range);
-      var close = findMatchingClose(forward, open.tag);
-      if (close) return {open: open, close: close};
-    }
-  };
-
-  // Used by addon/edit/closetag.js
-  CodeMirror.scanForClosingTag = function(cm, pos, name, end) {
-    var iter = new Iter(cm, pos.line, pos.ch, end ? {from: 0, to: end} : null);
-    return findMatchingClose(iter, name);
   };
 });
