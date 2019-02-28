@@ -914,8 +914,16 @@ class awesome_auth{
 				else
 					return false;
 		}
+		$result=array();
+		$result['login']=$user->user_login;
+		$result['email']=$user->user_email;
+		$result['display_name']=$user->display_name;
+		$result['ID']=$user->ID;
+		$app['user']=$result;				
+		
+		
 
-
+		if(in_array('administrator',(array)$user->roles))return true;
 		if(!isset($auth['all_roles']))return true;
 		
 		//check roles
@@ -1342,8 +1350,99 @@ class controllers{
 		}
 		exit();	
 	}
+/* 
+	static function controller_report_csv_old($o){
 
-	
+		$csv_ticket=array_shift($o->pieces);
+		self::set_qs($o);
+		
+		header("Content-type: text/csv");
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
+		header('Content-Disposition: attachment;filename="' . $csv_ticket . '.csv');		
+
+		$sql=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'sql'],null,null);
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . $csv_ticket;
+			exit();			
+		}
+		
+		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+			if(mysqli_multi_query($conn,$sql)){
+					do{
+						if ($result=mysqli_store_result($conn)) {
+
+							$buffer = fopen('php://memory','w');
+							
+							$first_row=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'first_row'],null,null);
+							if($first_row){
+								$data = trim($first_row) . PHP_EOL;
+								fwrite($buffer, $data );
+							}
+						
+							for($i = 0; $row = mysqli_fetch_assoc($result); $i++){
+									fputcsv($buffer, $row);
+							}
+							rewind($buffer);
+							$csv = stream_get_contents($buffer);
+							echo $csv;
+			
+						}
+						} while(mysqli_more_results($conn) && mysqli_next_result($conn));
+			}
+		exit();	
+	}	
+
+	static function controller_report_csv($o){
+
+		$csv_ticket=array_shift($o->pieces);
+		self::set_qs($o);
+		
+		header("Content-type: text/csv");
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		header("Pragma: no-cache"); // HTTP 1.0.
+		header("Expires: 0"); // Proxies.
+		header('Content-Disposition: attachment;filename="' . $csv_ticket . '.csv');
+
+		$sql=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'sql'],null,null);
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . $csv_ticket;
+			exit();			
+		}
+		
+		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+			if(mysqli_multi_query($conn,$sql)){
+					do{
+						if ($result=mysqli_use_result($conn)) {
+
+							$buffer = fopen('php://memory','w');
+							
+							$first_row=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'first_row'],null,null);
+							if($first_row){
+								$data = trim($first_row) . PHP_EOL;
+								fwrite($buffer, $data );
+							}
+						
+							while($row = mysqli_fetch_row($result)){
+								//\util::var_dump($row);die('TEST');
+								fputcsv($buffer, $row);
+							}
+							mysqli_free_result($result);
+							rewind($buffer);
+							$csv = stream_get_contents($buffer);
+							echo $csv;
+			
+						}
+					} while(mysqli_more_results($conn) && mysqli_next_result($conn));
+			}
+		exit();	
+	}
+	 */
 	static function controller_pages($o, $query){
 		if(empty($o->pieces))return;
 		
