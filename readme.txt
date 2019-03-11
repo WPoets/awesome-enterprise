@@ -1,5 +1,5 @@
 === Awesome Studio ===
-Contributors: wpoets
+Contributors: wpoets, thecancerus, devdanidhariya
 Tags: shortcodes, shortcode,site-builder, website builder
 Requires at least: 4.3
 Tested up to: 5.1
@@ -37,6 +37,12 @@ https://getawesomestudio.com/
 
 
 == Changelog ==
+
+= 1.2.3 =
+* Add feature to update plugin by git repo.
+
+= 1.2.2 =
+* upto release 1.2.2
 
 = 1.0 =
 * Initial release
