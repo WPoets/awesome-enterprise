@@ -104,38 +104,6 @@ class Monoframe
 		//require_once( dirname( __FILE__ ) . '/monoframe/WebSocket/autoload.php' );
 		
 		//require_once( dirname( __FILE__ ) . '/monoframe/awesome-app-o.php' );
-
-
-		/**
-		 * plugin-update-checker
-		 *
-		 * A custom update checker for WordPress plugins. Useful if you don't want to host your project in the official WP repository, but would still * like it to support automatic updates. Despite the name, it also works with themes.
-		 *
-		 * Developere: Dev Danidhariya
-		 * @author     Original Author <Jānis Elsts>
-		 * @author     Another Author  <devidas@amiworks.com>
-		 * @copyright  Copyright (c) 2017 Jānis Elsts
-		 * @license    https://github.com/YahnisElsts/plugin-update-checker/blob/master/license.txt MIT License
-		 * @link       https://github.com/YahnisElsts/plugin-update-checker#github-integration
-		 * @param      Wpoets Repo URL,Repo name
-		*/ 
-		require(  $plugin_path . '/libraries/plugin-update-checker/plugin-update-checker.php' );
-			$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-			  'https://github.com/WPoets/awesome-enterprise',
-			  __FILE__,
-			  'awesome-enterprise'
-			);
-
-
-			//Optional: If you're using a private repository, specify the access token like this:
-			//$myUpdateChecker->setAuthentication('your-token-here');
-
-			//Optional: Set the branch that contains the stable release.
-			//$myUpdateChecker->setBranch('stable-branch-name');
-
-			//Optional: Check for automatical release
-			$myUpdateChecker->getVcsApi()->enableReleaseAssets();
-
 	}
 		
 		// use the action to create a place for your meta box

@@ -3,13 +3,13 @@
 Plugin Name: Awesome Studio Enterprise
 Plugin URI: http://www.getawesomestudio.com
 Description: Awesome Studio is a shortcode based platform along with massive collection beautifully designed, fully responsive and easy to use UI parts. 
-Version: 1.2.3
+Version: 1.2.2
 Author: WPoets
 Author URI: http://www.wpoets.com
 License: GPLv2 or Later
 */
 
-define('AWE_VERSION','1.2.3');
+define('AWE_VERSION','1.2.2');
 
 require_once 'libraries/util/util.php';
 require_once 'includes/aw2_library.php';
@@ -130,3 +130,34 @@ class AW_Studio {
 }
 
 $awe = new AW_Studio();
+
+/**
+ * plugin-update-checker
+ *
+ * A custom update checker for WordPress plugins. Useful if you don't want to host your project in the official WP repository, but would still * like it to support automatic updates. Despite the name, it also works with themes.
+ *
+ * Developere: Dev Danidhariya
+ * @author     Original Author <Jānis Elsts>
+ * @author     Another Author  <devidas@amiworks.com>
+ * @copyright  Copyright (c) 2017 Jānis Elsts
+ * @license    https://github.com/YahnisElsts/plugin-update-checker/blob/master/license.txt MIT License
+ * @link       https://github.com/YahnisElsts/plugin-update-checker#github-integration
+ * @param      Wpoets Repo URL,Repo name
+*/ 
+			
+require 'libraries/plugin-update-checker/plugin-update-checker.php';
+$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+  'https://github.com/WPoets/awesome-enterprise',
+  __FILE__,
+  'awesome-enterprise'
+);
+
+
+//Optional: If you're using a private repository, specify the access token like this:
+//$myUpdateChecker->setAuthentication('your-token-here');
+
+//Optional: Set the branch that contains the stable release.
+//$myUpdateChecker->setBranch('master');
+
+//Optional: Check for automatical release
+$myUpdateChecker->getVcsApi()->enableReleaseAssets();
