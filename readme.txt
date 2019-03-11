@@ -38,6 +38,9 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.4 =
+* change update checker code location
+
 = 1.2.3 =
 * Add feature to update plugin by git repo.
 
