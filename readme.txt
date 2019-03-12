@@ -38,11 +38,9 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
-= 1.2.4 =
-* change update checker code location
-
 = 1.2.3 =
-* Add feature to update plugin by git repo.
+* Add feature to update plugin by git repo. User can directy update plugin from wp-admin dashboard in just one click.
+* AWE_VERSIONV define function make static to dynamic.
 
 = 1.2.2 =
 * upto release 1.2.2
