@@ -76,14 +76,17 @@ class awesome2_query{
 		}
 		
 		$return_value = get_post_meta($post_id);
-		$temp = array();
-		foreach($return_value as $key=>$value){
-			if(count($value)===1)
-				$temp[$key] = $value[0];
-			else
-				$temp[$key] = $value;
-		}
-		$return_value = $temp;
+                if($return_value){
+                    $temp = array();
+                    foreach($return_value as $key=>$value){
+                            if(count($value)===1)
+                                    $temp[$key] = $value[0];
+                            else
+                                    $temp[$key] = $value;
+                    }
+                    $return_value = $temp;
+                }
+                
 		
 		unset($temp);
 		return $return_value;
