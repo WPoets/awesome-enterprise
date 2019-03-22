@@ -87,6 +87,10 @@ class Monoframe
 		
 		require_once( $plugin_path . '/libraries/Mobile_Detect.php' );
 		require(  $plugin_path . '/libraries/menu-walkers/navwalkers.php' ); 
+                
+                
+                // include zoho SDK
+                require(  $plugin_path .'/libraries/zoho/zoho.php');
 		
 		// Include Module Distributable files.
 		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
