@@ -4,7 +4,8 @@
 
     Leads,Contacts,Products,Attachments
 */
-include '../zoho/vendor/autoload.php';
+    
+include( plugin_dir_path( __FILE__ ) . 'vendor/autoload.php');
 
 define("ZOHO_TOKEN_FOLDER_NAME", "zoho-token");
 define("ZOHO_TOKEN_TXT_FILE_NAME", "zcrm_oauthtokens.txt");
@@ -116,21 +117,68 @@ class zohoMain{
         return $response;
     }
 
-    public function tempMethod(){
-        $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance("Leads"); //To get record instance
-        $response = $moduleIns->getRecord("3876186000000204392");
-        $record = $response->getData();  //To get response data
-
-        echo "<br><br><br><br>";
+    public function getZohoInstance(){        
         try{
-            echo $record->getFieldValue("INDUSTRY");  //To get particular field value
-        }catch (ZCRMException $ex){
-            echo $ex->getMessage();  //To get ZCRMException error message
-            echo $ex->getExceptionCode();  //To get ZCRMException error code
-            echo $ex->getFile();  //To get the file name that throws the Exception   
+        
+//        $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance("Leads"); //To get record instance
+//        $response = $moduleIns->getRecord("3876186000000204391"); 
+        
+        
+        $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance("Products"); //To get record instance
+        $response = $moduleIns->getRecord("3876186000000243005");
+            
+        $record = $response->getData();  //To get response data
+        
+        $response = array();
+        $response['entity_Id'] = $record->getEntityId();
+        $response['module_api_name'] = $record->getModuleApiName();
+        
+        $createdBy = $record->getCreatedBy();
+        $response['created_by']['id'] = $createdBy->getId();;  //To get user_id who created the record
+        $response['created_by']['name'] = $createdBy->getName();  //To get user name who created the record
+        
+        
+        $modifiedBy = $record->getModifiedBy();
+        $response['modified_by']['id'] = $modifiedBy->getId();  //To get user_id who modified the record
+        $response['modified_by']['namew']= $modifiedBy->getName();  //To get user name who modified the record
+        
+        $owner = $record->getOwner();
+        $response['owner']['id'] = $owner->getId();  //To get record owner_id
+        $response['owner']['name'] = $owner->getName();  //To get record owner name
+        
+        $response['created_time'] = $record->getCreatedTime();  //To get record created time
+        $response['modified_time'] = $record->getModifiedTime();  //To get record modified time
+        $response['last_activity_time'] = $record->getLastActivityTime();  //To get last activity time(latest modify/view time)
+       
+        $response['information'] = $record->getData(); //To get lead all information
+        $response['properties'] = $record->getAllProperties();  //To get record properties
+        
+        $layouts = $record->getLayout();  //To get record layout
+        if($layouts){
+            $response['layout']['id'] = $layouts->getId();  //To get layout_id
+            $response['layout']['name'] = $layouts->getName();  //To get layout name
         }
         
-       
+        
+        $taxlists = $record->getTaxList();  //To get the tax list
+        $tax_temp = array();
+        foreach ($taxlists as $taxlist){
+            $temp['tax_name'] = $taxlist->getTaxName();
+            $temp['percentage'] = $taxlist->getPercentage();
+            $temp['value'] = $taxlist->getValue();
+            $tax_temp[] = $temp;
+        }
+        
+        
+        $response['tax_list'] =  $tax_temp;
+        
+//        $lineItems = $record->getLineItems();  //To get line_items as map
+//        $pricedetails = $record->getPriceDetails();  //To get the price_details array
+//        $participants = $record-> getParticipants();  //To get Event record's participants
+        }catch (ZCRMException $ex){
+            $response = $ex->getMessage();  //To get ZCRMException error message
+        }
+        print_r($response);
     }
 
 
@@ -142,8 +190,10 @@ class zohoPage extends zohoMain{
         add_submenu_page( 'tools.php', 'Zoho', 'Zoho', 'manage_options', 'zoho', array('zohoPage','zohoTestFun' ));
     }
     
-    public function zohoTestFun(){        
-        parent::tempMethod();
+    public function zohoTestFun(){   
+        echo "<pre>";
+            parent::getZohoInstance();
+        echo "</pre>";
     }
 }
 

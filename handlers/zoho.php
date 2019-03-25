@@ -4,6 +4,7 @@ namespace aw2\zoho;
 \aw2_library::add_service('zoho','Zoho Library.',['namespace'=>__NAMESPACE__]);
 
 \aw2_library::add_service('zoho.crm','Runs Zoho.com CRM API Actions',['namespace'=>__NAMESPACE__]);
+
 function crm($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract( shortcode_atts( array(
@@ -12,8 +13,11 @@ function crm($atts,$content=null,$shortcode){
 	
 	unset($atts['main']);
 
-	if(empty(\aw2_library::get('site_settings.zoho-crm-authcode')))
-		return 'Zoho.com CRM Authcode not set.';
+        /*
+         * Check Zoho requied setting here
+        */
+//	if(empty(\aw2_library::get('site_settings.zoho-crm-authcode')))
+//		return 'Zoho.com CRM Authcode not set.';
 	
 	$return_value='';
 	$pieces=explode('.',$main);
@@ -45,40 +49,38 @@ class aw2_zoho_crm{
 	}
 	
 	public function run(){
-		
-		$return_value='';
-		if (method_exists($this, $this->action))
-			return call_user_func(array($this, $this->action));
-		else {
-			
-			$xml=$this->zoho_crm->request($this->module, $this->action, $this->args());
-			if($xml)
-			{
-				$return_value = array();
-				foreach ($xml->result->{$this->module}->row as $row) {
-					$return_value[(string) $row['no']] = $this->row_to_record($row);
-				}
-			}
-			
-		}
-		return $return_value;	
+            
+            $return_value='';
+            if (method_exists($this, $this->action)){
+                return call_user_func(array($this, $this->action));
+            }else {
+                
+//                $xml=$this->zoho_crm->request($this->module, $this->action, $this->args());
+//                if($xml){
+//                    $return_value = array();
+//                    foreach ($xml->result->{$this->module}->row as $row) {
+//                        $return_value[(string) $row['no']] = $this->row_to_record($row);
+//                    }
+//                }
+            }
+            return $return_value;	
 	}
 	
 	private function insertRecords(){
-		$args = $this->args();
-		
-		$xmlData = $this->zoho_crm->fields_to_xml($this->module, $args['xmlData']);
+            $args = $this->args();
 
-		$args['xmlData']=$xmlData;
-		$xml=$this->zoho_crm->request($this->module, $this->action, $args);
-		
-		if(isset($xml->error)){
-			\aw2_library::set_error($xml->error); 
-			return false;
-		}
-			
-		
-		return (string) $xml->result->recorddetail->FL[0];
+            $xmlData = $this->zoho_crm->fields_to_xml($this->module, $args['xmlData']);
+
+            $args['xmlData']=$xmlData;
+            $xml=$this->zoho_crm->request($this->module, $this->action, $args);
+
+            if(isset($xml->error)){
+                    \aw2_library::set_error($xml->error); 
+                    return false;
+            }
+
+
+            return (string) $xml->result->recorddetail->FL[0];
 	}
 	
 	private function updateRecords(){
@@ -105,6 +107,7 @@ class aw2_zoho_crm{
 		
 		return (string) $xml->result->recorddetail->FL[0];
 	}
+
 	private function row_to_record(SimpleXMLElement $row) {
         $data = array();
         foreach($row as $field) {
