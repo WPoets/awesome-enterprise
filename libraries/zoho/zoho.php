@@ -272,31 +272,6 @@ class zohoMain{
                 $record->setFieldValue($key,$value); //This function use to set FieldApiName and value similar to all other FieldApis and Custom field
             }
             
-            /**
-                //$record->setFieldValue("Account_Name","{account_id}"); //This function is for Invoices module
-                //Following methods are being used only by Inventory modules
-                $lineItem=ZCRMInventoryLineItem::getInstance(null);  //To get ZCRMInventoryLineItem instance
-                $lineItem->setDescription("Product_description");  //To set line item description
-                $lineItem ->setDiscount(5);  //To set line item discount
-                $lineItem->setListPrice(100);  //To set line item list price
-
-                $taxInstance1=ZCRMTax::getInstance("{tax_name}");  //To get ZCRMTax instance
-                $taxInstance1->setPercentage(2);  //To set tax percentage
-                $taxInstance1->setValue(50);  //To set tax value
-                $lineItem->addLineTax($taxInstance1);  //To set line tax to line item
-
-                $taxInstance1=ZCRMTax::getInstance("{tax_name}"); //to get the tax instance
-                $taxInstance1->setPercentage(12); //to set the tax percentage
-                $taxInstance1->setValue(50); //to set the tax value
-                $lineItem->addLineTax($taxInstance1); //to add the tax to line item
-
-                $lineItem->setProduct(ZCRMRecord::getInstance("{module_api_name}","{record_id}"));  //To set product to line item
-                $lineItem->setQuantity(100);  //To set product quantity to this line item
-
-                $record->addLineItem($lineItem);   //to add the line item to the record
-
-                $record->uploadPhoto("/path/to/file");//to upload a photo of the record. photo can be uploaded only for certain modules                
-            **/
             $responseIns = $record->create();
             $details = $responseIns->getDetails();
             $record_id = $details['id'];
@@ -322,6 +297,41 @@ class zohoMain{
         }
        return $response;
    } 
+   
+    public function updateRecords($module,$id,$fiels){
+        $record = ZCRMRestClient::getInstance()->getRecordInstance($module,$id); //To get record instance
+        
+        $response = array();                
+        try{
+            foreach ($fiels['fields'] as $key => $value) {
+                $record->setFieldValue($key,$value); //This function use to set FieldApiName and value similar to all other FieldApis and Custom field
+            }
+            $responseIns = $record->update();//to update the record
+            
+            $details = $responseIns->getDetails();
+            $record_id = $details['id'];
+            
+            if (!empty($fiels['tags'])) { // Check tag exits or not
+                $tags = self::addTagsToRecord($module,$record_id,$fiels['tags']); //to add the tags to the record
+                //$response['tag_status'] = $tags;
+            }
+            
+            $record_image = $fiels['record_image'];
+            if ($record_image) {
+                $photo = self::uploadPhoto($module,$record_id,$record_image);
+            }
+            
+            $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+            $response['status'] = $responseIns->getStatus(); //To get response status
+            $response['message'] = $responseIns->getMessage(); //To get response message
+            $response['code'] = $responseIns->getCode();  //To get status code
+            $response['details'] = $responseIns->getDetails();
+            
+        }catch (ZCRMException $ex){
+            $response['message'] = $ex->getMessage();  //To get ZCRMException error message
+        }
+        return $response;
+    }
    
     public function addTagsToRecord($module,$record_id,$tags){
         $record = ZCRMRestClient::getInstance()->getRecordInstance($module,$record_id); //to get the module instance 
@@ -359,97 +369,97 @@ class zohoPage extends zohoMain{
     public function zohoTestFun(){   
         
         echo "<pre>";
-//            $m = parent::getModuleFieldsName('Products');
-//            print_r($m);
-            //parent::getAllCustomViews('Leads');
-//            $l = parent::getRecord('Products','3876186000000243005');
-//            print_r($l);
-//            exit;
-            //$module= "Leads";
-            //$custom_view_id = "3876186000000089005";
-            //$field_api_name = "Email";
-            //$sort_order = "DESC";
-            //$start_index=0;
-            //$end_index=5;
-            //$customHeaders = array();
-            //print_r(parent::getRecords($module,$custom_view_id ,$field_api_name,$sort_order,$start_index,$end_index,$customHeaders));
-            //print_r(parent::getRecords($module));
-
-            //$ids = "3876186000000204202,3876186000000204203";
-            //print_r(parent::deleteRecords('Contacts',$ids));
-        
+           
         /*
-            if (count($fiels) == count($fiels, COUNT_RECURSIVE)){
+            $get_fields = parent::getModuleFieldsName('Products');
+            $get_custom_view = parent::getAllCustomViews('Leads');
+            $get_record = parent::getRecord('Products','3876186000000243005');
 
-            }else{
+            $module= "Leads";
+            $custom_view_id = "3876186000000089005";
+            $field_api_name = "Email";
+            $sort_order = "DESC";
+            $start_index=0;
+            $end_index=5;
+            $customHeaders = array();
+            $get_records = parent::getRecords($module,$custom_view_id ,$field_api_name,$sort_order,$start_index,$end_index,$customHeaders);
 
-            }
-        */
-  
-//         $fiels = array("Lead_Source" => "Web Download",
-//                        "Lead_Status" => "Lost Lead",
-//                        "Company" => "Wpoets",
-//                        "Salutation" => "Ms.",
-//                        "First_Name" => "Dev",
-//                        "Last_Name" => "Danidhariya",
-//                        "Designation" => "Tech",
-//                        "Email" => "devidas@amiworks.com",
-//                        "Email_Opt_Out" => true,
-//                        "Phone" => "9033240723",
-//                        "Fax" => "1234567890",
-//                        "Mobile" => "0987654321",
-//                        "Website" => "devidas.in",
-//                        "Industry" => "Industry",
-//                        "No_of_Employees" => "27",
-//                        "Annual_Revenue" => "8000000",
-//                        "Rating" => "5",
-//                        "Tag" => "Tag_Test",
-//                        "Skype_ID" => "devidas",
-//                        "Full_Name" => "Devidas Danidhariya",
-//                        "Secondary_Email" => "devidas+2@amiworks.com",
-//                        "Twitter" => "devtwitter",
-//                        "Street" => "Line number 13",
-//                        "City" => "pune",
-//                        "State" => "maharashtra",
-//                        "Zip_Code" => "123456",
-//                        "Country" => "India",
-//                        "Description" => "This is test Description",
-//                        "Record_Image" => "https://rukminim1.flixcart.com/image/832/832/jr6o13k0/watch/w/q/z/1164-br-fogg-original-imaf9stmmgg2eq2f.jpeg"
-//             );
-//            $c = parent::createRecords('Leads',$fiels);
-//            print_r($c);
-
+            $ids = "3876186000000204202,3876186000000204203";
+            $deleteRecords = parent::deleteRecords('Contacts',$ids);
             
-            $fiels =    array(
-                            "fields" =>    array(
-                                                    "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For Men",
-                                                    "Product_Code" => "WATF9VDHRUQTGWQZ",
-                                                    "Product_Active" => true,
-                                                    "Manufacturer" => "Flip Kart",
-                                                    "Product_Category" => "Watch",
-                                                    "Sales_Start_Date" => "2019-03-28",
-                                                    "Sales_End_Date" => "2019-10-28",
-                                                    "Support_Start_Date" => "2019-03-28",
-                                                    "Support_Expiry_Date" => "2019-09-28",
-                                                    "Unit_Price" => 2830,
-                                                    "Commission_Rate" => 28,
-                                                    "Taxable" => true,
-                                                    "Usage_Unit" => "Box",
-                                                    "Qty_Ordered" => 10,
-                                                    "Qty_in_Stock" => 500,
-                                                    "Reorder_Level" => 3,
-                                                    "Qty_in_Demand" => 8,
-                                                    "Description" => "A classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
-                                                ),
-                            "tags" => array("Tea,Coffe,Test"),
-                            "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg"
-                        );
+            $insert_lead = array(
+                           "fields" =>    array(
+                                               "Lead_Source" => "Web Download",
+                                               "Lead_Status" => "Lost Lead",
+                                               "Company" => "Wpoets",
+                                               "Salutation" => "Ms.",
+                                               "First_Name" => "Dev",
+                                               "Last_Name" => "Danidhariya",
+                                               "Designation" => "Tech",
+                                               "Email" => "devidas@amiworks.com",
+                                               "Email_Opt_Out" => true,
+                                               "Phone" => "9033240723",
+                                               "Fax" => "1234567890",
+                                               "Mobile" => "0987654321",
+                                               "Website" => "devidas.in",
+                                               "Industry" => "Industry",
+                                               "No_of_Employees" => "27",
+                                               "Annual_Revenue" => "8000000",
+                                               "Rating" => "5",
+                                               "Tag" => "Tag_Test",
+                                               "Skype_ID" => "devidas",
+                                               "Full_Name" => "Devidas Danidhariya",
+                                               "Secondary_Email" => "devidas+2@amiworks.com",
+                                               "Twitter" => "devtwitter",
+                                               "Street" => "Line number 13",
+                                               "City" => "pune",
+                                               "State" => "maharashtra",
+                                               "Zip_Code" => "123456",
+                                               "Country" => "India",
+                                               "Description" => "This is test Description"
+                                           ),
+                           "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg",
+                           "tags" => array("Tea,Coffe,Test")           
+                       );
+            
+            $insert_product =    array(
+                                        "fields" => array(
+                                                        "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For Men",
+                                                        "Product_Code" => "WATF9VDHRUQTGWQZ",
+                                                        "Product_Active" => true,
+                                                        "Manufacturer" => "Flip Kart",
+                                                        "Product_Category" => "Watch",
+                                                        "Sales_Start_Date" => "2019-03-28",
+                                                        "Sales_End_Date" => "2019-10-28",
+                                                        "Support_Start_Date" => "2019-03-28",
+                                                        "Support_Expiry_Date" => "2019-09-28",
+                                                        "Unit_Price" => 2830,
+                                                        "Commission_Rate" => 28,
+                                                        "Taxable" => true,
+                                                        "Usage_Unit" => "Box",
+                                                        "Qty_Ordered" => 10,
+                                                        "Qty_in_Stock" => 500,
+                                                        "Reorder_Level" => 3,
+                                                        "Qty_in_Demand" => 8,
+                                                        "Description" => "A classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
+                                                    ),
+                                        "tags" => array("Tea,Coffe,Test"),
+                                        "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg"
+                                );
+            $create_records = parent::createRecords('Products',$insert_product);
 
-            $c = parent::createRecords('Products',$fiels);
-            print_r($c);
-//            
-//            $url = "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg";
-//            print_r($photo);
+            $module = 'Products';
+            $id = '3876186000000263022';
+            $fiels = array(
+                            "fields" => array(
+                                            "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For boys",
+                                            "Description" => "A As classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
+                                        ),
+                            "tags" => array("Tea-test,Coffe-test,Test-tea"),
+                            "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2018/10/dev-test.jpg"
+                    );
+            $update_records = parent::updateRecords($module,$id,$fiels);
+         */
         echo "</pre>";
     }
 }
