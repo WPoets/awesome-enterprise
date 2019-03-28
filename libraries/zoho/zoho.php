@@ -306,6 +306,11 @@ class zohoMain{
                 //$response['tag_status'] = $tags;
             }
             
+            $record_image = $fiels['record_image'];
+            if ($record_image) {
+                $photo = self::uploadPhoto($module,$record_id,$record_image);
+            }
+            
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
             $response['status'] = $responseIns->getStatus(); //To get response status
             $response['message'] = $responseIns->getMessage(); //To get response message
@@ -328,6 +333,19 @@ class zohoMain{
             $response['message'] = $responseIns->getMessage();  //To get status code;
             $response['code'] = $responseIns->getCode();
             $response['details'] = $responseIns->getDetails();
+        return $response;
+    }
+    
+    public function uploadPhoto($module,$record_id,$path){
+        $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
+        $responseIns=$record->uploadPhoto($path); // $photoPath - absolute path of the photo to be uploaded.
+        
+        $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+        $response['status'] = $responseIns->getStatus(); //To get response status
+        $response['message'] = $responseIns->getMessage(); //To get response message
+        $response['code'] = $responseIns->getCode(); //To get status code
+        $response['details'] = $responseIns->getDetails()['id'];;
+        
         return $response;
     }
 }
@@ -402,8 +420,8 @@ class zohoPage extends zohoMain{
 //            print_r($c);
 
             
-            $fiels = array(
-                            "information" =>    array(
+            $fiels =    array(
+                            "fields" =>    array(
                                                     "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For Men",
                                                     "Product_Code" => "WATF9VDHRUQTGWQZ",
                                                     "Product_Active" => true,
@@ -423,12 +441,15 @@ class zohoPage extends zohoMain{
                                                     "Qty_in_Demand" => 8,
                                                     "Description" => "A classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
                                                 ),
-                            "tags" => array("Tea,Coffe,Test")
-                            );
+                            "tags" => array("Tea,Coffe,Test"),
+                            "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg"
+                        );
 
             $c = parent::createRecords('Products',$fiels);
             print_r($c);
-        
+//            
+//            $url = "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg";
+//            print_r($photo);
         echo "</pre>";
     }
 }
