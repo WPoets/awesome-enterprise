@@ -301,6 +301,11 @@ class zohoMain{
             $details = $responseIns->getDetails();
             $record_id = $details['id'];
             
+            if (!empty($fiels['tags'])) { // Check tag exits or not
+                $tags = self::addTagsToRecord($module,$record_id,$fiels['tags']); //to add the tags to the record
+                //$response['tag_status'] = $tags;
+            }
+            
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
             $response['status'] = $responseIns->getStatus(); //To get response status
             $response['message'] = $responseIns->getMessage(); //To get response message
@@ -324,16 +329,6 @@ class zohoMain{
             $response['code'] = $responseIns->getCode();
             $response['details'] = $responseIns->getDetails();
         return $response;
-    }
-    
-    public function uploadPhoto($module,$record_id,$path){
-        $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
-        $responseIns=$record->uploadPhoto($path); // $photoPath - absolute path of the photo to be uploaded.
-        echo "HTTP Status Code:".$responseIns->getHttpStatusCode(); //To get http response code
-        echo "Status:".$responseIns->getStatus(); //To get response status
-        echo "Message:".$responseIns->getMessage(); //To get response message
-        echo "Code:".$responseIns->getCode(); //To get status code
-        echo "Details:".$responseIns->getDetails()['id'];
     }
 }
 
