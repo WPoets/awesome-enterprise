@@ -110,6 +110,22 @@ class aw2_zoho_crm{
             return $response;
         }
         
+        private function deleteRecords(){
+            $response = array();
+            if(!empty($this->module) && !empty($this->atts['ids'])){
+                $result =  $this->zoho_crm->deleteRecords($this->module,$this->atts['ids']);
+                if($result['aws_status'] === 1){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+                }else{
+                    $response = array('status'=>'error','response'=>$result);
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'Comma separated ids is required fields.Example ids="1234567890,9876543210" or Invalid shortcode format.');
+            }
+            return $response;
+        }
+        
         
         
 }

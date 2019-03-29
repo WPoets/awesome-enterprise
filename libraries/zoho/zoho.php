@@ -255,20 +255,27 @@ class zohoMain{
     }
     
     public function deleteRecords($module,$recordids){
-        $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
-        $recordids = explode(',', $recordids);
-        $responseIn = $moduleIns->deleteRecords($recordids); //to delete the records
-        
-        $response = array();
-        foreach($responseIn->getEntityResponses() as $responseIns){
-            $details = $responseIns->getDetails();
-                $temp['http_status_code'] = $responseIn->getHttpStatusCode(); //To get http response code
-                $temp['status'] = $responseIn->getStatus(); //To get response status
-                $temp['message'] = $responseIn->getMessage(); //To get response message
-                $temp['code'] = $responseIns->getCode();  //To get status code
-                $temp['details'] = json_encode($responseIns->getDetails());
-            $response[$details['id']] = $temp;
-        }
+        try {
+            $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
+            $recordids = explode(',', $recordids);
+            $responseIn = $moduleIns->deleteRecords($recordids); //to delete the records
+            
+            $response = array();
+            $response['aws_status'] = 1;
+            foreach($responseIn->getEntityResponses() as $responseIns){
+                $details = $responseIns->getDetails();
+                    $temp['http_status_code'] = $responseIn->getHttpStatusCode(); //To get http response code
+                    $temp['status'] = $responseIn->getStatus(); //To get response status
+                    $temp['message'] = $responseIn->getMessage(); //To get response message
+                    $temp['code'] = $responseIns->getCode();  //To get status code
+                    $temp['details'] = json_encode($responseIns->getDetails());
+                $response['data'][$details['id']] = $temp;
+            }
+        }catch (ZCRMException $ex){
+            $response['message'] = $ex->getMessage();  //To get ZCRMException error message
+            $response['code'] = $ex->getExceptionCode();  //To get ZCRMException error code
+            $response['file'] = $ex->getFile();
+        }    
         return $response;
      }
      
