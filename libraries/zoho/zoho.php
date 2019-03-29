@@ -146,13 +146,20 @@ class zohoMain{
     }
     
     public function getAllCustomViews($module){
-        $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
-        $response = $moduleIns->getAllCustomViews(); //to get all the custom views
-        $customViews = $response->getData(); //to get the custom view in form of ZCRMCustomView
-        
         $response = array();
-        foreach($customViews as $customView){
-            $response[$customView->getSystemName()] = array('id'=>$customView->getId(),'name'=>$customView->getName()); //to get the name of the custom view
+        try{
+            $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
+            $customViews = $moduleIns->getAllCustomViews(); //to get all the custom views
+            $customViews = $customViews->getData(); //to get the custom view in form of ZCRMCustomView
+
+            $response['aws_status'] = 1;
+
+            foreach($customViews as $customView){
+                $response[$customView->getSystemName()] = array('id'=>$customView->getId(),'name'=>$customView->getName()); //to get the name of the custom view
+            }
+        } catch (Exception $ex) {
+            $response['zoho_status'] = 0;
+            $response['message'] = $ex->getMessage();
         }
         return $response;
     }

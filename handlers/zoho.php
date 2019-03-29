@@ -97,6 +97,19 @@ class aw2_zoho_crm{
             return $response;
         }
         
+        private function getAllCustomViews(){
+            $response = array();
+            $result =  $this->zoho_crm->getAllCustomViews($this->module);
+            if($result['aws_status'] === 1){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+            }else{
+                $response = array('status'=>'error','response'=>$result);
+            }
+                
+            return $response;
+        }
+        
         
         
 }
