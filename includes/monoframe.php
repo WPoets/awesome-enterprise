@@ -90,7 +90,7 @@ class Monoframe
                 
                 
                 // include zoho SDK
-                require(  $plugin_path .'/libraries/zoho/zoho.php');
+                require_once (  $plugin_path .'/libraries/zoho/zoho.php');
 		
 		// Include Module Distributable files.
 		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
@@ -100,7 +100,7 @@ class Monoframe
 	
 		//require_once( dirname( __FILE__ ) . '/monoframe/awesome-app.php' );
 		//zoho
-		//require_once( dirname( __FILE__ ) . '/monoframe/zoho-crm.php' );
+//		require_once( dirname( __FILE__ ) . '/monoframe/zoho-crm.php' );
 		
 		
 		//notification

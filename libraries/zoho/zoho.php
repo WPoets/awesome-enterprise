@@ -13,7 +13,6 @@ $GLOBALS['aws_zoho_config_meta_keys'] = array('zoho_code','zoho_client_id','zoho
 class awsZohoConfig {
     
     public function __construct(){
-        
     }
     
     public function getZohoTokenTxtFilePath(){
@@ -54,9 +53,8 @@ $awsZohoConfig = new awsZohoConfig();
 
 class zohoMain{
     
-    public function __construct() {
+    public function __construct($m = null) {
         ZCRMRestClient::initialize();
-        add_action( 'admin_menu',array('zohoPage','registerZohoSubPage' )); 
     }      
     
     public function getZohoRefreshToken(){
@@ -106,11 +104,11 @@ class zohoMain{
             $ZohoConfig = $GLOBALS['zoho_config'];
             $oAuthClient = ZohoOAuth::getClientInstance();
             $oAuthClient->generateAccessTokenFromRefreshToken($ZohoConfig['zoho_refresh_token'],$ZohoConfig['zoho_userIdentifier_email']);
-            $response['status'] = 1;
+            $response['zoho_status'] = 1;
             $response['message'] = "Zoho access token updated successfully!";
             
         } catch (Exception $ex) {
-            $response['status'] = 0;
+            $response['zoho_status'] = 0;
             $response['message'] = $ex->getMessage();
         }
         return $response;
@@ -122,12 +120,13 @@ class zohoMain{
             $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
             $getAllFields = $moduleIns->getAllFields(); //to get the field
             $fields = $getAllFields->getData(); //to get the array of ZCRMField instances
-            
+            $response['aws_status'] = 1;
             foreach ($fields as $field){ //each field
-                $response[$field->getId()] = 
+                $response['data'][$field->getId()] = 
                         
                         array(
                                                 "name"=>$field->getApiName(),
+                                                "id" =>$field->getId(), 
                                                 "FieldLabel" => $field->getFieldLabel(),
                                                 "Length" => $field->getLength(),
                                                 "isMandatory" => $field->isMandatory(),
@@ -140,7 +139,7 @@ class zohoMain{
 //                        $field->getApiName();
             }       
         } catch (Exception $ex) {
-            $response['status'] = 0;
+            $response['zoho_status'] = 0;
             $response['message'] = $ex->getMessage();
         }
         return $response;
@@ -176,14 +175,17 @@ class zohoMain{
         return $response;
     }
     
-    public function getRecord($module,$id){        
+    public function getRecord($module,$id){
         try{
             $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module); //To get record instance
-            $response = $moduleIns->getRecord($id);
-            $record = $response->getData();  //To get response data
-            $response = self::getSingle($record);
+            $record = $moduleIns->getRecord($id);
+            $record = $record->getData();  //To get response data         
+            $response['data'] = self::getSingle($record);
+            $response['aws_status'] = 1;
         }catch (ZCRMException $ex){
-            $response = $ex->getMessage();  //To get ZCRMException error message
+            $response['message'] = $ex->getMessage();  //To get ZCRMException error message
+            $response['code'] = $ex->getExceptionCode();  //To get ZCRMException error code
+            $response['file'] = $ex->getFile();
         }
         return $response;
     }
@@ -287,7 +289,7 @@ class zohoMain{
             }
             
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-            $response['status'] = $responseIns->getStatus(); //To get response status
+            $response['zoho_status'] = $responseIns->getStatus(); //To get response status
             $response['message'] = $responseIns->getMessage(); //To get response message
             $response['code'] = $responseIns->getCode();  //To get status code
             $response['details'] = $responseIns->getDetails();
@@ -322,7 +324,7 @@ class zohoMain{
             }
             
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-            $response['status'] = $responseIns->getStatus(); //To get response status
+            $response['zoho_status'] = $responseIns->getStatus(); //To get response status
             $response['message'] = $responseIns->getMessage(); //To get response message
             $response['code'] = $responseIns->getCode();  //To get status code
             $response['details'] = $responseIns->getDetails();
@@ -339,7 +341,7 @@ class zohoMain{
         //$responseIn=$moduleIns->removeTagsFromRecords($recordids,$tagnames); //to remove the tags from the records
             $response = array();
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-            $response['status'] = $responseIns->getStatus();  //To get response status;
+            $response['zoho_status'] = $responseIns->getStatus();  //To get response status;
             $response['message'] = $responseIns->getMessage();  //To get status code;
             $response['code'] = $responseIns->getCode();
             $response['details'] = $responseIns->getDetails();
@@ -351,7 +353,7 @@ class zohoMain{
         $responseIns=$record->uploadPhoto($path); // $photoPath - absolute path of the photo to be uploaded.
         
         $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-        $response['status'] = $responseIns->getStatus(); //To get response status
+        $response['zoho_status'] = $responseIns->getStatus(); //To get response status
         $response['message'] = $responseIns->getMessage(); //To get response message
         $response['code'] = $responseIns->getCode(); //To get status code
         $response['details'] = $responseIns->getDetails()['id'];;
@@ -359,110 +361,3 @@ class zohoMain{
         return $response;
     }
 }
-
-class zohoPage extends zohoMain{
-    
-    public function registerZohoSubPage(){
-        add_submenu_page( 'tools.php', 'Zoho', 'Zoho', 'manage_options', 'zoho', array('zohoPage','zohoTestFun' ));
-    }
-    
-    public function zohoTestFun(){   
-        
-        echo "<pre>";
-           
-        /*
-            $get_fields = parent::getModuleFieldsName('Products');
-            $get_custom_view = parent::getAllCustomViews('Leads');
-            $get_record = parent::getRecord('Products','3876186000000243005');
-
-            $module= "Leads";
-            $custom_view_id = "3876186000000089005";
-            $field_api_name = "Email";
-            $sort_order = "DESC";
-            $start_index=0;
-            $end_index=5;
-            $customHeaders = array();
-            $get_records = parent::getRecords($module,$custom_view_id ,$field_api_name,$sort_order,$start_index,$end_index,$customHeaders);
-
-            $ids = "3876186000000204202,3876186000000204203";
-            $deleteRecords = parent::deleteRecords('Contacts',$ids);
-            
-            $insert_lead = array(
-                           "fields" =>    array(
-                                               "Lead_Source" => "Web Download",
-                                               "Lead_Status" => "Lost Lead",
-                                               "Company" => "Wpoets",
-                                               "Salutation" => "Ms.",
-                                               "First_Name" => "Dev",
-                                               "Last_Name" => "Danidhariya",
-                                               "Designation" => "Tech",
-                                               "Email" => "devidas@amiworks.com",
-                                               "Email_Opt_Out" => true,
-                                               "Phone" => "9033240723",
-                                               "Fax" => "1234567890",
-                                               "Mobile" => "0987654321",
-                                               "Website" => "devidas.in",
-                                               "Industry" => "Industry",
-                                               "No_of_Employees" => "27",
-                                               "Annual_Revenue" => "8000000",
-                                               "Rating" => "5",
-                                               "Tag" => "Tag_Test",
-                                               "Skype_ID" => "devidas",
-                                               "Full_Name" => "Devidas Danidhariya",
-                                               "Secondary_Email" => "devidas+2@amiworks.com",
-                                               "Twitter" => "devtwitter",
-                                               "Street" => "Line number 13",
-                                               "City" => "pune",
-                                               "State" => "maharashtra",
-                                               "Zip_Code" => "123456",
-                                               "Country" => "India",
-                                               "Description" => "This is test Description"
-                                           ),
-                           "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg",
-                           "tags" => array("Tea,Coffe,Test")           
-                       );
-            
-            $insert_product =    array(
-                                        "fields" => array(
-                                                        "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For Men",
-                                                        "Product_Code" => "WATF9VDHRUQTGWQZ",
-                                                        "Product_Active" => true,
-                                                        "Manufacturer" => "Flip Kart",
-                                                        "Product_Category" => "Watch",
-                                                        "Sales_Start_Date" => "2019-03-28",
-                                                        "Sales_End_Date" => "2019-10-28",
-                                                        "Support_Start_Date" => "2019-03-28",
-                                                        "Support_Expiry_Date" => "2019-09-28",
-                                                        "Unit_Price" => 2830,
-                                                        "Commission_Rate" => 28,
-                                                        "Taxable" => true,
-                                                        "Usage_Unit" => "Box",
-                                                        "Qty_Ordered" => 10,
-                                                        "Qty_in_Stock" => 500,
-                                                        "Reorder_Level" => 3,
-                                                        "Qty_in_Demand" => 8,
-                                                        "Description" => "A classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
-                                                    ),
-                                        "tags" => array("Tea,Coffe,Test"),
-                                        "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2019/03/IMG_20181106_111725-768x432.jpg"
-                                );
-            $create_records = parent::createRecords('Products',$insert_product);
-
-            $module = 'Products';
-            $id = '3876186000000263022';
-            $fiels = array(
-                            "fields" => array(
-                                            "Product_Name" => "Fogg 1164-BR Brown Day and Date Unique New Watch - For boys",
-                                            "Description" => "A As classy and sophisticated timepiece for modern men is this brown coloured round watch from Fogg Fashion. Highlighted with a brown bold dial and a brown bezel, this watch looks appealing. The number markings at 6 and 12 o clock positions ensure ease of time viewing. Styled with a unique brown strap, this watch fits well on your wrist. Durable and classy, this watch will complement your formal as well as semi-formal look."
-                                        ),
-                            "tags" => array("Tea-test,Coffe-test,Test-tea"),
-                            "record_image" => "D:/laragon/www/enterprise/wp-content/uploads/2018/10/dev-test.jpg"
-                    );
-            $update_records = parent::updateRecords($module,$id,$fiels);
-         */
-        echo "</pre>";
-    }
-}
-
-$_SERVER['user_email_id'] = $GLOBALS['zoho_config']['zoho_userIdentifier_email'];
-new zohoPage();
