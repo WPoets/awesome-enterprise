@@ -84,7 +84,7 @@ class aw2_zoho_crm{
             return $response;
         }
         
-        private function getModuleFieldsName(){
+        private function getModuleFields(){
             $response = array();
             $result =  $this->zoho_crm->getModuleFieldsName($this->module);
             if($result['aws_status'] === 1){
