@@ -126,6 +126,64 @@ class aw2_zoho_crm{
             return $response;
         }
         
+        private function createRecord(){
+            $args = $this->args();
+            $response = array();
+            
+            if(!empty($this->module) && !empty($args)){
+                $result =  $this->zoho_crm->createRecords($this->module,$args);
+                if($result['aws_status'] === 1){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+                }else{
+                    $response = array('status'=>'error','response'=>$result);
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'Comma separated ids is required fields.Example ids="1234567890,9876543210" or Invalid shortcode format.');
+            }
+            return $response;
+        }
+        private function createRecords(){
+            $args = $this->args();
+            $response = array();
+            
+            if(!empty($this->module) && !empty($args)){
+                foreach ($args['rows'] as $value) {
+                    $result =  $this->zoho_crm->createRecords($this->module,$value);
+                    if($result['aws_status'] === 1){
+                        unset($result['aws_status']);
+                        $response[] = array('status'=>'success','response'=>$result);
+                    }else{
+                        $response[] = array('status'=>'error','response'=>$result);
+                    }
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'Comma separated ids is required fields.Example ids="1234567890,9876543210" or Invalid shortcode format.');
+            }
+            return $response;
+        }
+        
+        private	function args(){
+            if($this->content==null || $this->content==''){
+                    $return_value = array();	
+            }
+            else{
+                    $json=\aw2_library::clean_specialchars($this->content);
+                    $json=\aw2_library::parse_shortcode($json);		
+                    $return_value=json_decode($json, true);
+                    if(is_null($return_value)){
+                            \aw2_library::set_error('Invalid JSON' . $content); 
+                            $return_value=array();	
+                    }
+            }
+            //util::var_dump($return_value);
+            /* $arg_list = func_get_args();
+            foreach($arg_list as $arg){
+                    if(array_key_exists($arg,$this->atts))
+                            $return_value[$arg]=$this->atts[$arg];
+            } */
+            return $return_value;
+	}
         
         
 }

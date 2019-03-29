@@ -301,15 +301,16 @@ class zohoMain{
             if ($record_image) {
                 $photo = self::uploadPhoto($module,$record_id,$record_image);
             }
+            $response['aws_status'] = 1;
             
-            $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-            $response['zoho_status'] = $responseIns->getStatus(); //To get response status
-            $response['message'] = $responseIns->getMessage(); //To get response message
-            $response['code'] = $responseIns->getCode();  //To get status code
-            $response['details'] = $responseIns->getDetails();
-            
+            $temp['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+            $temp['zoho_status'] = $responseIns->getStatus(); //To get response status
+            $temp['message'] = $responseIns->getMessage(); //To get response message
+            $temp['code'] = $responseIns->getCode();  //To get status code
+            $temp['details'] = $responseIns->getDetails();
+            $response['data'] = $temp;
         }catch (ZCRMException $ex){
-            $response['message'] = $ex->getMessage();  //To get ZCRMException error message
+            $response['data']['message'] = $ex->getMessage();  //To get ZCRMException error message
         }
        return $response;
    } 
