@@ -301,6 +301,7 @@ class aw2_apps_library{
 		
 	static function app_takeover($query){
 		if(empty($query->request)){
+			header("Cache-Control: public, must-revalidate");
 			self::initialize_root(); // it is front page hence request is not set so setup root.
 			return;
 		}
