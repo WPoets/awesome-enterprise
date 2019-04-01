@@ -1,9 +1,4 @@
-<?php
-/*
-    Home,Leads,Contacts,Accounts,Deals,Activities,Reports,Dashboards,Products,Quotes,Sales_Orders,Purchase_Orders,Invoices,SalesInbox,Feeds,Campaigns,Vendors,Price_Books,Cases,Solutions,Documents,Forecasts,Visits,Social,Tasks,Events,Notes,Attachments,Calls,Actions_Performed
-    Leads,Contacts,Products,Attachments
-*/
-    
+<?php    
 include( plugin_dir_path( __FILE__ ) . 'vendor/autoload.php');
 
 define("ZOHO_TOKEN_FOLDER_NAME", "zoho-token");
@@ -22,12 +17,19 @@ class awsZohoConfig {
     public function makeZohoTokenFolder(){
         $mode = '0777';
         $root_dir_name = $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME;
-
+        
         if(!is_dir($root_dir_name)){
             mkdir($root_dir_name, $mode, TRUE);
             $temp = $root_dir_name.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
             fopen($temp, "w");
-        } 
+        }
+       
+        if(is_dir($root_dir_name)){
+            return "Zoho token folder created successfully.";
+        }else{
+            return "Some error occurred please try again or check root folder access permission";
+        }
+        
     }
     
     public function makeZohoAttachmentFolder(){
@@ -36,6 +38,12 @@ class awsZohoConfig {
 
         if(!is_dir($root_dir_name)){
             mkdir($root_dir_name, $mode, TRUE);
+        }
+        
+        if(is_dir($root_dir_name)){
+            return "Zoho Attachment folder created successfully.";
+        }else{
+            return "Some error occurred please try again or check root folder access permission";
         }
     }
     
@@ -63,7 +71,7 @@ $awsZohoConfig = new awsZohoConfig();
 
 class zohoMain{
     
-    public function __construct($m = null) {
+    public function __construct() {
         ZCRMRestClient::initialize();
     }      
     
@@ -114,11 +122,11 @@ class zohoMain{
             $ZohoConfig = $GLOBALS['zoho_config'];
             $oAuthClient = ZohoOAuth::getClientInstance();
             $oAuthClient->generateAccessTokenFromRefreshToken($ZohoConfig['zoho_refresh_token'],$ZohoConfig['zoho_userIdentifier_email']);
-            $response['zoho_status'] = 1;
+            $response['status'] = 'success';
             $response['message'] = "Zoho access token updated successfully!";
             
         } catch (Exception $ex) {
-            $response['zoho_status'] = 0;
+            $response['status'] = 'error';
             $response['message'] = $ex->getMessage();
         }
         return $response;
