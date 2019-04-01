@@ -11,8 +11,6 @@ License: GPLv2 or Later
 
 $plugin_data = get_file_data(__FILE__, array('Version' => 'Version'), false);
 define('AWE_VERSION',$plugin_data['Version']);
-
-
 /**
  * plugin-update-checker
  *

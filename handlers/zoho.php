@@ -84,6 +84,27 @@ class aw2_zoho_crm{
             return $response;
         }
         
+        private function getRecords(){
+            $field_api_name = $this->atts['field_api_name'];
+            $sort_order = $this->atts['sort_order'];
+            $start_index = $this->atts['start_index'];
+            $end_index = $this->atts['end_index'];
+            
+            $response = array();
+            if(!empty($this->module)){
+                $result =  $this->zoho_crm->getRecords($this->module,null ,$field_api_name,$sort_order,$start_index,$end_index,null);
+                if(isset($result['aws_status'])){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+                }else{
+                    $response = array('status'=>'error','response'=>$result);
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'zoho module name is required field!');
+            }
+            return $response;
+        }
+        
         private function getModuleFields(){
             $response = array();
             $result =  $this->zoho_crm->getModuleFieldsName($this->module);
@@ -143,6 +164,7 @@ class aw2_zoho_crm{
             }
             return $response;
         }
+        
         private function createRecords(){
             $args = $this->args();
             $response = array();
@@ -159,6 +181,22 @@ class aw2_zoho_crm{
                 }
             }else{
                 $response = array('status'=>'error','message'=>'Comma separated ids is required fields.Example ids="1234567890,9876543210" or Invalid shortcode format.');
+            }
+            return $response;
+        }
+        
+        private function uploadPhoto() {
+            $response = array();
+            if(!empty($this->module) && !empty($this->atts['id']) && !empty($this->atts['path'])){
+                $result =  $this->zoho_crm->uploadPhoto($this->module,$this->atts['id'],$this->atts['path']);
+                if($result['aws_status'] === 1){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+                }else{
+                    $response = array('status'=>'error','response'=>$result);
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'Lead id, absolute path required fields.Example id="1234567890" path="D:\laragon\IMG_20181106_111725-768x432.jpg" or Invalid shortcode format.');
             }
             return $response;
         }
