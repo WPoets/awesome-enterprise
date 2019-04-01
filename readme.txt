@@ -38,6 +38,12 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.4 =
+*Add functionality to support Zoho CRM using Zoho php API version 2. 
+*In this functionality, we added 14 new shortcodes.
+*Using this shortcode user can Add, Edit, Delete leads, Contacts, Products modules.
+
+
 = 1.2.3 =
 * Add feature to update plugin by git repo. User can directy update plugin from wp-admin dashboard in just one click.
 * AWE_VERSION define function make static to dynamic.
