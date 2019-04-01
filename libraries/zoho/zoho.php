@@ -1,9 +1,4 @@
-<?php
-/*
-    Home,Leads,Contacts,Accounts,Deals,Activities,Reports,Dashboards,Products,Quotes,Sales_Orders,Purchase_Orders,Invoices,SalesInbox,Feeds,Campaigns,Vendors,Price_Books,Cases,Solutions,Documents,Forecasts,Visits,Social,Tasks,Events,Notes,Attachments,Calls,Actions_Performed
-    Leads,Contacts,Products,Attachments
-*/
-    
+<?php    
 include( plugin_dir_path( __FILE__ ) . 'vendor/autoload.php');
 
 define("ZOHO_TOKEN_FOLDER_NAME", "zoho-token");
@@ -19,16 +14,39 @@ class awsZohoConfig {
         return $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME.'/';
     }
     
-    public function makeZohoTokenFloder(){
+    public function makeZohoTokenFolder(){
         $mode = '0777';
         $root_dir_name = $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME;
-
+        
         if(!is_dir($root_dir_name)){
             mkdir($root_dir_name, $mode, TRUE);
             $temp = $root_dir_name.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
             fopen($temp, "w");
-        } 
+        }
+       
+        if(is_dir($root_dir_name)){
+            return "Zoho token folder created successfully.";
+        }else{
+            return "Some error occurred please try again or check root folder access permission";
+        }
+        
     }
+    
+    public function makeZohoAttachmentFolder(){
+        $mode = '0777';
+        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].'zoho-attachment';
+
+        if(!is_dir($root_dir_name)){
+            mkdir($root_dir_name, $mode, TRUE);
+        }
+        
+        if(is_dir($root_dir_name)){
+            return "Zoho Attachment folder created successfully.";
+        }else{
+            return "Some error occurred please try again or check root folder access permission";
+        }
+    }
+    
     
     public function getSetZohoConfig(){
         $setting_post = get_page_by_path('settings',OBJECT,'awesome_core');
@@ -53,7 +71,7 @@ $awsZohoConfig = new awsZohoConfig();
 
 class zohoMain{
     
-    public function __construct($m = null) {
+    public function __construct() {
         ZCRMRestClient::initialize();
     }      
     
@@ -104,11 +122,11 @@ class zohoMain{
             $ZohoConfig = $GLOBALS['zoho_config'];
             $oAuthClient = ZohoOAuth::getClientInstance();
             $oAuthClient->generateAccessTokenFromRefreshToken($ZohoConfig['zoho_refresh_token'],$ZohoConfig['zoho_userIdentifier_email']);
-            $response['zoho_status'] = 1;
+            $response['status'] = 'success';
             $response['message'] = "Zoho access token updated successfully!";
             
         } catch (Exception $ex) {
-            $response['zoho_status'] = 0;
+            $response['status'] = 'error';
             $response['message'] = $ex->getMessage();
         }
         return $response;
@@ -164,17 +182,16 @@ class zohoMain{
         return $response;
     }
     
-    //public function getRecords($module,$custom_view_id = null,$field_api_name = null,$sort_order = null,$start_index = null,$end_index = null,$customHeaders = null) {
-    public function getRecords($module) {
+    public function getRecords($module,$custom_view_id = null,$field_api_name = null,$sort_order = null,$start_index = null,$end_index = null,$customHeaders = null) {
         try{
             $moduleIns = ZCRMRestClient::getInstance()->getModuleInstance($module);  //To get module instance
-            //$response = $moduleIns->getRecords("3876186000000089005",$field_api_name,$sort_order,$start_index,$end_index,$customHeaders);
-            $response = $moduleIns->getRecords();
+            $response = $moduleIns->getRecords($custom_view_id,$field_api_name,$sort_order,$start_index,$end_index,$customHeaders);
             $records = $response->getData();  //To get response data
             
             $response = array();
+            $response['aws_status'] = 1;
             foreach ($records as $record){
-                $response[] = self::getSingle($record);
+                $response['data'][] = self::getSingle($record);
             }
         }catch (ZCRMException $ex){
             $response = $ex->getMessage();  //To get ZCRMException error message
@@ -249,8 +266,28 @@ class zohoMain{
             $temp['value'] = $taxlist->getValue();
             $tax_temp[] = $temp;
         }
+        
+        //Check record image is set
+        if(isset($response['fields']['Record_Image'])){
+            
+            $dir = "zoho-attachment/";
+            $filePath = $_SERVER['DOCUMENT_ROOT'].$dir;
+            
+            $fileResponseIns = $record->downloadPhoto();
+            $file_name = $fileResponseIns->getFileName();
+            $fp=fopen($filePath.$file_name,"w"); // $filePath - absolute path where the downloaded photo is stored.
+            $stream=$fileResponseIns->getFileContent();
+            fputs($fp,$stream);
+            fclose($fp);
+            
+            $response['photo'] =    array(
+                                    "name" => $file_name,
+                                    "url" => site_url($dir).$file_name,
+                                    "dir" => $filePath.$file_name
+                                );
+        }
 
-        $response['tax'] =  $tax_temp;
+        $response['tax'] = $tax_temp;
         return $response;
     }
     
@@ -364,15 +401,22 @@ class zohoMain{
     }
     
     public function uploadPhoto($module,$record_id,$path){
-        $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
-        $responseIns=$record->uploadPhoto($path); // $photoPath - absolute path of the photo to be uploaded.
         
-        $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
-        $response['zoho_status'] = $responseIns->getStatus(); //To get response status
-        $response['message'] = $responseIns->getMessage(); //To get response message
-        $response['code'] = $responseIns->getCode(); //To get status code
-        $response['details'] = $responseIns->getDetails()['id'];;
-        
+        try{
+            $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
+            $responseIns=$record->uploadPhoto($path); // $photoPath - absolute path of the photo to be uploaded.
+            $response['aws_status'] = 1;
+            $response['data']['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+            $response['data']['zoho_status'] = $responseIns->getStatus(); //To get response status
+            $response['data']['message'] = $responseIns->getMessage(); //To get response message
+            $response['data']['code'] = $responseIns->getCode(); //To get status code
+            $response['data']['details'] = $responseIns->getDetails()['id'];;
+            
+        } catch (Exception $ex) {
+            $response['zoho_status'] = 0;
+            $response['message'] = $ex->getMessage();
+        }
         return $response;
+
     }
 }
