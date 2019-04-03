@@ -11,15 +11,14 @@ class awsZohoConfig {
     }
     
     public function getZohoTokenTxtFilePath(){
-        return $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME.'/';
+        return $_SERVER['DOCUMENT_ROOT'].'/'.ZOHO_TOKEN_FOLDER_NAME.'/';
     }
     
     public function makeZohoTokenFolder(){
-        $mode = '0777';
-        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME;
+        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].'/'.ZOHO_TOKEN_FOLDER_NAME;
         
         if(!is_dir($root_dir_name)){
-            mkdir($root_dir_name, $mode, TRUE);
+            mkdir($root_dir_name, 0777, TRUE);
             $temp = $root_dir_name.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
             fopen($temp, "w");
         }
@@ -33,11 +32,10 @@ class awsZohoConfig {
     }
     
     public function makeZohoAttachmentFolder(){
-        $mode = '0777';
-        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].'zoho-attachment';
+        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].'/zoho-attachment';
 
         if(!is_dir($root_dir_name)){
-            mkdir($root_dir_name, $mode, TRUE);
+            mkdir($root_dir_name, 0777, TRUE);
         }
         
         if(is_dir($root_dir_name)){
@@ -270,7 +268,7 @@ class zohoMain{
         //Check record image is set
         if(isset($response['fields']['Record_Image'])){
             
-            $dir = "zoho-attachment/";
+            $dir = "/zoho-attachment/";
             $filePath = $_SERVER['DOCUMENT_ROOT'].$dir;
             
             $fileResponseIns = $record->downloadPhoto();
