@@ -11,7 +11,7 @@ class awsZohoConfig {
     }
     
     public function getZohoTokenTxtFilePath(){
-        return dirname(getcwd(), 1) . ZOHO_TOKEN_FOLDER_NAME.'/';
+        return dirname(getcwd(), 1) .'/'. ZOHO_TOKEN_FOLDER_NAME.'/';
     }
     
     public function makeZohoTokenFolder(){
@@ -24,7 +24,7 @@ class awsZohoConfig {
             fopen($temp, "w");
         } */
 		
-		$folder=dirname(getcwd(), 1) . ZOHO_TOKEN_FOLDER_NAME;
+		$folder=dirname(getcwd(), 1) .'/' .ZOHO_TOKEN_FOLDER_NAME;
 		if (!file_exists($folder)) {
 			mkdir($folder, 0777, true);
 			$temp = $folder.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
