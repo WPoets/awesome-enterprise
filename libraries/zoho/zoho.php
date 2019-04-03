@@ -15,21 +15,12 @@ class awsZohoConfig {
     }
     
     public function makeZohoTokenFolder(){
-       /*  $mode = '0777';
-        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].ZOHO_TOKEN_FOLDER_NAME;
-        
-        if(!is_dir($root_dir_name)){
-            mkdir($root_dir_name, $mode, TRUE);
-            $temp = $root_dir_name.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
-            fopen($temp, "w");
-        } */
-		
-		$folder=dirname(getcwd(), 1) .'/' .ZOHO_TOKEN_FOLDER_NAME;
-		if (!file_exists($folder)) {
-			mkdir($folder, 0777, true);
-			$temp = $folder.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
-			fopen($temp, "w");
-		}
+        $folder=dirname(getcwd(), 1) .'/' .ZOHO_TOKEN_FOLDER_NAME;
+        if (!file_exists($folder)) {
+                mkdir($folder, 0777, true);
+                $temp = $folder.'/'.ZOHO_TOKEN_TXT_FILE_NAME;
+                fopen($temp, "w");
+        }
 		
         if(is_dir($folder)){
             return "Zoho token folder created successfully.";
@@ -39,19 +30,12 @@ class awsZohoConfig {
         
     }
     
-    public function makeZohoAttachmentFolder(){
-        /* $mode = '0777';
-        $root_dir_name = $_SERVER['DOCUMENT_ROOT'].'zoho-attachment';
-
-        if(!is_dir($root_dir_name)){
-            mkdir($root_dir_name, $mode, TRUE);
+    public function makeZohoAttachmentFolder(){	 
+        $folder=dirname(getcwd(), 1) . '/zoho-attachment';
+        
+        if (!file_exists($folder)) {
+            mkdir($folder, 0777, true);
         }
-         */
-		 
-		$folder=dirname(getcwd(), 1) . '/zoho-attachment';
-			if (!file_exists($folder)) {
-				mkdir($folder, 0777, true);
-			}
 		
         if(is_dir($folder)){
             return "Zoho Attachment folder created successfully.";
