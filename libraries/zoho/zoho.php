@@ -30,7 +30,7 @@ class awsZohoConfig {
         
     }
     
-    public function makeZohoAttachmentFolder(){	 
+    public function makeZohoAttachmentFolder(){
         $folder=dirname(getcwd(), 1) . '/zoho-attachment';
         
         if (!file_exists($folder)) {
@@ -267,8 +267,8 @@ class zohoMain{
         //Check record image is set
         if(isset($response['fields']['Record_Image'])){
             
-            $dir = "zoho-attachment/";
-            $filePath = $_SERVER['DOCUMENT_ROOT'].$dir;
+            $dir = "/zoho-attachment/";
+            $filePath = dirname(getcwd(), 1).$dir;
             
             $fileResponseIns = $record->downloadPhoto();
             $file_name = $fileResponseIns->getFileName();
