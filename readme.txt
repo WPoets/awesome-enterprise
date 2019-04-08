@@ -41,6 +41,7 @@ https://getawesomestudio.com/
 = 1.2.5 =
 *Change zoho attachment folder path
 *Update zoho attachment folder create code.
+*Setup current user's data in app context.
 
 = 1.2.4 =
 *Add functionality to support Zoho CRM using Zoho php API version 2. 

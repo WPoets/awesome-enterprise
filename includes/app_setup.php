@@ -746,7 +746,24 @@ class awesome_app{
 		$this->configs = $config_posts	;
 			
 		} */
-
+                
+                //set up the current user details
+                $this->user=array();
+                $user=&$this->user;
+                if(is_user_logged_in()){
+                    $current_user = wp_get_current_user();
+                    $user['login']=$current_user->user_login;
+                    $user['email']=$current_user->user_email;
+                    $user['display_name']=$current_user->display_name;
+                    $user['ID']=$current_user->ID;
+                }
+                else{
+                    $user['login']='guest';
+                    $user['email']='guest';
+                    $user['display_name']='guest';
+                    $user['ID']=null;
+                }
+                
 		aw2_library::set('app',(array) $this);				
 
 	}
