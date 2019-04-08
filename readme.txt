@@ -38,6 +38,9 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.6 =
+*Add zoho attachment function
+
 = 1.2.5 =
 *Change zoho attachment folder path
 *Update zoho attachment folder create code.
