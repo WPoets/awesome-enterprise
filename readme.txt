@@ -38,6 +38,10 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.5 =
+*Change zoho attachment folder path
+*Update zoho attachment folder create code.
+
 = 1.2.4 =
 *Add functionality to support Zoho CRM using Zoho php API version 2. 
 *In this functionality, we added 14 new shortcodes.
