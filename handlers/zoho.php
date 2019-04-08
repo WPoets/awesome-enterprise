@@ -217,6 +217,22 @@ class aw2_zoho_crm{
             return $response;
         }
         
+        private function uploadAttachment() {
+            $response = array();
+            if(!empty($this->module) && !empty($this->atts['id']) && !empty($this->atts['path'])){
+                $result =  $this->zoho_crm->uploadAttachment($this->module,$this->atts['id'],$this->atts['path']);
+                if($result['aws_status'] === 1){
+                    unset($result['aws_status']);
+                    $response = array('status'=>'success','response'=>$result);
+                }else{
+                    $response = array('status'=>'error','response'=>$result);
+                }
+            }else{
+                $response = array('status'=>'error','message'=>'Lead id, absolute path required fields.Example id="1234567890" path="D:\laragon\IMG_20181106_111725-768x432.jpg" or Invalid shortcode format.');
+            }
+            return $response;
+        }
+        
         private function updateAccessToken() {
             $result =  $this->zoho_crm->updateAccessToken();
             return $result;

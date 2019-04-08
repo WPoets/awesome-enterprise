@@ -266,7 +266,6 @@ class zohoMain{
         
         //Check record image is set
         if(isset($response['fields']['Record_Image'])){
-            
             $dir = "/zoho-attachment/";
             $filePath = dirname(getcwd(), 1).$dir;
             
@@ -277,7 +276,7 @@ class zohoMain{
             fputs($fp,$stream);
             fclose($fp);
             
-            $response['photo'] =    array(
+            $response['profile_photo'] =    array(
                                     "name" => $file_name,
                                     "url" => site_url($dir).$file_name,
                                     "dir" => $filePath.$file_name
@@ -331,10 +330,17 @@ class zohoMain{
                 //$response['tag_status'] = $tags;
             }
             
-            $record_image = $fiels['record_image'];
-            if ($record_image) {
-                $photo = self::uploadPhoto($module,$record_id,$record_image);
+            $record_attachment = $fiels['attachment'];
+            if (trim($record_attachment)) {
+                $record_attachment = self::uploadAttachment($module,$record_id,$record_attachment);
             }
+            
+            $profile_photo = $fiels['profile_photo'];
+            if (trim($profile_photo)) {
+                $profile_photo = self::uploadPhoto($module,$record_id,$profile_photo);
+            }
+            
+            
             $response['aws_status'] = 1;
             
             $temp['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
@@ -367,9 +373,14 @@ class zohoMain{
                 //$response['tag_status'] = $tags;
             }
             
-            $record_image = $fiels['record_image'];
-            if ($record_image) {
-                $photo = self::uploadPhoto($module,$record_id,$record_image);
+            $profile_photo = $fiels['profile_photo'];
+            if ($profile_photo) {
+                $profile_photo = self::uploadPhoto($module,$record_id,$profile_photo);
+            }
+            
+            $record_attachment = $fiels['attachment'];
+            if (trim($record_attachment)) {
+                $record_attachment = self::uploadAttachment($module,$record_id,$record_attachment);
             }
             
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
@@ -415,5 +426,21 @@ class zohoMain{
         }
         return $response;
 
+    }
+    public function uploadAttachment($module,$record_id,$path){
+        try{
+            $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
+            $responseIns=$record->uploadAttachment($path); // $photoPath - absolute path of the photo to be uploaded.
+            $response['aws_status'] = 1;
+            $response['data']['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+            $response['data']['zoho_status'] = $responseIns->getStatus(); //To get response status
+            $response['data']['message'] = $responseIns->getMessage(); //To get response message
+            $response['data']['code'] = $responseIns->getCode(); //To get status code
+            $response['data']['details'] = $responseIns->getDetails()['id'];;
+        } catch (Exception $ex) {
+            $response['zoho_status'] = 0;
+            $response['message'] = $ex->getMessage();
+        }
+        return $response;
     }
 }
