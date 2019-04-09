@@ -2,7 +2,7 @@
 Contributors: wpoets, thecancerus, devdanidhariya
 Tags: shortcodes, shortcode,site-builder, website builder
 Requires at least: 4.3
-Tested up to: 5.1
+Tested up to: 5.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ https://getawesomestudio.com/
 
 
 == Changelog ==
+
+= 1.2.7 =
+*add zoho campaigns support
 
 = 1.2.6 =
 *Add zoho attachment function
