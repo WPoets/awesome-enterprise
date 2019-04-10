@@ -38,6 +38,10 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.8 =
+*Add Leads, Contacts, Products etc notes support
+*Update SEO Yoast sitemap code
+
 = 1.2.7 =
 *add zoho campaigns support
 
