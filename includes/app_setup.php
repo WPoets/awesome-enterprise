@@ -16,6 +16,9 @@ add_action('wp_footer', 'aw2_apps_library::wp_footer');
 
 add_filter( 'wpseo_sitemap_index', 'aw2_apps_library::add_apps_to_yoast_sitemap' );
 
+//To remove all the app pages and app post from the sitemap_index
+add_filter( 'wpseo_sitemap_exclude_post_type', 'aw2_apps_library::sitemap_exclude_post_type', 10, 2 );
+
 require_once('awesome-menus.php');
 
 class aw2_apps_library{
@@ -87,7 +90,20 @@ class aw2_apps_library{
 		self::run_core('init');
 		
 	}
-		
+	
+	/***
+	 * This function will remove all the sitemap.xml files,
+	 * of posts and pages of awesome app
+	 */
+	static function sitemap_exclude_post_type( $value, $post_type ) {
+		$registered_apps=&aw2_library::get_array_ref('apps');
+		$remove_cpt_from_sitemap=array();
+		foreach($registered_apps as $key=>$app){
+			array_push($remove_cpt_from_sitemap,$app['collection']['pages']['post_type'],$app['collection']['posts']['post_type']);
+		}
+		if( in_array( $post_type, $remove_cpt_from_sitemap ) ) return true;
+	}
+
 	static function register_service_cpts(){
 		
 		$handlers=&aw2_library::get_array_ref('handlers');
@@ -535,7 +551,7 @@ class aw2_apps_library{
 			if(!self::enable_sitemap($app)) continue;
 			
 			$smp .= '<sitemap>' . "\n";
-			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-sitemap.xml</loc>' . "\n";
+			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-app-sitemap.xml</loc>' . "\n";
 			$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
 			$smp .= '</sitemap>' . "\n";
 		}
@@ -550,7 +566,7 @@ class aw2_apps_library{
 	}
 	
 	static function setup_yoast_links($slug){
-		add_action( "wpseo_do_sitemap_".$slug,  function() use ($slug){
+		add_action( "wpseo_do_sitemap_".$slug."-app",  function() use ($slug){
 														aw2_apps_library::awesome_apps_pages_sitemap($slug);
 												});
 	}
