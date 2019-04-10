@@ -217,7 +217,7 @@ class zohoMain{
         $response['module_api_name'] = $record->getModuleApiName();
 
         $createdBy = $record->getCreatedBy();
-        $response['created_by']['id'] = $createdBy->getId();;  //To get user_id who created the record
+        $response['created_by']['id'] = $createdBy->getId();  //To get user_id who created the record
         $response['created_by']['name'] = $createdBy->getName();  //To get user name who created the record
 
 
@@ -284,6 +284,19 @@ class zohoMain{
         }
 
         $response['tax'] = $tax_temp;
+        
+        
+        $notes=$record->getNotes()->getData();//to get the notes in form of ZCRMNote instances array
+        $temp_notes = array();
+        foreach ($notes as $note){
+            $temp_notes[] =   array(
+                                    "id" => $note->getId(), //To get note id
+                                    "title" => $note->getTitle(), //To get note title
+                                    "content" => $note->getContent() //To get note content
+                                );
+        }
+        $response['notes'] = $temp_notes;
+        
         return $response;
     }
     
@@ -332,15 +345,19 @@ class zohoMain{
             
             $record_attachment = $fiels['attachment'];
             if (trim($record_attachment)) {
-                $record_attachment = self::uploadAttachment($module,$record_id,$record_attachment);
+                self::uploadAttachment($module,$record_id,$record_attachment);
             }
             
             $profile_photo = $fiels['profile_photo'];
             if (trim($profile_photo)) {
-                $profile_photo = self::uploadPhoto($module,$record_id,$profile_photo);
+                self::uploadPhoto($module,$record_id,$profile_photo);
             }
             
-            
+            $note = $fiels['note'];
+            if (!empty($note)) {
+                self::addNote($module,$record_id,$note);
+            }
+    
             $response['aws_status'] = 1;
             
             $temp['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
@@ -355,11 +372,13 @@ class zohoMain{
        return $response;
    } 
    
-    public function updateRecords($module,$id,$fiels){
+    public function updateRecord($module,$id,$fiels){
         $record = ZCRMRestClient::getInstance()->getRecordInstance($module,$id); //To get record instance
         
         $response = array();                
         try{
+            
+            $response['aws_status'] = 1;
             foreach ($fiels['fields'] as $key => $value) {
                 $record->setFieldValue($key,$value); //This function use to set FieldApiName and value similar to all other FieldApis and Custom field
             }
@@ -368,19 +387,27 @@ class zohoMain{
             $details = $responseIns->getDetails();
             $record_id = $details['id'];
             
+            //Tag update section
             if (!empty($fiels['tags'])) { // Check tag exits or not
-                $tags = self::addTagsToRecord($module,$record_id,$fiels['tags']); //to add the tags to the record
-                //$response['tag_status'] = $tags;
+                self::addTagsToRecord($module,$record_id,$fiels['tags']); //to add the tags to the record
             }
             
+            //profile_photo update section
             $profile_photo = $fiels['profile_photo'];
             if ($profile_photo) {
-                $profile_photo = self::uploadPhoto($module,$record_id,$profile_photo);
+                self::uploadPhoto($module,$record_id,$profile_photo);
             }
             
+            //attachment update section
             $record_attachment = $fiels['attachment'];
             if (trim($record_attachment)) {
-                $record_attachment = self::uploadAttachment($module,$record_id,$record_attachment);
+                self::uploadAttachment($module,$record_id,$record_attachment);
+            }
+            
+            //notes update section
+            $record_notes = $fiels['notes'];
+            if (!empty($record_notes)) {
+                self::updateNotes($module,$record_id,$record_notes);
             }
             
             $response['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
@@ -418,7 +445,7 @@ class zohoMain{
             $response['data']['zoho_status'] = $responseIns->getStatus(); //To get response status
             $response['data']['message'] = $responseIns->getMessage(); //To get response message
             $response['data']['code'] = $responseIns->getCode(); //To get status code
-            $response['data']['details'] = $responseIns->getDetails()['id'];;
+            $response['data']['details'] = $responseIns->getDetails()['id'];
             
         } catch (Exception $ex) {
             $response['zoho_status'] = 0;
@@ -427,6 +454,7 @@ class zohoMain{
         return $response;
 
     }
+    
     public function uploadAttachment($module,$record_id,$path){
         try{
             $record=ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
@@ -436,11 +464,59 @@ class zohoMain{
             $response['data']['zoho_status'] = $responseIns->getStatus(); //To get response status
             $response['data']['message'] = $responseIns->getMessage(); //To get response message
             $response['data']['code'] = $responseIns->getCode(); //To get status code
-            $response['data']['details'] = $responseIns->getDetails()['id'];;
+            $response['data']['details'] = $responseIns->getDetails()['id'];
         } catch (Exception $ex) {
             $response['zoho_status'] = 0;
             $response['message'] = $ex->getMessage();
         }
         return $response;
     }
+    
+    public function addNote($module,$record_id,$fiels){
+        $response =  array();
+        try{
+            $record = ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
+            $noteIns = ZCRMNote::getInstance($record,NULL);//to get the note instance
+
+            $noteIns->setTitle($fiels['title']);//to set the note title
+            $noteIns->setContent($fiels['content']);//to set the note content
+            $responseIns = $record->addNote($noteIns);//to add the note
+
+            $response['aws_status'] = 1;
+            $response['data']['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+            $response['data']['zoho_status'] = $responseIns->getStatus(); //To get response status
+            $response['data']['message'] = $responseIns->getMessage(); //To get response message
+            $response['data']['code'] = $responseIns->getCode(); //To get status code
+            $response['data']['details'] = $responseIns->getDetails();
+        } catch (Exception $ex) {
+            $response['zoho_status'] = 0;
+            $response['message'] = $ex->getMessage();
+        }
+        return $response;
+    }
+    
+    public function updateNotes($module,$record_id,$fiels){
+        try{
+            $record = ZCRMRestClient::getInstance()->getRecordInstance($module, $record_id); //To get record instance
+            $response['aws_status'] = 1;
+            foreach ($fiels as $note_id => $note_fiels) {
+                $noteIns = ZCRMNote::getInstance($record,$note_id);//to get the note instance
+                $noteIns->setTitle($note_fiels['title']);//to set the title of the note
+                $noteIns->setContent($note_fiels['content']);//to set the content of the note
+                $responseIns = $record->updateNote($noteIns);//to update the note
+                
+                $note_id = $responseIns->getDetails()['id'];
+                $response['data'][$note_id]['http_status_code'] = $responseIns->getHttpStatusCode(); //To get http response code
+                $response['data'][$note_id]['zoho_status'] = $responseIns->getStatus(); //To get response status
+                $response['data'][$note_id]['message'] = $responseIns->getMessage(); //To get response message
+                $response['data'][$note_id]['code'] = $responseIns->getCode(); //To get status code
+                $response['data'][$note_id]['details'] = $responseIns->getDetails();
+            }
+        } catch (Exception $ex) {
+            $response['zoho_status'] = 0;
+            $response['message'] = $ex->getMessage();
+        }
+        return $response;
+    }
+
 }
