@@ -551,7 +551,7 @@ class aw2_apps_library{
 			if(!self::enable_sitemap($app)) continue;
 			
 			$smp .= '<sitemap>' . "\n";
-			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'app-sitemap.xml</loc>' . "\n";
+			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-app-sitemap.xml</loc>' . "\n";
 			$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
 			$smp .= '</sitemap>' . "\n";
 		}
