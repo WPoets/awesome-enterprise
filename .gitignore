@@ -34,7 +34,7 @@
 # ignore files in folder foo
 libraries/zoho/vendor/zohocrm/php-sdk/src/resources/*
 # but keep the folder
-!libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties
+!libraries/zoho/vendor/zohocrm/php-sdk/src/resources/.keep
 
 # End of
 # End of
