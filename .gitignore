@@ -31,6 +31,6 @@
 *.rar
 *.tar
 *.zip
-*.properties
+/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/.properties
 
 # End of
