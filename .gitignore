@@ -1,4 +1,5 @@
 ### WordPress ###
+*
 *.log
 *.htaccess
 /license.txt
