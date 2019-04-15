@@ -30,8 +30,11 @@
 *.rar
 *.tar
 *.zip
-/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/oauth_configuration.properties
-/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties
+
+# ignore files in folder foo
+libraries/zoho/vendor/zohocrm/php-sdk/src/resources/*
+# but keep the folder
+!libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties
 
 # End of
 # End of
