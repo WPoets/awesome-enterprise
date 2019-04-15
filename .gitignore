@@ -31,7 +31,41 @@
 *.rar
 *.tar
 *.zip
+
+### WordPress ###
+*.log
+*.htaccess
+/license.txt
+/readme.html
+/sitemap.xml
+/sitemap.xml.gz
+
+
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
 /libraries/zoho/vendor/zohocrm/php-sdk/src/resources/oauth_configuration.properties
 /libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties
 
+# End of
 # End of
