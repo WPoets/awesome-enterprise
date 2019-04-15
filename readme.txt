@@ -38,6 +38,9 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.2.9 =
+* insert lead issue fixed
+
 = 1.2.8 =
 *Add Leads, Contacts, Products etc notes support
 *Update SEO Yoast sitemap code

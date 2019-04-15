@@ -168,7 +168,7 @@ class aw2_zoho_crm{
         $response = array();
 
         if(!empty($this->module) && !empty($args)){
-            $result =  $this->zoho_crm->createRecords($this->module,$this->atts['ids'],$args);
+                $result =  $this->zoho_crm->createRecords($this->module,$args);
             if($result['aws_status'] === 1){
                 unset($result['aws_status']);
                 $response = array('status'=>'success','response'=>$result);
