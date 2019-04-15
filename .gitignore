@@ -1,4 +1,3 @@
-
 ### WordPress ###
 *.log
 *.htaccess
@@ -31,7 +30,8 @@
 *.rar
 *.tar
 *.zip
-/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/oauth_configuration.properties #
-/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties #
+/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/oauth_configuration.properties
+/libraries/zoho/vendor/zohocrm/php-sdk/src/resources/configuration.properties
 
+# End of
 # End of
