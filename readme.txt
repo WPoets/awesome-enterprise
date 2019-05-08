@@ -1,4 +1,4 @@
-=== Awesome Studio ===
+=== Awesome Enterprise ===
 Contributors: wpoets, thecancerus, devdanidhariya
 Tags: shortcodes, shortcode,site-builder, website builder
 Requires at least: 4.3
@@ -6,7 +6,7 @@ Tested up to: 5.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Awesome Studio is a shortcode based platform which comes with a massive collection of beautifully crafted, fully responsive and easy to use UI Modules, making it simple for you to assemble your website like Legos.
+Awesome Studio is a sh`ortcode based platform which comes with a massive collection of beautifully crafted, fully responsive and easy to use UI Modules, making it simple for you to assemble your website like Legos.
 
 == Description ==
 
@@ -37,6 +37,11 @@ https://getawesomestudio.com/
 
 
 == Changelog ==
+
+= 1.3.0 =
+* fix sideload shortcode issue
+* Change plugin name "Awesome Studio Enterprise" to "Awesome Enterprise"
+
 
 = 1.2.9 =
 * insert lead issue fixed

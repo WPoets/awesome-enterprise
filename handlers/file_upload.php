@@ -2,8 +2,6 @@
 namespace aw2;
 
 \aw2_library::add_service('aw2.upload','Upload',['namespace'=>__NAMESPACE__]);
-
-
 function upload($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
@@ -62,6 +60,7 @@ function upload($atts,$content=null,$shortcode){
 			}
 		}
 	}
+        
 	else if($main = 'upload_to_path'){
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];
@@ -107,7 +106,6 @@ function upload($atts,$content=null,$shortcode){
 	
 	return $return_value;
 }	
-
 
 function aw2_handle_attachment($allowed,$file_handler,$post_id,$set_thu=false,$upload_file_url=null) {
 	// check to make sure its a successful upload
@@ -172,11 +170,12 @@ function sideload($atts,$content=null,$shortcode){
 	// Allow certain file formats
 	$allowed = array('gif', 'png' ,'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'csv');
 	
+        
 	if($allowed_file_types != null || $allowed_file_types != ''){
 		$allowed_ext = explode(',', $allowed_file_types);
 		$allowed = $allowed_ext;
 	}
-	
+
 	if(empty($file_url)){
 		\aw2_library::set_error('file_url is blank. It is required.'); 
 		return '';
@@ -202,17 +201,20 @@ function sideload($atts,$content=null,$shortcode){
 		
 		$desc = "";
 		$file_array = array();
+                
+                $allowed = implode('|',$allowed);
+                // Set variables for storage
+                // fix file filename for query strings
+                preg_match("/[^\?]+\.($allowed)/i", $file_url, $matches);
+                $file_array['name'] = basename($matches[0]);
 
-		// Set variables for storage
-		// fix file filename for query strings
-		preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png|pdf|doc|docx|xls|xlsx|csv)/i', $file_url, $matches);
-		
-		if($file_name){
-			$file_array['name'] = $file_name.".".pathinfo(parse_url($file_url)['path'], PATHINFO_EXTENSION);
-		}else{
-			$file_array['name'] = basename($matches[0]);
-		}
-
+                $file_array['tmp_name'] = $tmp;
+                // If error storing temporarily, unlink
+                if ( is_wp_error( $tmp ) ) {
+                        @unlink($file_array['tmp_name']);
+                        $file_array['tmp_name'] = '';
+                }
+                
 		$file_array['tmp_name'] = $tmp;
 		// If error storing temporarily, unlink
 		if ( is_wp_error( $tmp ) ) {
@@ -222,13 +224,12 @@ function sideload($atts,$content=null,$shortcode){
 
 		// do the validation and storage stuff
 		$attachment_id = media_handle_sideload( $file_array, $post_id, $desc );
-
 		// If error storing permanently, unlink
+                
 		if ( is_wp_error($attachment_id ) ) {
 			@unlink($file_array['tmp_name']);
-			util::var_dump($file_array);
-			\aw2_library::set_error('Media Sideload failed. '.$attachment_id->get_error_message());
-			return '' ;
+                        \aw2_library::set_error('Media Sideload failed. '.$attachment_id->get_error_message());
+                        return $attachment_id->get_error_message();
 		}
 
 		$src = wp_get_attachment_url( $attachment_id );

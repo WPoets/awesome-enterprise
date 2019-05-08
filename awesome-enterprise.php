@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Awesome Studio Enterprise
+Plugin Name: Awesome Enterprise
 Plugin URI: http://www.getawesomestudio.com
 Description: Awesome Studio is a shortcode based platform along with massive collection beautifully designed, fully responsive and easy to use UI parts. 
-Version: 1.2.9
+Version: 1.3.0
 Author: WPoets
 Author URI: http://www.wpoets.com
 License: GPLv2 or Later
