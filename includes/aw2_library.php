@@ -7,6 +7,7 @@ static $conn=null;
 static $stack=array();
 static $plugin_path=null;
 static $redis_conn=null;
+static $mysqli=null;
 
 static function setup(){
 	self::$plugin_path=plugin_dir_path( __DIR__ );
@@ -41,6 +42,27 @@ static function redis_connect($database_number){
 	self::$redis_conn->select($database_number);
 	return self::$redis_conn;	
 }
+
+static function new_mysqli(){
+
+	// if admin then throw error
+	
+	$path = self::$plugin_path . "/libraries";
+	require_once $path . '/simple-mysqli/simple-mysqli.php';
+	/*
+	set_exception_handler(function($e) {
+		error_log($e->getMessage());
+		if(current_user_can('develop_for_awesomeui')){
+			exit($e->getMessage());
+		}
+		exit('Something weird happened'); //Should be a message a typical user could understand
+	});
+	*/
+	$mysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
+	$mysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+	return $mysqli;
+}
+
 // takes a json and returns back an array
 static function get_clean_args($content,&$atts=null){
 	if($content==null || $content=='')return '';
