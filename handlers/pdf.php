@@ -1,5 +1,8 @@
 <?php
+/*
 namespace aw2\pdf;
+namespace aw2\awesome_pdf;
+*/
 
 \aw2_library::add_service('pdf','PDF Library',['namespace'=>__NAMESPACE__]);
 
@@ -171,8 +174,9 @@ class awesome2_pdf_handler{
 	}
 	
 	private function generate_pdf($pdf_data, $download=false){
-		require_once dirname(plugin_dir_path( __DIR__ )).'/monoframe/pdf-helper.php';
+		require_once plugin_dir_path( __DIR__ ).'/libraries/pdf-helper.php';
 		
+                
 		$aw_pdf = new awesome_pdf($pdf_data);
 		$aw_pdf->SetPDF();
 		
