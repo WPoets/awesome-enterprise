@@ -93,6 +93,7 @@ class Monoframe
                 require_once (  $plugin_path .'/libraries/zoho/zoho.php');
 		
 		// Include Module Distributable files.
+		require_once( $plugin_path . '/libraries/module-distribution/code-distributables.php' );
 		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
 		
 		//Apps Inclusion
@@ -148,7 +149,10 @@ class Monoframe
 			if(!isset($handler['post_type']))
 				continue;
 			
-			if(isset($handler['@service']) && $handler['@service'] === true){
+			if(isset($handler['service']) && strtolower($handler['service']) === 'yes'){
+				$service_post_type[] =  $handler['post_type'];
+			} 
+			elseif(isset($handler['@service']) && $handler['@service'] === true){
 				$service_post_type[] =  $handler['post_type'];
 			}	
 		}

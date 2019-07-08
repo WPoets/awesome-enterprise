@@ -1,6 +1,17 @@
 <?php
 namespace aw2\util;
 
+\aw2_library::add_service('util.otp','Generate a 6 digit OTP',['namespace'=>__NAMESPACE__]);
+
+
+function otp($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	$return_value=mt_rand(100000,999999);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
 \aw2_library::add_service('util.form_data_array','Collect Form Data and return an array',['namespace'=>__NAMESPACE__]);
 
 
@@ -30,7 +41,7 @@ function save_csv_page($atts,$content=null,$shortcode){
 	
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
  
-	
+		
 
 	$buffer = fopen('php://memory','w');
 	foreach ($rows as $line) {
@@ -88,6 +99,34 @@ function nonce($atts,$content=null,$shortcode){
 	echo 'RET';
 	\util::var_dump($return_value);
 	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	
+	return $return_value;
+}
+
+\aw2_library::add_service('util.qs_parse','parse the query string and return back array',['namespace'=>__NAMESPACE__]);
+function qs_parse($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	), $atts) );
+	
+	$qs = \aw2_library::get_array_ref('qs');
+	
+	$i = 0;
+	$return_value=array();
+	foreach ($qs as $value){
+		$pos = strpos($value, '$$');
+		if ($pos !== false) {
+			$arr=explode('$$',$value);
+			$return_value[$arr[0]]=\aw2\clean\safe(['main'=>$arr[1]]);
+		}else{
+			$return_value[$i]=\aw2\clean\safe(['main'=>$value]);
+			$i++;
+		}
+	}
+
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
 	return $return_value;

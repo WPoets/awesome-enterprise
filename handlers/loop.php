@@ -18,7 +18,7 @@ function unhandled($atts,$content=null,$shortcode){
 	$ctr=$pieces[1];
 	$stack_id=\aw2_library::push_child($ctr,$main);
 	$call_stack=&\aw2_library::get_array_ref('call_stack',$stack_id);
-	
+	 
 	$is_done=false;
 	//decide loop or for loop
 	
@@ -36,6 +36,7 @@ function unhandled($atts,$content=null,$shortcode){
 		$index=1;
 		$output=array();
 		foreach ($items as $key =>&$item) {
+			if(isset($call_stack['break_on_next']))break;
 			$call_stack['index']=$index;
 			$call_stack['counter']=$index-1;
 			$call_stack['item']=&$item;
@@ -61,7 +62,7 @@ function unhandled($atts,$content=null,$shortcode){
 		$string=implode($output);	
 		
 	}
-	if($start && $stop){
+	if(!is_null($start) ){
 		$is_done=true;
 		$index=1;
 		$call_stack['start']=$start;
@@ -74,6 +75,7 @@ function unhandled($atts,$content=null,$shortcode){
 		if($stop>=$start){
 			$output=array();
 			for ($i = $start; $i <= $stop; $i+=$step) {
+			if(isset($call_stack['break_on_next']))break;				
 				$call_stack['index']=$index;
 				$call_stack['counter']=$index-1;
 				$call_stack['item']=$i;

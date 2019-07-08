@@ -304,6 +304,16 @@ function not_contains($atts,$content=null,$shortcode){
 		return false;
 }
 
+\aw2_library::add_service('c.aw2_error','Check if c has an error object',['namespace'=>__NAMESPACE__]);
+function aw2_error($atts,$content=null,$shortcode){
+	$error = \aw2_library::resolve_chain($atts['aw2_error']);
+	if(is_object($error) && get_class($error)==='aw2_error'){
+	}	
+	else
+		return false;
+}
+
+
 \aw2_library::add_service('c.exists','Check if the param exists in the environment. Use c.exists',['namespace'=>__NAMESPACE__]);
 function exists($atts,$content=null,$shortcode){
 	if(\aw2_library::env_key_exists($atts['exists']) === '_error')

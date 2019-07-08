@@ -16,8 +16,8 @@ function check($ticket,$otp_value,$validation){
 	
 	// user validation
 	if(isset($validation['user'])){
-		$current_user = wp_get_current_user();
-		if($current_user->user_login!== $validation['user'])return false;
+		$current_user = \aw2_library::get('app.user.login');
+		if($current_user!== $validation['user'])return false;
 	}
 	
 	// app validation
@@ -34,7 +34,6 @@ function check($ticket,$otp_value,$validation){
 
 
 \aw2_library::add_service('session_ticket.create','Create a ticket',['namespace'=>__NAMESPACE__]);
-
 
 
 function create($atts,$content=null,$shortcode){
@@ -150,7 +149,9 @@ function set_activity($atts,$content=null,$shortcode){
 	'app'=>null,
 	'collection'=>null,
 	'module'=>null,
-	'service'=>null
+	'service'=>null,
+	'template'=>null
+	
 	), $atts) );
 
 	if(!$main)return 'Main must be set';
@@ -163,6 +164,7 @@ function set_activity($atts,$content=null,$shortcode){
 	if($collection)$ticket_activity['collection']=$collection;
 	if($module)$ticket_activity['module']=$module;
 	if($service)$ticket_activity['service']=$service;
+	if($template)$ticket_activity['template']=$template;
 	
 	$json=json_encode($ticket_activity);
 	$redis->hSet($ticket,'ticket_activity',$json);
@@ -185,8 +187,27 @@ function set($atts,$content=null,$shortcode){
 
 	$ticket=$main;
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
-	
 	$redis->hSet($ticket,$field,$value);
+	return;
+}
+
+\aw2_library::add_service('session_ticket.set_timeout','Set values of a ticket',['namespace'=>__NAMESPACE__]);
+
+function set_timeout($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'time' => 60,
+	'main'=>null,
+	'field'=>'_error',
+	'value'=>null,
+	), $atts) );
+
+	if(!$main)return 'Main must be set';
+
+	$ticket=$main;
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	$redis->setTimeout($ticket, $time*60);
 	return;
 }
 
@@ -216,7 +237,7 @@ function get($atts,$content=null,$shortcode){
 			if($field)
 				$return_value=$redis->hGet($ticket,$field);
 			else	
-				$return_value=$redis->hGetAll($ticket);
+				$return_value=$redis->hGetAll($ticket); 
 		}
 	}
 
@@ -226,3 +247,40 @@ function get($atts,$content=null,$shortcode){
 	
 }
 
+\aw2_library::add_service('session_ticket.generate_token','Generate action token against ticket.',['namespace'=>__NAMESPACE__]);
+
+function generate_token($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'value'=>null,
+	), $atts) );
+
+	if(!$main)return 'Main must be set';
+
+	$field = uniqid();
+	
+	$ticket=$main;
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	$redis->hSet($ticket,$field,$value);
+	return $field;
+}
+
+\aw2_library::add_service('session_ticket.destroy','Destroy a ticket',['namespace'=>__NAMESPACE__]);
+
+function destroy($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null
+	), $atts) );
+
+	if(!$main)return 'Main must be set';		
+	
+	$ticket=$main;
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+
+	$return_value=$redis->unlink($ticket);
+	
+}

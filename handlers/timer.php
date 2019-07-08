@@ -1,5 +1,7 @@
 <?php
 namespace aw2\_time;
+use Amp\Loop;
+use Amp\Promise;
 
 \aw2_library::add_service('time','Timer Library.',['namespace'=>__NAMESPACE__]);
 
@@ -22,14 +24,4 @@ function diff_echo($atts,$content=null,$shortcode){
 	echo '<br>' . $diff;
 }
 
-\aw2_library::add_service('test.t1','Echo difference from start',['namespace'=>__NAMESPACE__]);
-function t1($atts,$content=null,$shortcode){
-	global $wpdb;
-	\util::var_dump($wpdb);
-	
-	$args = array(
-		'post_type' => 'post',
-	);
-	$query = new \WP_Query( $args );
-	\util::var_dump($query);
-}
+

@@ -229,6 +229,12 @@ function diff($atts,$content=null,$shortcode){
 		$return_value=iterator_count($periods);
 	}
 	
+	if($type=='years'){
+		$interval = new \DateInterval('P1Y');
+		$periods = new \DatePeriod($date_from, $interval, $date_to);
+		$return_value=iterator_count($periods);
+	}
+	
 	if($type=='english'){
 		$date_diff= $date_from->diff($date_to, true);
 		

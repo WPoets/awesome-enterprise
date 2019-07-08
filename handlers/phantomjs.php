@@ -13,10 +13,9 @@ function generate($atts,$content=null,$shortcode){
 		'url'=>'',
 		'output_folder'=>'',
 		'output_file'=>'',
-		'format'=>'A4',
-		'orientation' =>'landscape',
-		'margin'=>'1cm'
-		
+		'format'=>'A3',
+		'orientation' =>'portrait',
+		'margin'=>'0cm'
 		), $atts) );
 	
 	/*Needed to load required files from JonnyW-PhantomJs Library*/
@@ -33,7 +32,6 @@ function generate($atts,$content=null,$shortcode){
 		mkdir($output_folder, 0755, true);
 	}
 	$output_file_path = $output_folder . $output_file;
-	
 	/*Setup content if passed*/	
 	if(empty($url)){
 		$content=\aw2_library::parse_shortcode($content);
@@ -55,6 +53,8 @@ function generate($atts,$content=null,$shortcode){
     $request->setFormat($format);
     $request->setOrientation($orientation);
     $request->setMargin($margin);
+    $request->setRepeatingHeader('<span style="float:right; font-size: 9px;">%pageNum% / %pageTotal%</span>');
+    $request->setRepeatingFooter('<span style="float:right; font-size: 9px;">%pageNum% / %pageTotal%</span>');
 
     /** 
      * @see JonnyW\PhantomJs\Http\Response 

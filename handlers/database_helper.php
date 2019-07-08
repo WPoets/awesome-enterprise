@@ -308,7 +308,18 @@ class awesome2_query{
 
 	function get_results(){
 		global $wpdb;
-		$sql=aw2_library::parse_shortcode($this->content);
+		
+		$str='/*' . PHP_EOL;
+		$str.='query:get_results' . PHP_EOL;
+		$str.='user:	' . \aw2_library::get('app.user.email') . PHP_EOL;
+		$str.='module:	' . \aw2_library::get('module.slug') . PHP_EOL;
+		$str.='post_type:	' . \aw2_library::get('module.collection.post_type') . PHP_EOL;
+		$str.='template:	' . \aw2_library::get('template.name') . PHP_EOL;
+		$str.='*/' . PHP_EOL;
+
+		$sql=$str . aw2_library::parse_shortcode($this->content);
+
+		
 		$results = $wpdb->get_results($sql,ARRAY_A);
 		return $results;
 	}
@@ -342,7 +353,7 @@ class awesome2_query{
 	}
 
 	function get_user_by(){
-			return get_user_by($this->att('field'),$this->att('value'));
+		return get_user_by($this->att('field'),$this->att('value'));
 	}
 	
 	function update_user_meta(){

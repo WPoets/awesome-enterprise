@@ -19,7 +19,7 @@ function run($atts,$content=null,$shortcode){
 
 	if(is_string($return_value))$return_value=trim($return_value);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	if(is_object($return_value))$return_value='Object';
+	//if(is_object($return_value))$return_value='Object';
 	return $return_value;
 }
 
@@ -28,9 +28,16 @@ function run($atts,$content=null,$shortcode){
 function _return($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
-	'main'=>null
+	'main'=>null,
+	'service'=>null
 	), $atts) );
+	
+	if($service){
+		$return_value=\aw2_library::service_run($service,$atts,$content);		
+	}
+	else
 	$return_value=\aw2_library::get($main,$atts,$content);
+
 	\aw2_library::set('_return',true);	
 	\aw2_library::set('template._return',$return_value);
 	return;

@@ -20,7 +20,8 @@ function signon($atts,$content=null,$shortcode){
 	$return_value='yes';
 	if ( is_wp_error($user) )
 		$return_value='no';
-	wp_set_current_user($user->ID);
+	else
+		wp_set_current_user($user->ID);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;

@@ -23,7 +23,7 @@ function run($atts,$content=null,$shortcode){
 
 	if(is_string($return_value))$return_value=trim($return_value);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	if(is_object($return_value))$return_value='Object';
+	//if(is_object($return_value))$return_value='Object';
 	return $return_value;
 }
 

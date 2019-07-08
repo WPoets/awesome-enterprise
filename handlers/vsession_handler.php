@@ -9,21 +9,22 @@ namespace aw2\vsession;
 function create($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract( shortcode_atts( array(
-	'id'=>null
+	'id'=>null,
+	'setcookie'=>'yes'
 	), $atts) );
 	
-	if(!$id)$id='aw2_vsesssion';
+	if(!$id)$id='aw2_vsession';
+
+	$ticket=uniqid();
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	$redis->hSet($ticket,'ticket_id',$ticket);
+	$redis->setTimeout($ticket, 60*60);
 	unset($_COOKIE[$id]);
-	$length=15;
-	$chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	if($setcookie==='yes')setcookie($id, $ticket, -1, '/');
 	
-	$token=substr( str_shuffle($chars ), 0, $length );
-	$nonce=wp_create_nonce($token);
-	$ticket=$token . '.' . $nonce;
-	setcookie($id, $ticket, -1, '/');
-	
-	
-	return ;
+	$return_value=$ticket;
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
 }
 
 \aw2_library::add_service('vsession.exists','Check if VSession Exists',['namespace'=>__NAMESPACE__]);
@@ -33,17 +34,13 @@ function exists($atts,$content=null,$shortcode){
 	'id'=>null
 	), $atts) );
 	
-	if(!$id)$id='aw2_vsesssion';
+	if(!$id)$id='aw2_vsession';
 
 	$return_value = false;	
 	if(isset($_COOKIE[$id])){
 		$ticket=$_COOKIE[$id];
-		$pieces=explode('.',$ticket);
-		$token=$pieces[0];
-		$nonce=$pieces[1];
-		
-		//verify that nonce is valid
-		if(wp_create_nonce($token) !==$nonce)$return_value = true;
+		$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		if($redis->exists($ticket))$return_value = true;
 	}
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -58,40 +55,26 @@ function set($atts,$content=null,$shortcode){
 	extract( shortcode_atts( array(
 	'key'=>null,
 	'value'=>null,
-	'prefix'=>'',
-	'ttl' => 60,
-	'id'=>null
+	'id'=>null,
+	'ticket'=>null
 	), $atts) );
 
-	if(!$id)$id='aw2_vsesssion';
-	
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	if(!$id)$id='aw2_vsession';
+	//get ticketid from cookie or main
 
-	
-	if(isset($_COOKIE[$id])){
-		$ticket=$_COOKIE[$id];
-		$pieces=explode('.',$ticket);
-		$token=$pieces[0];
-		$nonce=$pieces[1];
-		
-		//verify that nonce is valid
-		if(wp_create_nonce($token)!=$nonce){
-			unset($_COOKIE[$id]);
-			$length=15;
-			$chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-			
-			$token=substr( str_shuffle( $chars ), 0, $length );
-			$nonce=wp_create_nonce($token);
-			$ticket=$token . '.' . $nonce;
-			setcookie($id, $ticket, -1, '/');
-		}
+	if($ticket){}
+	else
+	{
+		if(isset($_COOKIE[$id]))
+			$ticket=$_COOKIE[$id];
 	}
 	
-	if(!$key)return 'Invalid Key';		
-	if($prefix)$key=$prefix . $key;
-	$redis->hMSet($ticket, array($key => $value));
-	
-	$redis->setTimeout($ticket, $ttl*60);
+	if($ticket!==null){
+		$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		if($redis->exists($ticket)){
+				$redis->hSet($ticket,$key,$value);
+		}
+	}
 	return;
 }
 
@@ -102,37 +85,31 @@ function get($atts,$content=null,$shortcode){
 	extract( shortcode_atts( array(
 	'main'=>null,
 	'id'=>null,
-	'prefix'=>'',
+	'ticket'=>null
 	), $atts) );
 
-	if(!$id)$id='aw2_vsesssion'	;
-	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	if(!$id)$id='aw2_vsession'	;
 
-	$return_value='_error';
+	//get ticketid from cookie or main
+	if(!$ticket && isset($_COOKIE[$id])){
+			$ticket=$_COOKIE[$id];
+	}
+
+	$return_value='';
 	
-	if(isset($_COOKIE[$id])){
-		$ticket=$_COOKIE[$id];
-		$pieces=explode('.',$ticket);
-		$token=$pieces[0];
-		$nonce=$pieces[1];
-		
-		//verify that nonce is valid
-		if(wp_create_nonce($token)==$nonce){
-			
-			if(!$main){
-				$return_value=$redis->hGetAll($ticket);
-			}			
-			else{
-				if(!$redis->hExists($ticket,$main))
-					$return_value='';
-				else
-					$return_value=$redis->hGet($ticket, $main);
-			}
+	if($ticket!==null){
+		$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		if(!$main){
+			$return_value=$redis->hGetAll($ticket);
+		}			
+		else{
+			if(!$redis->hExists($ticket,$main))
+				$return_value='';
+			else
+				$return_value=$redis->hGet($ticket, $main);
 		}
 	}
-	
+
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }

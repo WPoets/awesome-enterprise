@@ -18,7 +18,7 @@ function module($atts,$content=null,$shortcode){
 	
 	if(!$post_type){
 		$handlers=\aw2_library::get_array_ref('handlers');
-		if(!$handlers['modules'])return 'No Collection found';
+		if(!isset($handlers['modules']))return 'No Collection found';
 		$post_type=$handlers['modules']['post_type'];
 	}
 	if($slug)$module=$slug;	
@@ -26,7 +26,7 @@ function module($atts,$content=null,$shortcode){
 	if(is_string($return_value))$return_value=trim($return_value);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	if(is_object($return_value))$return_value='Object';
+	//if(is_object($return_value))$return_value='Object';
 	return $return_value;
 }
 

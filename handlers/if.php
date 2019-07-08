@@ -275,7 +275,10 @@ function unhandled($atts,$content=null,$shortcode){
 			$atts['not_request_exists']=$main;
 			break;		
 		case 'device':
-			$atts['device']=$main;
+			$atts['device']=$main;			
+			break;	
+		case 'aw2_error':
+			$atts['aw2_error']=$main;			
 			break;				
 	}
 	unset($atts['main']);	

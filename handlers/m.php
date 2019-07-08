@@ -250,6 +250,7 @@ function _money_format($value, $atts){
 	}
 	setlocale(LC_MONETARY, $format);
     $value = money_format('%!i', (float)$value);
+	$value =str_replace('.00','',$value);
 	return $value;
 }
 

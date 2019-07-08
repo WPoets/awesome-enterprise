@@ -35,7 +35,7 @@ function unhandled($atts,$content,$shortcode){
 	
 	if(is_string($return_value))$return_value=trim($return_value);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	if(is_object($return_value))$return_value='Object';
+	//if(is_object($return_value))$return_value='Object';
 	return $return_value;
 }
 
@@ -58,7 +58,7 @@ function run($atts,$content,$shortcode){
 	if(is_string($return_value))$return_value=trim($return_value);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	if(is_object($return_value))$return_value='Object';
+	//if(is_object($return_value))$return_value='Object';
 	
 	return $return_value;
 }
@@ -89,6 +89,41 @@ function include_raw($atts,$content=null,$shortcode){
 }
 
 
+\aw2_library::add_service('collection.export_compare','Exports a collection for compare. Needs a post_type',['namespace'=>__NAMESPACE__]);
+
+function export_compare($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract( shortcode_atts( array(
+	'main'=>null
+	), $atts ) );
+
+	$post_type=$main;	
+	if(!$post_type)return 'Post Type not provided';
+	
+	$posts=get_posts('post_type=' . $post_type . '&posts_per_page=-1&post_status=publish');
+	$upload_dir=LOG_PATH;
+	
+	$backup_path=$upload_dir . '/collection_backup';
+	if (!file_exists($backup_path)) {
+		mkdir($backup_path, 0777, true);
+	}
+	
+	$collection_directory=$backup_path . '/' . $post_type;
+	delete_files($collection_directory);
+	
+	if (!file_exists($collection_directory)) {
+		mkdir($collection_directory, 0777, true);
+	}
+	
+ 
+	foreach ( $posts as $post ){
+		$file = $collection_directory . '/' . $post->post_name . '.html';
+		file_put_contents($file,$post->post_content);
+	}
+	return 'Done. Taken Backup';	
+}
+
+
 \aw2_library::add_service('collection.export','Exports a collection. Needs a post_type',['namespace'=>__NAMESPACE__]);
 
 function export($atts,$content=null,$shortcode){
@@ -101,7 +136,7 @@ function export($atts,$content=null,$shortcode){
 	if(!$post_type)return 'Post Type not provided';
 	
 	$posts=get_posts('post_type=' . $post_type . '&posts_per_page=-1&post_status=publish');
-	$upload_dir=wp_upload_dir()['basedir'];
+	$upload_dir=LOG_PATH;
 	
 	$backup_path=$upload_dir . '/collection_backup';
 	if (!file_exists($backup_path)) {
@@ -109,15 +144,15 @@ function export($atts,$content=null,$shortcode){
 	}
 	
 	$collection_directory=$backup_path . '/' . $post_type;
-	deleteDir($collection_directory);
+	delete_files($collection_directory);
 	
 	if (!file_exists($collection_directory)) {
 		mkdir($collection_directory, 0777, true);
 	}
 	
-
+ 
 	foreach ( $posts as $post ){
-		$one_page=new stdClass();
+		$one_page=new \stdClass();
 		$one_page->post_name=$post->post_name;
 		$one_page->post_content=$post->post_content;
 		$one_page->post_title=$post->post_title;
@@ -187,3 +222,16 @@ function import($atts,$content=null,$shortcode){
 }
 
 
+function delete_files($target) {
+    if(is_dir($target)){
+        $files = glob( $target . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
+
+        foreach( $files as $file ){
+            delete_files( $file );      
+        }
+
+        rmdir( $target );
+    } elseif(is_file($target)) {
+        unlink( $target );  
+    }
+}
