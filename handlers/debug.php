@@ -66,6 +66,8 @@ function FriendlyErrorType($type)
 
 
 function throw_error($errno, $errstr, $errfile, $errline,$trace=NULL){
+		if(\aw2_library::get('debug_config.active')!=='yes') return;	
+		
 		$folder=LOG_PATH . '/debug/errors';
 		if (!file_exists($folder)) {
 			mkdir($folder, 0777, true); 
@@ -110,7 +112,8 @@ function throw_error($errno, $errstr, $errfile, $errline,$trace=NULL){
 // error handler function 
 function myErrorHandler($errno, $errstr, $errfile, $errline)
 {	
-
+	if(\aw2_library::get('debug_config.active')!=='yes') return;
+	
 	if (!headers_sent()) {
 			//setcookie("wordpress_no_cache", 'error', time()+100);  /* expire in 1 hour */
 	}
