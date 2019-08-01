@@ -381,7 +381,7 @@ function awesome_save_postdata( $post_id ) {
 	  
 	  //if ( in_array($_POST['post_type'], Monoframe::get_awesome_post_type())) {
 
-		if ( ! current_user_can( 'edit_page', $post_id ) )
+		if ( ! current_user_can( 'develop_for_awesomeui', $post_id ) )
 			return $post_id;
 
 	 // } else {
