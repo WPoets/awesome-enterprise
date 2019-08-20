@@ -1158,7 +1158,7 @@ class awesome_auth{
 			aw2_library::parse_shortcode($auth['code']);
 
 			 //if auth_data.status == success
-			if($app['auth']['status'] == 'success'){
+			if(isset($app['auth']['status']) && $app['auth']['status'] == 'success'){
 					//set app_valid=yes and return true
 				$atts['key']=$app['slug'].'_valid';
 				$atts['value']='yes';

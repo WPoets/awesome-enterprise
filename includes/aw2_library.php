@@ -2271,8 +2271,8 @@ static function set($key,$value,$content=null,$atts=null){
 			
 			if(is_object($arr)){
 				if (property_exists($arr,$pieces[0]) && $overwrite=='no')$flag=false;
-				if (property_exists($arr,$pieces[0]) && $arr->$pieces[0]!='' && $arr->$pieces[0]!=null & $overwrite=='empty')$flag=false;
-				if($flag)$arr->$pieces[0]=$value;
+				if (property_exists($arr,$pieces[0]) && $arr->{$pieces[0]}!='' && $arr->{$pieces[0]}!=null & $overwrite=='empty')$flag=false;
+				if($flag)$arr->{$pieces[0]}=$value;
 				array_shift($pieces);
 			}	
 			if(is_array($arr)){
@@ -2297,7 +2297,7 @@ static function set($key,$value,$content=null,$atts=null){
 			}	
 			elseif(is_object($arr)){
 				if (!property_exists($arr,$pieces[0])){
-					$arr->$pieces[0]=null;
+					$arr->{$pieces[0]}=null;
 					
 				}
 				
