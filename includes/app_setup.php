@@ -353,7 +353,7 @@ class aw2_apps_library{
 			
 			
 			
-			if(!current_user_can('develop_for_awesomeui')){
+			if(current_user_can('develop_for_awesomeui')){
 					$content_types = \aw2_library::get_array_ref('content_types');	
 					aw2\global_cache\set(["key"=>$content_types_key,"prefix"=>""],json_encode($content_types),null);
 			}	
@@ -371,7 +371,7 @@ class aw2_apps_library{
 	$return_value=null;
 	
 	if(!current_user_can('develop_for_awesomeui')){
-			$return_value=aw2\global_cache\get(["main"=>$app_key,"prefix"=>""],null,null);
+			$return_value=\aw2\global_cache\get(["main"=>$app_key,"prefix"=>""],null,null);
 	}
 	
 	if(!$return_value){
@@ -415,8 +415,8 @@ class aw2_apps_library{
 			}
 			$registered_apps[$app_post['module']]=$app;
 		}
-		if(!current_user_can('develop_for_awesomeui')){
-			aw2\global_cache\set(["key"=>$app_key,"prefix"=>""],json_encode($registered_apps),null);
+		if(current_user_can('develop_for_awesomeui')){
+			\aw2\global_cache\set(["key"=>$app_key,"prefix"=>""],json_encode($registered_apps),null);
 		}
 	}
 	else{
