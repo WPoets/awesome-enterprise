@@ -288,7 +288,7 @@ class aw2_apps_library{
 					$supports = array('title','editor','revisions','custom-fields');
 					
 				if(!post_type_exists( $collection['post_type'] ))
-					\aw2_library::register_module($collection['post_type'],ucwords($app['name'] . ' ' . rtrim($collection_name,'s')) , ucwords($app['name'] . ' ' . $collection_name),'config' );
+					\aw2_library::register_module($collection['post_type'],ucwords($app['name'] . ' ' . rtrim($collection_name,'s')) , ucwords($app['name'] . ' ' . $collection_name),'config',$supports );
 					
 				}
 				
@@ -304,7 +304,7 @@ class aw2_apps_library{
 				
 				if($collection_name == 'modules'){
 					if(!post_type_exists( $collection['post_type'] ))
-						\aw2_library::register_module($collection['post_type'],ucwords($app['name'] . ' ' . rtrim($collection_name,'s')) , ucwords($app['name'] . ' ' . $collection_name),'config' );
+						\aw2_library::register_module($collection['post_type'],ucwords($app['name'] . ' ' . rtrim($collection_name,'s')) , ucwords($app['name'] . ' ' . $collection_name),'modules' );
 
 				}
 				
