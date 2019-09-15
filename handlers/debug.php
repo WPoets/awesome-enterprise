@@ -81,7 +81,7 @@ function throw_error($errno, $errstr, $errfile, $errline,$trace=NULL){
 		$main=\util::var_dump(\aw2_library::get('module'),true);
 		$main .='<br>' . $errno . $errstr . $errfile . $errline;
 		$main .=\aw2_library::generateCallTrace();
-		$main.=\util::var_dump(\aw2_library::get('env'),true);
+		//$main.=\util::var_dump(\aw2_library::get('env'),true);
 		$main.=\util::var_dump(\aw2_library::get('env.last_shortcode'),true);
 		
 		if($trace==NULL)
@@ -148,7 +148,7 @@ function myErrorHandler($errno, $errstr, $errfile, $errline)
 	$main=\util::var_dump(\aw2_library::get('module'),true);
 	$main .='<br>' . $errno . $errstr . $errfile . $errline;
 	$main .=\aw2_library::generateCallTrace();
-	$main.=\util::var_dump(\aw2_library::get('env'),true);
+	//$main.=\util::var_dump(\aw2_library::get('env'),true);
 	$main.=\util::var_dump(\aw2_library::get('env.last_shortcode'),true);
 	
 	// create data array to store data

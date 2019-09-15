@@ -326,10 +326,10 @@ function single_email_data($connection,$config,$uid,$validation="yes"){
 
 
 function gmail_connection($config){
-	// 'api@loantap.in';
+	// 
 	$username =$config['username'];
 	
-	//api100100
+	//
 	$password =$config['password'] ;
 	 
 	 
