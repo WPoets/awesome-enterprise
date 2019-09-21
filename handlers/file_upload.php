@@ -52,6 +52,7 @@ function upload($atts,$content=null,$shortcode){
 						}
 					} 
 				} 
+				$return_value = $attach_ids;
 				if($woo_product_gal==true)
 					aw2_woo_set_prodcut_gallery($post_id,$attach_ids);
 			}
