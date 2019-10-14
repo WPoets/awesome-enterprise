@@ -91,6 +91,9 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
         state.tokenize = inBlock("meta", "?>");
         return "meta";
       } else {
+        if(stream.match(/[^A-Za-z/]/)){
+          return null;
+        }
         type = stream.eat("/") ? "closeTag" : "openTag";
         state.tokenize = inTag;
         return "tag bracket";
