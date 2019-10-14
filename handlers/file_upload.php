@@ -62,7 +62,7 @@ function upload($atts,$content=null,$shortcode){
 		}
 	}
         
-	else if($main = 'upload_to_path'){
+	else if($main == 'upload_to_path'){
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];
 			$FileType = pathinfo($files['name'], PATHINFO_EXTENSION);
@@ -97,14 +97,61 @@ function upload($atts,$content=null,$shortcode){
 			}else{
 				$return_value['success'] = 'File uploaded';
 				$return_value['filename'] = $file_name;
-				$return_value['path'] = $upload_dir.'/'.$file_name;
-				$return_value['url'] = site_url().'/'.$upload_dir.'/'.$file_name;
+				$return_value['path'] = $upload_dir.$file_name;
+				$return_value['url'] = site_url().'/'.substr($dir_name, 0, -5).'/file?filename='.$file_name;;
 			}			
 		}
 	}
-	
+
+	else if($main == 'upload_multiple_to_path'){
+		if ( $_FILES ) { 
+			$files = $_FILES[$upload_element_id];
+
+			if(is_array($files['name'])){
+				foreach ($files['name'] as $key => $value) {            
+						
+					$FileType = pathinfo($files['name'][$key], PATHINFO_EXTENSION);
+					$upload_dir = realpath(ABSPATH . '/..').'/'.$dir_name.'/';
+					if ($files["error"][$key]) {
+						$return_value[$key]['error'] = "An error occurred.";
+					}
+					
+					if(!in_array($FileType,$allowed) ) {
+						$return_value[$key]['error'] = "Sorry, only JPG, JPEG, PNG, GIF & PDF files are allowed.";
+					}
+					$tmp_file_name = $file_name.$key.'.'.$FileType;
+					
+					if($overwrite_file == 'no'){
+						// don't overwrite an existing file
+						$i = 0;
+						$name = pathinfo($tmp_file_name);
+						while (file_exists($upload_dir . $tmp_file_name)) {
+							$i++;
+							$tmp_file_name = $name["filename"] . "-" . $i . "." . $name["extension"];
+						}
+					}
+					
+					if (!file_exists($upload_dir)) {
+						mkdir($upload_dir, 0777, true);
+					}
+					// preserve file from temporary directory
+					$success = move_uploaded_file($files["tmp_name"][$key],$upload_dir . $tmp_file_name);
+					if (!$success) { 
+						$return_value[$key]['error'] = "Unable to save file.";
+					}else{
+						$return_value[$key]['success'] = 'File uploaded';
+						$return_value[$key]['filename'] = $tmp_file_name;
+						$return_value[$key]['path'] = $upload_dir.$tmp_file_name;
+						$return_value[$key]['url'] = site_url().'/'.substr($dir_name, 0, -5).'/file?filename='.$tmp_file_name;			
+					}
+				}
+			}else{
+				$return_value['error'] = "File array is Invalid.";
+			}	
+		}
+	}
+
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	
 	return $return_value;
 }	
 
