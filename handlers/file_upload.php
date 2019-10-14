@@ -95,10 +95,15 @@ function upload($atts,$content=null,$shortcode){
 			if (!$success) { 
 				$return_value['error'] = "Unable to save file.";
 			}else{
+				$file_dir =  explode('/', $dir_name);
+				$app_name = array_shift($file_dir);
+				$app_name = substr($app_name, 0, -5);
+				$file_dir = implode('/', $file_dir);
+				
 				$return_value['success'] = 'File uploaded';
 				$return_value['filename'] = $file_name;
 				$return_value['path'] = $upload_dir.$file_name;
-				$return_value['url'] = site_url().'/'.substr($dir_name, 0, -5).'/file?filename='.$file_name;;
+				$return_value['url'] = site_url().'/'.$app_name.'/file?filename='.$file_dir.'/'.$file_name;
 			}			
 		}
 	}
@@ -108,6 +113,11 @@ function upload($atts,$content=null,$shortcode){
 			$files = $_FILES[$upload_element_id];
 
 			if(is_array($files['name'])){
+				$file_dir =  explode('/', $dir_name);
+				$app_name = array_shift($file_dir);
+				$app_name = substr($app_name, 0, -5);
+				$file_dir = implode('/', $file_dir);
+
 				foreach ($files['name'] as $key => $value) {            
 						
 					$FileType = pathinfo($files['name'][$key], PATHINFO_EXTENSION);
@@ -138,11 +148,11 @@ function upload($atts,$content=null,$shortcode){
 					$success = move_uploaded_file($files["tmp_name"][$key],$upload_dir . $tmp_file_name);
 					if (!$success) { 
 						$return_value[$key]['error'] = "Unable to save file.";
-					}else{
+					}else{			
 						$return_value[$key]['success'] = 'File uploaded';
 						$return_value[$key]['filename'] = $tmp_file_name;
 						$return_value[$key]['path'] = $upload_dir.$tmp_file_name;
-						$return_value[$key]['url'] = site_url().'/'.substr($dir_name, 0, -5).'/file?filename='.$tmp_file_name;			
+						$return_value[$key]['url'] = site_url().'/'.$app_name.'/file?filename='.$file_dir.'/'.$tmp_file_name;
 					}
 				}
 			}else{
