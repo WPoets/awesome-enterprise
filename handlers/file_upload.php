@@ -74,7 +74,9 @@ function upload($atts,$content=null,$shortcode){
 			if(!in_array($FileType,$allowed) ) {
 				$return_value['error'] = "Sorry, only JPG, JPEG, PNG, GIF & PDF files are allowed.";
 			}
-			$file_name = $file_name.'.'.$FileType;
+
+			$file_name = $file_name ? $file_name.'.'.$FileType : $files['name'];
+			$original_file_name = $file_name;
 			
 			if($overwrite_file == 'no'){
 				// don't overwrite an existing file
@@ -101,6 +103,7 @@ function upload($atts,$content=null,$shortcode){
 				$file_dir = implode('/', $file_dir);
 				
 				$return_value['success'] = 'File uploaded';
+				$return_value['original_file_name'] = $original_file_name;
 				$return_value['filename'] = $file_name;
 				$return_value['path'] = $upload_dir.$file_name;
 				$return_value['url'] = site_url().'/'.$app_name.'/file?filename='.$file_dir.'/'.$file_name;
@@ -131,6 +134,9 @@ function upload($atts,$content=null,$shortcode){
 					}
 					$tmp_file_name = $file_name.$key.'.'.$FileType;
 					
+					$tmp_file_name = $file_name ? $file_name.$key.'.'.$FileType : $files['name'][$key];
+					$original_file_name = $tmp_file_name;
+
 					if($overwrite_file == 'no'){
 						// don't overwrite an existing file
 						$i = 0;
@@ -150,6 +156,7 @@ function upload($atts,$content=null,$shortcode){
 						$return_value[$key]['error'] = "Unable to save file.";
 					}else{			
 						$return_value[$key]['success'] = 'File uploaded';
+						$return_value[$key]['original_file_name'] = $original_file_name;
 						$return_value[$key]['filename'] = $tmp_file_name;
 						$return_value[$key]['path'] = $upload_dir.$tmp_file_name;
 						$return_value[$key]['url'] = site_url().'/'.$app_name.'/file?filename='.$file_dir.'/'.$tmp_file_name;
