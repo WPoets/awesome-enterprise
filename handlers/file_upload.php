@@ -12,6 +12,7 @@ function upload($atts,$content=null,$shortcode){
 		'upload_file_url'=>null,
 		'dir_name'=>null,
 		'file_name'=>null,
+		'default_extension'=>null,
 		'overwrite_file'=>'no',
 		'allowed_file_types'=>null,
 		'set_featured'=>false,
@@ -65,7 +66,11 @@ function upload($atts,$content=null,$shortcode){
 	else if($main == 'upload_to_path'){
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];
-			$FileType = pathinfo($files['name'], PATHINFO_EXTENSION);
+			$filePathInfo = pathinfo($files['name']);
+			$FileType = $filePathInfo['extension'];
+
+			$FileType = $FileType ? $FileType : $default_extension;
+			
 			$upload_dir = realpath(ABSPATH . '/..').'/'.$dir_name.'/';
 			if ($files["error"]) {
 				$return_value['error'] = "An error occurred.";
@@ -75,7 +80,7 @@ function upload($atts,$content=null,$shortcode){
 				$return_value['error'] = "Sorry, only JPG, JPEG, PNG, GIF & PDF files are allowed.";
 			}
 
-			$file_name = $file_name ? $file_name.'.'.$FileType : $files['name'];
+			$file_name = $file_name ? $file_name.'.'.$FileType : $filePathInfo['filename'].'.'.$FileType;
 			$original_file_name = $file_name;
 			
 			if($overwrite_file == 'no'){
