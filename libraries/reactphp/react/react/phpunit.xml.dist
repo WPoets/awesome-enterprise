@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="tests/bootstrap.php"
+>
+    <testsuites>
+        <testsuite name="React Test Suite">
+            <directory>./vendor/react/*/tests/</directory>
+            <!-- temporarily skip broken tests, see https://github.com/reactphp/socket/issues/207 -->
+            <exclude>./vendor/react/socket/tests/ConnectorTest.php</exclude>
+            <exclude>./vendor/react/socket/tests/DnsConnectorTest.php</exclude>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./vendor/react/*/src/</directory>
+        </whitelist>
+    </filter>
+</phpunit>
