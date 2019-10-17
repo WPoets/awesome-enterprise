@@ -1357,7 +1357,7 @@ class controllers{
 				break;
 		}
 		
-		header('Content-Disposition: attachment;filename="' . $filename);
+		header('Content-Disposition: attachment;filename="' . $filename.'"');
 		self::set_cache_header('no');
 
 		
@@ -1379,7 +1379,7 @@ class controllers{
 		$path=$folder . $filename;
 
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header('Content-Disposition: attachment;filename="' . $filename);
+		header('Content-Disposition: attachment;filename="' . $filename.'"');
 		
 		self::set_cache_header('no');
 
