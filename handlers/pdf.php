@@ -213,3 +213,34 @@ class awesome2_pdf_handler{
 	}
 
 }
+
+
+# [pdf.parse formdata|text file_path="/var/www/file.pdf" data_format="raw(default)|json|array" set="" /]
+\aw2_library::add_service('pdf.parse', 'To parse the PDF Acro or XFA form',['namespace'=>__NAMESPACE__]);
+
+function parse($atts, $content=null, $shortcode){
+	if(\aw2_library::pre_actions('all', $atts, $content, $shortcode) == FALSE ) {
+		return;
+	}
+	extract( shortcode_atts( array(
+		'main' => 'formdata',
+		'file_path'=>null, /* String Filename */
+		'data_format'=>null/* [raw(default)|json|array]*/
+	), $atts) );
+
+	if(is_null($file_path)){
+		\aw2_library::set_error('please provide file_path'); 
+		return \aw2_library::get('errors');
+	}
+	require_once plugin_dir_path( __DIR__ ).'/libraries/pdf-parser.php';
+	if('formdata' == $main){
+		$obj = new pdf_parser($file_path, $data_format);
+		$return_value = $obj->data;
+	}
+	elseif('plaindata' == $main){
+		return 'Plaindata function not implented yet!';
+	}
+
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
