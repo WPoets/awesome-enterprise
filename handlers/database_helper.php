@@ -86,8 +86,7 @@ class awesome2_query{
                     }
                     $return_value = $temp;
                 }
-                
-		
+
 		unset($temp);
 		return $return_value;
 	}		
@@ -290,7 +289,7 @@ class awesome2_query{
 	}
 
 	function get_terms(){
-		$return_value=get_terms( $this->att('taxonomies'),$this->args('orderby','order','hide_empty','include','exclude','exclude_tree','number','offset','fields','name','slug','hierarchical','search','name__like','description__like','pad_counts','get','child_of','parent','childless','cache_domain','update_term_meta_cache','meta_query'));
+		$return_value=get_terms( $this->att('taxonomies'),$this->args('taxonomy','orderby','order','hide_empty','include','exclude','exclude_tree','number','offset','fields','name','slug','hierarchical','search','name__like','description__like','pad_counts','get','child_of','parent','childless','cache_domain','update_term_meta_cache','meta_query'));
 		if(	is_object($return_value) && get_class($return_value)=='WP_Error'){
 			aw2_library::set_error($return_value); 
 			return;
@@ -503,8 +502,3 @@ class awesome2_query{
 	}
 
 }
-
-
-
-
-

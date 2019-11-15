@@ -280,6 +280,22 @@ function _date_format($value, $atts){
 	return $value;
 }
 
+
+//format date
+\aw2_library::add_service('m.hhmm_format','Format the value as HH:MM:SS and return. Use m.date_format="<format>"',['func'=>'_date_format','namespace'=>__NAMESPACE__]);
+function hhmm_format($value, $atts){
+
+	do{
+        $c[] = str_pad(isset($c) && sizeof($c) > 1 ? $value : $value % 60, isset($c) && $value < 60 ? 1 : 2, 0, STR_PAD_LEFT);
+    }while(($value = floor($value / 60)) > 0 && sizeof($c) < 3);
+    
+    $return_value = implode(":", array_reverse($c));
+
+	return $return_value;
+}
+
+
+
 //words
 \aw2_library::add_service('m.words','Break the value as words and return. Use m.words=yes or m.words="n:<no of words>"',['namespace'=>__NAMESPACE__]);
 function words($value, $atts){

@@ -186,6 +186,7 @@ function create($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+
 \aw2_library::add_service('date.diff','returns the differnce between two dates',['namespace'=>__NAMESPACE__]);
 function diff($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
