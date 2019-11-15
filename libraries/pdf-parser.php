@@ -95,7 +95,7 @@ class pdf_parser {
 		/* Remove special characters from the tags <frm:data> */
 		$xmlstring = preg_replace(array('/<([a-zA-Z0-9 _-])+[@|:|,|*|!|]/', '/<\/([a-zA-Z0-9 _-])+[@|:|,|*|!|]/'), array('<','</'), $xmlstring);
 		/* Load the xml data and get it parsed */
-		$xml = simplexml_load_string((string)$xmlstring, "SimpleXMLElement", LIBXML_NOCDATA);
+		$xml = simplexml_load_string(utf8_encode((string)$xmlstring), "SimpleXMLElement", LIBXML_NOCDATA);
 
 		if('' == $data_format){
 			return $xml;
