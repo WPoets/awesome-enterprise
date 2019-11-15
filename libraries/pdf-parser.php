@@ -85,7 +85,7 @@ class pdf_parser {
 
 		/* Fetch only the needed node data */
 		preg_match_all('/<xfa:data>(.*?)<\/xfa:data/', $tags, $match); 
-		$xmlstring = $match[1][1];
+		$xmlstring = array_pop($match[1]);
 
 		/* Sometimes its taking the closing tag from the last element to here */
 		if($xmlstring{0}=='>'){ $xmlstring = substr($xmlstring, 1); }
