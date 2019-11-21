@@ -63,19 +63,7 @@ class pdf_parser {
 					$text  = '';
 					$lines = explode("\n", $data);
 					foreach ($lines as $line) {
-						$line = trim($line);
-						/* Stream: Our requirement is only XFA form data: START **/
-						if(stristr($line, '<xfa:data')!==FALSE && stristr($line, '<xfa:datasets')===FALSE) {
-							$start = true;
-						}
-						if($start){
-							$collected[] = $line;
-						}
-						if(stristr($line, '/xfa:data')!==FALSE && stristr($line, '/xfa:datasets')===FALSE) {
-							$start = false;
-						}
-						/* Stream: Our requirement is only XFA form data: END */
-						/* Return from here, because we dont need the more data from the PDF */
+						$collected[] = trim($line);
 					}
 					$start = false;
 				}
