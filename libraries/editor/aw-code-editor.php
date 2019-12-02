@@ -449,7 +449,7 @@ function awesome_custom_button(){
 							{action:'codeeditor_update',awesome_code:aw_ui_code,post_id:post_id},
 							function(data){
 									jQuery('#uwrspin').removeClass('is-active');
-									$.iaoAlert({msg: 'Saved',
+									jQuery.iaoAlert({msg: 'Saved',
 										type: 'success',
 										mode: 'light'}
 									);
