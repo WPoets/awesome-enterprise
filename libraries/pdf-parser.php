@@ -63,19 +63,7 @@ class pdf_parser {
 					$text  = '';
 					$lines = explode("\n", $data);
 					foreach ($lines as $line) {
-						$line = trim($line);
-						/* Stream: Our requirement is only XFA form data: START **/
-						if(stristr($line, '<xfa:data')!==FALSE && stristr($line, '<xfa:datasets')===FALSE) {
-							$start = true;
-						}
-						if($start){
-							$collected[] = $line;
-						}
-						if(stristr($line, '/xfa:data')!==FALSE && stristr($line, '/xfa:datasets')===FALSE) {
-							$start = false;
-						}
-						/* Stream: Our requirement is only XFA form data: END */
-						/* Return from here, because we dont need the more data from the PDF */
+						$collected[] = trim($line);
 					}
 					$start = false;
 				}
@@ -85,7 +73,7 @@ class pdf_parser {
 
 		/* Fetch only the needed node data */
 		preg_match_all('/<xfa:data>(.*?)<\/xfa:data/', $tags, $match); 
-		$xmlstring = $match[1][1];
+		$xmlstring = array_pop($match[1]);
 
 		/* Sometimes its taking the closing tag from the last element to here */
 		if($xmlstring{0}=='>'){ $xmlstring = substr($xmlstring, 1); }
@@ -95,7 +83,7 @@ class pdf_parser {
 		/* Remove special characters from the tags <frm:data> */
 		$xmlstring = preg_replace(array('/<([a-zA-Z0-9 _-])+[@|:|,|*|!|]/', '/<\/([a-zA-Z0-9 _-])+[@|:|,|*|!|]/'), array('<','</'), $xmlstring);
 		/* Load the xml data and get it parsed */
-		$xml = simplexml_load_string((string)$xmlstring, "SimpleXMLElement", LIBXML_NOCDATA);
+		$xml = simplexml_load_string(utf8_encode((string)$xmlstring), "SimpleXMLElement", LIBXML_NOCDATA);
 
 		if('' == $data_format){
 			return $xml;
