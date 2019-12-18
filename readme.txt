@@ -38,6 +38,19 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
+= 1.3.2 =
+* Added Support for content type
+* Updated the flow for apps & rights.
+* fixed the issue with notifications not going with no attachments.
+* File Upload: Default File extention support added.
+* support for async request using reactphp
+* fixed the issue where attachment ids were not being returned.
+* issue with editor fixed: SQL query breaks when interted in the template variable.
+* Multiple file upload support added.
+* File Upload: not getting original file name issue fixed
+* added support to modifier - to convert hh:mm:ss
+* Add support to parse and read pdfs
+
 = 1.3.1 =
 * Added new mysqli library support.
 * Fixed PDF issue.
