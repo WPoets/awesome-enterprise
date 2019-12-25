@@ -225,6 +225,8 @@ function parse($atts, $content=null, $shortcode){
 	extract( shortcode_atts( array(
 		'main' => 'formdata',
 		'file_path'=>null, /* String Filename */
+		'give_attachments' => false,
+		'attachment_extension' => '',
 		'data_format'=>null/* [raw(default)|json|array]*/
 	), $atts) );
 
@@ -234,7 +236,7 @@ function parse($atts, $content=null, $shortcode){
 	}
 	require_once plugin_dir_path( __DIR__ ).'/libraries/pdf-parser.php';
 	if('formdata' == $main){
-		$obj = new pdf_parser($file_path, $data_format);
+		$obj = new pdf_parser($file_path, $data_format, $give_attachments, $attachment_extension);
 		$return_value = $obj->data;
 	}
 	elseif('plaindata' == $main){
