@@ -14,6 +14,7 @@
         $lib_path = plugin_dir_path( __DIR__ ) . 'libraries/docx-creator/vendor/autoload.php';
         require_once $lib_path;
         
+        \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
         $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($path);
         foreach( $data['flat'] as $item=> $value ){
             $templateProcessor->setValue($item, $value);
