@@ -303,6 +303,8 @@ function awesome_init_codemirror( $post ) {
 				  "F11": function(cm) {
 					  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
 				  },
+				  "Shift-Ctrl-A": cm => CodeMirror.commands.foldAll(cm),
+				  "Shift-Ctrl-S": cm => CodeMirror.commands.unfoldAll(cm),
 				  "Esc": function(cm) {
 					  cm.setOption("fullScreen", !cm.getOption("fullScreen"));
 				  },

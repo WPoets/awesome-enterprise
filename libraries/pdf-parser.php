@@ -2,15 +2,31 @@
 
 class pdf_parser {
 
-	function __construct($filename, $data_format = NULL) {
-		$this->data = $this->parseForm($filename, $data_format);
+	function __construct($filename, $data_format = NULL, $give_attachments = false, $attachment_extension) {
+		$this->data = $this->parseForm($filename, $data_format, $give_attachments, $attachment_extension);
 	}
 
-	function parseForm($file_path, $data_format = '')
+	function parseForm($file_path, $data_format = '', $give_attachments = false, $attachment_extension)
 	{
 		$start = false;
 		$content = file_get_contents($file_path);
-
+		
+		if($give_attachments){
+			preg_match_all('/Type\/Filespec\/UF\((.*?)\)/', $content, $match);
+			$file_names = $match[1];
+			$attachments = [];
+			foreach ($file_names as $i => $file) {
+				preg_match("/.*\.(" . $attachment_extension . ")$/", $file, $output_array);
+				if(!$output_array[0]){
+					continue;
+				}
+				
+				$a_obj = $this->getDataArray($content, 'Type/Filespec/UF(' . $file . ')', 'endstream');
+				$data = trim(substr($a_obj[0], strpos($a_obj[0],'stream') + strlen('stream'), - strlen('endstream')));
+				$attachments[$file] =@ gzuncompress($data);
+			}
+		}
+		
 		/**
 		* Split apart the PDF document into sections. We will address each
 		* section separately.
@@ -41,10 +57,7 @@ class pdf_parser {
 		foreach ($a_chunks as $key => $chunk) {
 		// Look at each chunk decide if we can decode it by looking at the contents of the filter
 			if (isset($chunk['data'])) {
-				// look at the filter to find out which encoding has been used
-				//if($key < 200)	print_r(zlib_decode ($chunk['data']));
-				//if($key < 200)	print_r(gzdeflate ($chunk['data']));
-				
+				$tst =@ gzuncompress($chunk['data']);				
 				if (strpos($chunk['filter'], 'FlateDecode') !== false) {
 					// Use gzuncompress but suppress error messages.
 					$data =@ gzuncompress($chunk['data']);
@@ -94,7 +107,9 @@ class pdf_parser {
 			return $json;
 		}
 		if('array' == $data_format){
-			return json_decode($json, true);
+			$arr = json_decode($json, true);
+			$arr['aw2_attachments'] = $attachments;
+			return $arr;
 		}
 
 	}
