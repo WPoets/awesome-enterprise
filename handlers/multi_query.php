@@ -20,6 +20,10 @@ function update($atts,$content=null,$shortcode){
 	
 	$sql=\aw2_library::parse_shortcode($content);
 	
+	//fix for % placeholder, that was introduced with esc_sql
+	global $wpdb;
+	$sql = $wpdb->remove_placeholder_escape($sql);
+	
 	if(mysqli_multi_query(\aw2_library::$conn,$sql)){
 			do{
 				if (mysqli_store_result(\aw2_library::$conn)) {}
@@ -61,6 +65,10 @@ function select($atts,$content=null,$shortcode){
 	
 	
 	$sql=\aw2_library::parse_shortcode($content);
+	
+	//fix for % placeholder, that was introduced with esc_sql
+	global $wpdb;
+	$sql = $wpdb->remove_placeholder_escape($sql);
 	
 	$return_value=array();		
 	if(mysqli_multi_query(\aw2_library::$conn,$sql)){
