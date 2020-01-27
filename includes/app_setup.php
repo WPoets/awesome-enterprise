@@ -748,6 +748,17 @@ class aw2_apps_library{
 				'order'            => 'DESC',
 				'post_type'        => $app['collection']['pages']['post_type'],
 				'post_status'      => 'publish',
+				'meta_query'  => array(
+					 'relation' => 'OR',
+					array(
+					'key'      => '_yoast_wpseo_meta-robots-noindex',
+					'compare' => 'NOT EXISTS'
+					)
+					,array(
+					'key'      => '_yoast_wpseo_meta-robots-noindex',
+					'value'      => '2'
+					)
+				),	
 				'suppress_filters' => true
 			);
 			
@@ -791,6 +802,17 @@ class aw2_apps_library{
 				'order'            => 'DESC',
 				'post_type'        => $app['collection']['posts']['post_type'],
 				'post_status'      => 'publish',
+				'meta_query'  => array(
+					 'relation' => 'OR',
+					array(
+					'key'      => '_yoast_wpseo_meta-robots-noindex',
+					'compare' => 'NOT EXISTS'
+					)
+					,array(
+					'key'      => '_yoast_wpseo_meta-robots-noindex',
+					'value'      => '2'
+					)
+				),	
 				'suppress_filters' => true
 			);
 			
