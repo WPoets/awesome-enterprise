@@ -106,7 +106,8 @@ class awesome2_register{
 		
 		$custom_meta_boxes=&\aw2_library::get_array_ref('custom_meta_boxes');
 		
-		$args = $this->args();
+		$args = $this->atts;
+		
 		$id = $args['id'];
 		$custom_meta_boxes[$id]=$args;
 		
