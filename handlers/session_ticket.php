@@ -247,6 +247,22 @@ function get($atts,$content=null,$shortcode){
 	
 }
 
+\aw2_library::add_service('session_ticket.query','Get all values of a query',['namespace'=>__NAMESPACE__]);
+
+function query($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null
+	), $atts) );
+
+	if(!$main)return 'Main must be set';
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	$return_value= $redis->keys($main);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
 \aw2_library::add_service('session_ticket.generate_token','Generate action token against ticket.',['namespace'=>__NAMESPACE__]);
 
 function generate_token($atts,$content=null,$shortcode){
