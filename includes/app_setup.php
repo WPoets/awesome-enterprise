@@ -1853,10 +1853,12 @@ class controllers{
 				$layout='layout';
 			}
 			if(isset($app_config['posts-single-layout'])){
+				
 				$layout='posts-single-layout';
 			}
 			
 			if(!empty($layout)){
+				aw2_library::set('current_post',$post);
 				$output = aw2_library::module_run($app['collection']['config'],$layout,null,null);
 			}
 		}
