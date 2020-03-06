@@ -20,8 +20,7 @@ class pdf_parser {
 				if(!$output_array[0]){
 					continue;
 				}
-				
-				$a_obj = $this->getDataArray($content, 'Type/Filespec/UF(' . $file . ')', 'endstream');
+				$a_obj = $this->getDataArray($content, $attachment_extension . '>>stream', 'endstream');
 				$data = trim(substr($a_obj[0], strpos($a_obj[0],'stream') + strlen('stream'), - strlen('endstream')));
 				$attachments[$file] =@ gzuncompress($data);
 			}
