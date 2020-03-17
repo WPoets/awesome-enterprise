@@ -1044,7 +1044,7 @@ class awesome_app{
 		$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
 		
 		if(isset($rights['access']['title'])){
-			$login_url .= '&title='. urlencode($rights['access']['title']);
+			$login_url .= '&title='. urlencode(strip_tags($rights['access']['title']));
 		}
 		
 		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
