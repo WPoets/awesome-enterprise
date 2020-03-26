@@ -1323,7 +1323,8 @@ class controllers{
 
 
 		header("Content-type: text/css");
-		
+		$c=&aw2_library::get_array_ref('cache');
+		$c['enable']='yes';
 		self::set_cache_header('yes');
 		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
@@ -1343,7 +1344,10 @@ class controllers{
 		
 		header("Content-type: application/javascript");
 		header("Service-Worker-Allowed: /");
+		$c=&aw2_library::get_array_ref('cache');
+		$c['enable']='yes';
 		self::set_cache_header('yes');
+		
 		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
 		exit();	
