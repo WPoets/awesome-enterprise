@@ -5,13 +5,13 @@ class pdf_parser {
 	function __construct($filename, $data_format = NULL, $give_attachments = false, $attachment_extension) {
 		$this->data = $this->parseForm($filename, $data_format, $give_attachments, $attachment_extension);
 	}
-
+	
 	function parseForm($file_path, $data_format = '', $give_attachments = false, $attachment_extension)
 	{
 		$start = false;
-		$content = file_get_contents($file_path);
-		
-		if($give_attachments){
+	    $content = @file_get_contents($file_path, FILE_BINARY);
+        
+        if($give_attachments){
 			preg_match_all('/Type\/Filespec\/UF\((.*?)\)/', $content, $match);
 			$file_names = $match[1];
 			$attachments = [];
@@ -30,8 +30,10 @@ class pdf_parser {
 		* Split apart the PDF document into sections. We will address each
 		* section separately.
 		*/
-		$a_obj    = $this->getDataArray($content, 'obj', 'endobj');
-		$j        = 0;
+		preg_match_all("#obj[\n|\r](.*)endobj[\n|\r]#ismU", $content, $a_objs); 
+		$a_obj = @$a_objs[1];
+		  
+        $j        = 0;
 		$a_chunks = array();
 		/**
 		* Attempt to extract each part of the PDF document into a 'filter'
@@ -40,14 +42,12 @@ class pdf_parser {
 		*/
 		foreach ($a_obj as $k => $obj) {
 			
-			$a_filter = $this->getDataArray($obj, '<<', '>>');
+            preg_match("#<<(.*)>>#ismU", $obj, $a_filter);
 			if (is_array($a_filter) && isset($a_filter[0])) {
-				$a_chunks[$j]['filter'] = $a_filter[0];
-				$a_data = $this->getDataArray($obj, 'stream', 'endstream');
-				
-				if (is_array($a_data) && isset($a_data[0])) {
-					$a_chunks[$j]['data'] = trim(substr($a_data[0], strlen('stream'), strlen($a_data[0]) - strlen('stream') - strlen('endstream')));
-				}
+                $a_chunks[$j]['filter'] = $a_filter[1];
+			    preg_match("#stream[\n|\r](.*)endstream[\n|\r]#ismU", $obj, $stream);
+                $a_data = ltrim($stream[1]);
+                $a_chunks[$j]['data'] = $a_data;
 				$j++;
 			}
 		}
@@ -56,7 +56,7 @@ class pdf_parser {
 		foreach ($a_chunks as $key => $chunk) {
 		// Look at each chunk decide if we can decode it by looking at the contents of the filter
 			if (isset($chunk['data'])) {
-				$tst =@ gzuncompress($chunk['data']);				
+				$tst =@ gzuncompress($chunk['data']);
 				if (strpos($chunk['filter'], 'FlateDecode') !== false) {
 					// Use gzuncompress but suppress error messages.
 					$data =@ gzuncompress($chunk['data']);
@@ -66,7 +66,7 @@ class pdf_parser {
 				}
 				else {
 					$data = $chunk['data'];
-				}
+                }
 				if (trim($data) != '') {
 					// If we got data then attempt to extract it.
 					if (strpos($data, '/CIDInit') === 0) {
@@ -84,7 +84,7 @@ class pdf_parser {
 		$tags = implode('', $collected);
 
 		/* Fetch only the needed node data */
-		preg_match_all('/<xfa:data>(.*?)<\/xfa:data/', $tags, $match); 
+        preg_match_all('/<xfa:data>(.*?)<\/xfa:data/', $tags, $match);
 		$xmlstring = array_pop($match[1]);
 
 		/* Sometimes its taking the closing tag from the last element to here */
@@ -94,8 +94,8 @@ class pdf_parser {
 
 		/* Remove special characters from the tags <frm:data> */
 		$xmlstring = preg_replace(array('/<([a-zA-Z0-9 _-])+[@|:|,|*|!|]/', '/<\/([a-zA-Z0-9 _-])+[@|:|,|*|!|]/'), array('<','</'), $xmlstring);
-		/* Load the xml data and get it parsed */
-		$xml = simplexml_load_string(utf8_encode((string)$xmlstring), "SimpleXMLElement", LIBXML_NOCDATA);
+        /* Load the xml data and get it parsed */
+        $xml = simplexml_load_string(utf8_encode((string)$xmlstring), "SimpleXMLElement", LIBXML_NOCDATA);
 
 		if('' == $data_format){
 			return $xml;
@@ -119,8 +119,8 @@ class pdf_parser {
 	* @param  string $start_word The start of each section of data.
 	* @param  string $end_word   The end of each section of data.
 	* @return array              The array of data.
-	*/
-	function getDataArray($data, $start_word, $end_word)
+    */
+    function getDataArray($data, $start_word, $end_word)
 	{
 		$start     = 0;
 		$end       = 0;
