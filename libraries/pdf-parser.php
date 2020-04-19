@@ -30,7 +30,7 @@ class pdf_parser {
 		* Split apart the PDF document into sections. We will address each
 		* section separately.
 		*/
-		preg_match_all("#obj[\n|\r](.*)endobj[\n|\r]#ismU", $content, $a_objs); 
+		preg_match_all("#obj(.*)endobj#ismU", $content, $a_objs); 
 		$a_obj = @$a_objs[1];
 		  
         $j        = 0;
@@ -41,11 +41,11 @@ class pdf_parser {
 		* data.
 		*/
 		foreach ($a_obj as $k => $obj) {
-			
+			$obj = ltrim($obj);
             preg_match("#<<(.*)>>#ismU", $obj, $a_filter);
 			if (is_array($a_filter) && isset($a_filter[0])) {
                 $a_chunks[$j]['filter'] = $a_filter[1];
-			    preg_match("#stream[\n|\r](.*)endstream[\n|\r]#ismU", $obj, $stream);
+			    preg_match("#stream(.*)endstream#ismU", $obj, $stream);
                 $a_data = ltrim($stream[1]);
                 $a_chunks[$j]['data'] = $a_data;
 				$j++;
