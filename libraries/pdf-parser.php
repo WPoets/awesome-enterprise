@@ -14,15 +14,11 @@ class pdf_parser {
         if($give_attachments){
 			preg_match_all('/Type\/Filespec\/UF\((.*?)\)/', $content, $match);
 			$file_names = $match[1];
-			$attachments = [];
-			foreach ($file_names as $i => $file) {
-				preg_match("/.*\.(" . $attachment_extension . ")$/", $file, $output_array);
-				if(!$output_array[0]){
-					continue;
-				}
-				$a_obj = $this->getDataArray($content, $attachment_extension . '>>stream', 'endstream');
-				$data = trim(substr($a_obj[0], strpos($a_obj[0],'stream') + strlen('stream'), - strlen('endstream')));
-				$attachments[$file] =@ gzuncompress($data);
+			preg_match_all("#$attachment_extension>>stream(.*)endstream#ismU", $content, $attachments); 
+			$attachments = $attachments[1];
+			
+			for($i=0; $i < count($attachments); $i++){
+				$final_attrs[$file_names[$i]] = @gzuncompress(trim($attachments[$i]));	
 			}
 		}
 		
@@ -56,7 +52,6 @@ class pdf_parser {
 		foreach ($a_chunks as $key => $chunk) {
 		// Look at each chunk decide if we can decode it by looking at the contents of the filter
 			if (isset($chunk['data'])) {
-				$tst =@ gzuncompress($chunk['data']);
 				if (strpos($chunk['filter'], 'FlateDecode') !== false) {
 					// Use gzuncompress but suppress error messages.
 					$data =@ gzuncompress($chunk['data']);
@@ -66,7 +61,7 @@ class pdf_parser {
 				}
 				else {
 					$data = $chunk['data'];
-                }
+				}
 				if (trim($data) != '') {
 					// If we got data then attempt to extract it.
 					if (strpos($data, '/CIDInit') === 0) {
@@ -81,6 +76,7 @@ class pdf_parser {
 				}
 			}
 		}
+
 		$tags = implode('', $collected);
 
 		/* Fetch only the needed node data */
@@ -107,7 +103,9 @@ class pdf_parser {
 		}
 		if('array' == $data_format){
 			$arr = json_decode($json, true);
-			$arr['aw2_attachments'] = $attachments;
+			if($final_attrs){
+				$arr['aw2_attachments'] = $final_attrs;
+			}
 			return $arr;
 		}
 
@@ -119,7 +117,9 @@ class pdf_parser {
 	* @param  string $start_word The start of each section of data.
 	* @param  string $end_word   The end of each section of data.
 	* @return array              The array of data.
-    */
+	*/
+	
+	/*
     function getDataArray($data, $start_word, $end_word)
 	{
 		$start     = 0;
@@ -135,6 +135,7 @@ class pdf_parser {
 		}
 		return $a_results;
 	}
+	*/
 }
 
 /*
