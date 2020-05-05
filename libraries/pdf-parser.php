@@ -10,9 +10,10 @@ class pdf_parser {
 	{
 		$start = false;
 	    $content = @file_get_contents($file_path, FILE_BINARY);
-        
+		
         if($give_attachments){
-			preg_match_all('/Type\/Filespec\/UF\((.*?)\)/', $content, $match);
+			preg_match_all('/Type\/Filespec\/UF\((.*?)\)>>/', $content, $match);
+			
 			$file_names = $match[1];
 			preg_match_all("#$attachment_extension>>stream(.*)endstream#ismU", $content, $attachments); 
 			$attachments = $attachments[1];
