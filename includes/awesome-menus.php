@@ -30,7 +30,7 @@ class aw2_menu{
 		ksort($registered_apps);
 		
 		foreach($registered_apps as $key => $app){
-			add_menu_page($app['name'], $app['name'].' App', 'manage_options', 'awesome-app-'.$app['slug'], 'aw2_apps_library::show_app_pages', 'dashicons-admin-multisite',3);
+			add_menu_page($app['name'], $app['name'].' App', 'manage_options', 'awesome-app-'.$app['slug'], function() use($app){aw2_apps_library::show_app_pages($app);}, 'dashicons-admin-multisite',3);
 			
 			foreach($app['collection'] as $collection_name => $collection){
 				
