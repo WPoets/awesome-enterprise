@@ -679,8 +679,14 @@ class aw2_apps_library{
 		$mod = $wpdb->get_var( $sql )." +00:00";
 				
 		//$date = $wpseo_sitemaps->get_last_modified('aw2_app');
-		$timezone =  new WPSEO_Sitemap_Timezone();
-		$mod = $timezone->format_date($mod );
+		if(!class_exists(WPSEO_Date_Helper)){
+			$timezone =  new WPSEO_Sitemap_Timezone();
+			$mod = $timezone->format_date($mod );
+		}
+		else{
+			$date = new WPSEO_Date_Helper();
+			$mod = $date->format($mod );
+		}
 		
 		$registered_apps=&aw2_library::get_array_ref('apps');
 		
