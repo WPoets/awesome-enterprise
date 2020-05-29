@@ -19,6 +19,7 @@ add_filter( 'wpseo_sitemap_index', 'aw2_apps_library::add_apps_to_yoast_sitemap'
 //To remove all the app pages and app post from the sitemap_index
 add_filter( 'wpseo_sitemap_exclude_post_type', 'aw2_apps_library::sitemap_exclude_post_type', 10, 2 );
 
+require_once('app-rights.php');
 require_once('awesome-menus.php');
 
 class aw2_apps_library{
@@ -545,10 +546,12 @@ class aw2_apps_library{
 			wp_redirect( esc_url_raw( add_query_arg( array( 'awesome_purge' =>'done' ) ) ) );
 	}
 	
-	static function show_app_pages(){
-		echo '<div class="wrap ">';        	
-		echo 'Not Yet Implemented';
-		echo '</div>';		
+	static function show_app_pages($app){
+		if('root' != $app['slug']){
+			rights_options_page($app);
+		}else{
+			echo 'not yet implemented';
+		}
 	}
 	
 	
@@ -755,16 +758,16 @@ class aw2_apps_library{
 				'post_type'        => $app['collection']['pages']['post_type'],
 				'post_status'      => 'publish',
 				'meta_query'  => array(
-					 'relation' => 'OR',
-					array(
-					'key'      => '_yoast_wpseo_meta-robots-noindex',
-					'compare' => 'NOT EXISTS'
-					)
-					,array(
-					'key'      => '_yoast_wpseo_meta-robots-noindex',
-					'value'      => '2'
-					)
-				),	
+					'relation' => 'OR',
+				   array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'compare' => 'NOT EXISTS'
+				   )
+				   ,array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'value'      => '2'
+				   )
+			   ),
 				'suppress_filters' => true
 			);
 			
@@ -809,16 +812,16 @@ class aw2_apps_library{
 				'post_type'        => $app['collection']['posts']['post_type'],
 				'post_status'      => 'publish',
 				'meta_query'  => array(
-					 'relation' => 'OR',
-					array(
-					'key'      => '_yoast_wpseo_meta-robots-noindex',
-					'compare' => 'NOT EXISTS'
-					)
-					,array(
-					'key'      => '_yoast_wpseo_meta-robots-noindex',
-					'value'      => '2'
-					)
-				),	
+					'relation' => 'OR',
+				   array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'compare' => 'NOT EXISTS'
+				   )
+				   ,array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'value'      => '2'
+				   )
+			   ),
 				'suppress_filters' => true
 			);
 			
@@ -1008,56 +1011,115 @@ class awesome_app{
 		aw2_library::parse_shortcode($init['code']);
 	}
 	
-	public function check_rights($query){
-		
+	public function check_rights($query){		//any changes to this function or related to this function should reflect in the if.user_can_access service
 		if(current_user_can('administrator'))return;
 		
-		if(!isset($this->configs['rights']))return;
+		if(isset($this->configs['rights'])){
+			
+			aw2_library::parse_shortcode($this->configs['rights']['code']);
+			
+			$rights =&aw2_library::get_array_ref('app','rights');
+			
+			if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
+			
+			if(strtolower($rights['access']['mode']) === 'private'){
+				wp_die('Access to this app is private.');
+			}
+			
+			// must be logged in
+			if(!isset($rights['auth']) && is_user_logged_in() )return;
+
+			foreach($rights['auth'] as $auth){
+				if(is_callable(array('awesome_auth', $auth['method']))){
+					$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
+					if($pass === true)return;
+				}
+			}
 		
-		aw2_library::parse_shortcode($this->configs['rights']['code']);
+			$login_url=wp_login_url();
+			if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
+			$login_url=site_url().'/'. $rights['access']['unlogged'];
+			}
+			
+			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			
+			if(isset($rights['access']['title'])){
+				$login_url .= '&title='. urlencode($rights['access']['title']);
+			}
+			
+			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+			wp_redirect( $login_url );
+			exit();
 		
-		$rights =&aw2_library::get_array_ref('app','rights');
+		}else{
+			$options = get_option('awesome-app-' . $this->slug);
+			if(!isset($options) || ('1' != $options['enable_rights'])) return true;
+			
+			if('1' == $options['enable_vsession']){
+				$vsession_key = $options['vsession_key'] ? $options['vsession_key'] : 'email';
+				$vsession = awesome_auth::vsession2($vsession_key);
+				if($vsession) return;
+			}
+			
+			if('1' == $options['enable_single_access']){
+				$auth_for_single = array();
+				$auth_for_single['all_roles'] = $options['single_access_roles'];
+				$has_single_access = awesome_auth::single_access($auth_for_single);
+				if($has_single_access) return;
+			}
+			
+			$modular_check = $this->check_modulewise_rights($options);
+			if($modular_check) return;
+			
+			$login_url=wp_login_url();
+			if('' != $options['unlogged'] && $options['unlogged'] !== 'wp_login'){
+				$login_url=site_url().'/'. $options['unlogged'];
+			}
+			
+			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			
+			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+			wp_redirect( $login_url );
+			exit();
+		}
+	}
+
+	public function check_modulewise_rights($options){
+		if(!is_user_logged_in()) return false;
 		
-		if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
+		global $wp;
+		$current_url = home_url( add_query_arg( array(), $wp->request ) );
+		$path = str_replace($this->base_path, '', $current_url);
+		$path = explode('/', $path);
+		$module = $path[1];
 		
-		if(strtolower($rights['access']['mode']) === 'private'){
-			wp_die('Access to this app is private.');
+		if('ajax' == $module){
+			$module = $path[2];
 		}
 		
-		// must be logged in
-		if(!isset($rights['auth']) && is_user_logged_in() )return;
+		if('css' == $module || 'js' == $module || 't' == $module){
+			return true;
+		}
 		
+		if(!$module){
+			$module = 'home';
+		}
 		
-		//must be authenticated
-
-
-					
-		foreach($rights['auth'] as $auth){
-			if(is_callable(array('awesome_auth', $auth['method']))){
-				$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
-				if($pass === true)return;
+		$roles = $options['roles'];
+		if( 0 == count($roles) ) return true;		//return true if no roles selected
+		
+		foreach($roles as $key => $val){
+			if(current_user_can($key)){
+				if('1' == $val['access']) return true;
+				
+				$acees_cap = 'm_' . $this->slug . '_' . $module;
+				if(current_user_can($acees_cap)) return true;
 			}
 		}
-			
-		//all conditions failed, but use needs to be logged-in so redirect
-
-		$login_url=wp_login_url();
-		if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
-		   $login_url=site_url().'/'. $rights['access']['unlogged'];
-		}
 		
-		$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-		$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
-		
-		if(isset($rights['access']['title'])){
-			$login_url .= '&title='. urlencode(strip_tags($rights['access']['title']));
-		}
-		
-		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-		wp_redirect( $login_url );
-		exit();
-		
-		
+		return false;
 	}
 	
 	public function resolve_route($pieces,$query){
@@ -1140,21 +1202,20 @@ class awesome_auth{
 		
 		//check roles
 		$all_roles = explode(',',$auth['all_roles']);
-			
+		
 		foreach($all_roles as $role){
 			
-			if(!in_array($role,(array)$user->roles)){
-				if(isset($_REQUEST['force_single_access']))
-				{
-					echo 'error::Role Mismatch';
-					exit;
-				}		
-				else
-					return false;
-			} //if any of the role/capability is not valid throw the user
+			if(in_array($role,(array)$user->roles)){
+				return true;
+			}
 		}
-	
-		return true; //user is logged in and has all the roles/capabilities.
+		
+		if(isset($_REQUEST['force_single_access'])){	 //if any of the role/capability is not valid throw the user
+			echo 'error::Role Mismatch';
+			exit;
+		}
+		
+		return false; //user is logged in and has all the roles/capabilities.
 	}
 	
 	static function vsession($auth){
@@ -1202,6 +1263,49 @@ class awesome_auth{
 		$reply=aw2\vsession\create('','','');
 		return false;
 		
+	}
+
+	static function vsession2($vsession_key){
+		
+		//check for cookie -> 
+		if(isset($_COOKIE['aw2_vsession'])){
+						
+			$app = &aw2_library::get_array_ref('app'); 
+		//cookie = yes
+			//get app_valid status
+			$name=$app['slug'].'_valid';
+			
+			$vsession=\aw2\vsession\get([],null,'');
+			
+			if(isset($vsession[$name]) && $vsession[$name] === 'yes'){
+				$app['session']=$vsession;
+				return true;
+			}
+			
+			if(isset($vsession[$vsession_key])){
+				$app['user'][$vsession_key]= $vsession[$vsession_key];
+				if('' != $vsession[$vsession_key]){
+					$app['auth']['status']= 'success';
+				}else{
+					$app['auth']['status']= 'error';
+				}
+			}
+			
+			//if auth_data.status == success
+			if(isset($app['auth']['status']) && $app['auth']['status'] == 'success'){
+					//set app_valid=yes and return true
+				$atts['key']=$app['slug'].'_valid';
+				$atts['value']='yes';
+				\aw2\vsession\set($atts,null,'');
+				return true;
+			}	
+		}
+		
+		//at this stage with either cookie is not set or user did not authenticate
+		//create a cookie for vsession
+		
+		$reply=aw2\vsession\create('','','');
+		return false;
 	}
 }
 
@@ -1863,7 +1967,7 @@ class controllers{
 				$layout='layout';
 			}
 			if(isset($app_config['posts-single-layout'])){
-				
+
 				$layout='posts-single-layout';
 			}
 			
