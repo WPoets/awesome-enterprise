@@ -1532,9 +1532,8 @@ class controllers{
 				break;	
 		}			
 		
-		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-		header("Pragma: no-cache"); // HTTP 1.0.
-		header("Expires: 0"); // Proxies.
+		header("Cache-Control: max-age=‭2592000‬, public");
+		header("Pragma: public");
 		
 		$result=file_get_contents($path);	
 		echo $result;
