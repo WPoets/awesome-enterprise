@@ -1532,7 +1532,7 @@ class controllers{
 				break;	
 		}			
 		
-		header("Cache-Control: max-age=‭2592000‬, public");
+		header("Cache-Control: max-age=2792000,public");
 		header("Pragma: public");
 		
 		$result=file_get_contents($path);	
