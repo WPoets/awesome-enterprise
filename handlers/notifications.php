@@ -10,7 +10,8 @@ function wpmail($atts,$content=null,$shortcode){
         'email' => null,
         'log' => null,
         'notification_object_type' => null,    
-        'notification_object_id' => null
+        'notification_object_id' => null,
+        'tracking_set' => null
     ), $atts, 'aw2_wpmail' ) );
     
     // if email is null, return
@@ -20,10 +21,13 @@ function wpmail($atts,$content=null,$shortcode){
     if(!isset($email['subject']))$email['subject']='';
     if(!isset($email['message']))$email['message']='';
 	if(!isset($email['headers']))$email['headers']='';
-    if(!isset($email['attachments']) || empty($email['attachments']['file_path']))$email['attachments']=array();
+    if(!isset($email['attachment']))$email['attachment']='';
+	
+	$tracking = array();
+    if(!empty($tracking_set))$tracking['tracking_set']=$tracking_set;
 
     // Log data in db
-    \notification_log('mail', 'wpmail', $email, $log, $notification_object_type, $notification_object_id);
+    \notification_log('mail', 'wpmail', $email, $log, $notification_object_type, $notification_object_id,$tracking);
 
 	wp_mail( 
         $email['to']['email_id'], 
@@ -51,7 +55,8 @@ function sendgrid($atts,$content=null,$shortcode){
 		'email' => null,
         'log' => null,
         'notification_object_type' => null,    
-        'notification_object_id' => null
+        'notification_object_id' => null,
+        'tracking_set' => null
     ), $atts, 'aw2_sendgrid' ) );
     
     // if email is null, return
@@ -109,10 +114,19 @@ function sendgrid($atts,$content=null,$shortcode){
 			$mail->personalization[0]->addCc($cc_to);
 		}
 	}
+	
+	//$email['reply_to']['email_id']
+	if(isset($email['reply_to']['email_id'])){		
+		$reply_to_emails = explode(",",$email['reply_to']['email_id']);
+		foreach($reply_to_emails as $val){
+			$reply_to = new \SendGrid\Email(null, $val);
+			$mail->setReplyTo($reply_to);
+		}
+	}
 
     $response = $sendgrid->client->mail()->send()->post($mail);
-
-    //get headers from the response->headers();
+	
+	//get headers from the response->headers();
     $header = $response->headers();
 
     //getting the message id from the header response
@@ -122,7 +136,8 @@ function sendgrid($atts,$content=null,$shortcode){
     $tracking['tracking_id'] = trim($messageId) ;
     $tracking['tracking_status'] = 'sent_to_provider';
     $tracking['tracking_stage'] = 'sent_to_provider';
-
+	if(!empty($tracking_set))$tracking['tracking_set']=$tracking_set;
+    
     // Log data in db
     \notification_log('mail', 'sendgrid', $email, $log, $notification_object_type, $notification_object_id, $tracking);
 
@@ -133,6 +148,7 @@ function sendgrid($atts,$content=null,$shortcode){
     }
 
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	
 	return $return_value;
 }
 

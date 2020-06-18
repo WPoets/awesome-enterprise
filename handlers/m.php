@@ -354,6 +354,36 @@ function arr_item($value, $atts){
 	return $value;
 }
 
+
+//unset_item
+\aw2_library::add_service('m.unset_item','If the value is an array, unset element from array and return array. Use m.unset_item=<first|last| element_key>',['namespace'=>__NAMESPACE__]);
+function unset_item($value, $atts){
+	
+	if(is_array($value)){
+		
+		
+		$element = $atts['unset_item'];
+		
+		if($element){
+			switch ($element) {
+				case 'first':
+					array_shift($value);
+					break;
+				case 'last':
+					array_pop($value);
+					break;
+				default:
+					//$value = $element;
+					unset($value[$element]);
+					break;
+			}
+		}
+		
+	}
+	return $value;
+}
+
+
 //shuffle
 \aw2_library::add_service('m.shuffle','If the value is an array, shuffle the elements and return. Use m.shuffle',['func'=>'_shuffle','namespace'=>__NAMESPACE__]);
 function _shuffle($value, $atts){
@@ -413,7 +443,6 @@ function to_str($value, $atts){
 //to number
 \aw2_library::add_service('m.to_num','Typecast the value to float and return. Use m.to_num',['namespace'=>__NAMESPACE__]);
 function to_num($value, $atts){
-	echo $value;
 	$value = (float) $value;
 	return $value;
 }
@@ -447,5 +476,12 @@ function prepend($value, $atts){
 	$prepend = $atts['prepend'];
 	$value = $prepend.$value;
 	
+	return $value;
+}
+
+//round to value
+\aw2_library::add_service('m.num_round','round the given value and return. Use m.num_round',['namespace'=>__NAMESPACE__]);
+function num_round($value, $atts){
+	$value = round($value);
 	return $value;
 }

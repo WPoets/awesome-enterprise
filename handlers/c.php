@@ -47,8 +47,16 @@ function gt($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$gt = \aw2_library::resolve_chain($atts['gt']);
 	
-	if($cond < $gt)
-		return false;
+	// default return value
+	$returnValue = false;
+	
+	// check condition
+	if($cond > $gt)
+		$returnValue = true;
+	
+	// return result
+	return $returnValue;
+	
 }
 
 \aw2_library::add_service('c.lt','Check if one param is less than the other. Use c.cond and c.lt',['namespace'=>__NAMESPACE__]);
@@ -56,24 +64,49 @@ function lt($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$lt = \aw2_library::resolve_chain($atts['lt']);
 	
-	if($cond > $lt)
-		return false;
+	// default return value
+	$returnValue = false;
+	
+	// check condition
+	if($cond < $lt)
+		$returnValue = true;
+	
+	// return result
+	return $returnValue;
 }
 
 \aw2_library::add_service('c.gte','Check if one param is greater than or equal to the other. Use c.cond and c.gte',['namespace'=>__NAMESPACE__]);
 function gte($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$gte = \aw2_library::resolve_chain($atts['gte']);
-	if($cond <= $gte)
-		return false;
+	
+	// default return value
+	$returnValue = false;
+	
+	// check condition
+	if($cond >= $gte)
+		$returnValue = true;
+	
+	// return result
+	return $returnValue;
+	
 }
 
 \aw2_library::add_service('c.lte','Check if one param is less than or equal to the other. Use c.cond and c.lte',['namespace'=>__NAMESPACE__]);
 function lte($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$lte = \aw2_library::resolve_chain($atts['lte']);
-	if($cond >= $lte)
-		return false;
+	
+	// default return value
+	$returnValue = false;
+	
+	// check condition
+	if($cond <= $lte)
+		$returnValue = true;
+	
+	// return result
+	return $returnValue;
+
 }
 
 \aw2_library::add_service('c.true','Check if the param is true. Use c.true',['func'=>'_true','namespace'=>__NAMESPACE__]);

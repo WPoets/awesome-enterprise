@@ -78,3 +78,40 @@ function merge_with($value, $atts){
 	return $value;
 }
 
+//merge_r_with
+\aw2_library::add_service('o.merge_r_with','Merge the value with specified variable. Use o.merge_with',['namespace'=>__NAMESPACE__]);
+function merge_r_with($value, $atts){
+	if(is_array($value)){
+		$merge_with_array=\aw2_library::get($atts['merge_r_with']);
+		if(!is_array($merge_with_array))$merge_with_array=array();
+		$final_array=array_merge_deep_array([$merge_with_array,$value]);
+		\aw2_library::set($atts['merge_r_with'],$final_array,null,$atts);
+		$value='';	
+	}
+	return $value;
+}
+
+
+function array_merge_deep_array($arrays) {
+    $result = array();
+    foreach ($arrays as $array) {
+        foreach ($array as $key => $value) {
+            // Renumber integer keys as array_merge_recursive() does. Note that PHP
+            // automatically converts array keys that are integer strings (e.g., '1')
+            // to integers.
+            if (is_integer($key)) {
+                $result[] = $value;
+            }
+            elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
+                $result[$key] = array_merge_deep_array(array(
+                    $result[$key],
+                    $value,
+                ));
+            }
+            else {
+                $result[$key] = $value;
+            }
+        }
+    }
+    return $result;
+}

@@ -77,3 +77,49 @@ function flush($atts,$content=null,$shortcode){
 		$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
 	$redis->flushdb() ;
 }
+
+
+\aw2_library::add_service('global_cache.del','Delete a Key',['namespace'=>__NAMESPACE__]);
+
+function del($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'prefix'=>'',
+	), $atts) );	
+	if(!$main)return 'Main must be set';		
+	if($prefix)$main=$prefix . $main;
+	//Connect to Redis and store the data
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	if($redis->exists($main))$redis->del($main);
+	return;	
+}
+
+
+\aw2_library::add_service('global_cache.run','Set the Global Cache',['namespace'=>__NAMESPACE__]);
+
+function run($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'ttl' => 30
+	), $atts) );
+
+	//Connect to Redis and store the data
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+		
+	if($main && $redis->exists($main)){
+		$return_value = $redis->get($main);
+	}
+	else{
+		$return_value=\aw2_library::parse_shortcode($content) ;
+		if($main && !(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+			$redis->set($main, $return_value);
+			$redis->setTimeout($main, $ttl*60);
+		}
+	}
+		
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}

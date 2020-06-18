@@ -90,16 +90,19 @@ function common_fetch($obj,$action){
 	switch($action){
 		case 'rows':
 			$result = $obj->fetchAll("assoc");
+			$result = is_null($result) ? [] : $result;
 			$return_value['rows']=$result;
 			$return_value['message']=(!$result) ? "No rows found" : count($result)." rows found";
 		break;
 		case 'row':
 			$result = $obj->fetch("assoc");
+			$result = is_null($result) ? [] : $result;
 			$return_value['row']=$result;
 			$return_value['message']=(empty($row)) ? "No data found" : "One row found";
 		break;
 		case 'exactly_one_row':
 			$result = $obj->fetchAll("assoc");
+			$result = is_null($result) ? [] : $result;
 			if(count($result)>1 || count($result)===0){
 				throw new \SimpleMySQLiException("Result should return 1 and exactly 1 row");
 			}
@@ -112,11 +115,13 @@ function common_fetch($obj,$action){
 		break;
 		case 'col':
 			$result = $obj->fetchAll("col");
+			$result = is_null($result) ? [] : $result;
 			$return_value['col']=$result;
 			$return_value['message']=(!$result) ? "No rows found" : count($result)." rows found";
 		break;
 		case 'scalar':
 			$result = $obj->fetchAll("scalar");
+			$result = is_null($result) ? [] : $result;
 			if(!empty($result))
 				$return_value['scalar']=$result[0];
 			
@@ -124,17 +129,20 @@ function common_fetch($obj,$action){
 		break;
 		case 'count':
 			$result = $obj->fetchAll("count");
+			$result = is_null($result) ? [] : $result;
 			$return_value['count']=$result[0];
 			
 			$return_value['message']=(count($result) < 1) ? "No result found" : "One result found";
 		break;
 		case 'grouped':
 			$result = $obj->fetchAll("group");
+			$result = is_null($result) ? [] : $result;
 			$return_value['rows']=$result;
 			$return_value['message']=(!$result) ? "No rows found" : count($result)." rows found";
 		break;
 		case 'meta_keys':
 			$result = $obj->fetchAll("metaKeys");
+			$result = is_null($result) ? [] : $result;
 			$return_value['rows']=$result;
 			$return_value['message']=(!$result) ? "No rows found" : count($result)." rows found";
 		break;
@@ -151,6 +159,7 @@ function common_fetch($obj,$action){
 function multi($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
+
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
@@ -162,6 +171,8 @@ function multi($atts,$content=null,$shortcode){
 		if($action==='fetch')$return_value=multi_fetch($atts,$content,$shortcode['tags_left']);
 		if($action==='cud')$return_value=multi_cud($atts,$content,$shortcode['tags_left']);
 		if($action==='search')$return_value=multi_search($atts,$content,$shortcode['tags_left']);
+		if($action==='self')$return_value=multi_self($atts,$content,$shortcode['tags_left']);
+		
 		//if($action==='read_committed')$return_value=multi_read_committed($atts,$content,$shortcode['tags_left']);
 		
 	}else{
@@ -171,11 +182,37 @@ function multi($atts,$content=null,$shortcode){
 	\aw2_library::$mysqli->close();
 	 \aw2_library::$mysqli =null;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	
+	
 	return $return_value;	
 	
 }
 
+function multi_self($atts,$content,$tags_left){
+	$return_value = array();
+	
+    //**Parse the query from content**//
+    $sql=\aw2_library::parse_shortcode($content);
+	
+	if(empty($return_value)){
+		$obj = \aw2_library::$mysqli->multi_query($sql);
+		$result = $obj->fetchAll("assoc");
+		$result = is_null($result) ? [] : $result;
+        $return_value['status']="success";
+        $return_value['message']="Success";
+		$return_value['rows']=$result;
+		$return_value['message']=(!$result) ? "No rows found" : count($result)." rows found";
+		$return_value['sql']=$sql;				
+	}
+	return $return_value;
+}
+
+
 function multi_search($atts,$content,$tags_left){
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start search query:' . $timeConsumed . '*/';
+	}
 	$return_value = array();
 	
 	//**Prepare the query**//
@@ -190,6 +227,10 @@ function multi_search($atts,$content,$tags_left){
 	}
 	
 	$return_value = array_merge($atts['dataset'],$return_value);
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::end search query:' . $timeConsumed . '*/';
+	}
 	
 	return $return_value;
 }
@@ -226,6 +267,10 @@ function multi_read_committed($atts,$content,$tags_left){
 }
 
 function multi_fetch($atts,$content,$tags_left){
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start fetch query:' . $timeConsumed . '*/';
+	}
 	
 	$return_value = array();
 	
@@ -243,6 +288,12 @@ function multi_fetch($atts,$content,$tags_left){
 			throw new \SimpleMySQLiException("Query should have exactly 3 parts");
 		}
 	}
+
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::end search query:' . $timeConsumed . '*/';
+	}
+	
 	return $return_value;
 		
 } 

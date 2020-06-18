@@ -50,6 +50,27 @@ function unhandled($atts,$content=null,$shortcode){
 }
 
 
+
+\aw2_library::add_service('@content_type.cnt','Counts a content type path',['namespace'=>__NAMESPACE__]);
+function cnt($atts,$content=null,$shortcode){
+	extract( shortcode_atts( array(
+	'main'=>''
+	), $atts) );
+	
+
+	$root=\aw2_library::get_array_ref();
+	if(!isset($root['@content_type']))return;	
+	$content_type=$root['@content_type']['name'];
+	
+	$arr=\aw2_library::get('content_types.' . $content_type . '.' . $main);
+
+	$return_value=count($arr);	
+
+
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
 \aw2_library::add_service('@content_type.run','Runs a content type template',['namespace'=>__NAMESPACE__]);
 function run($atts,$content=null,$shortcode){
 	extract( shortcode_atts( array(

@@ -31,35 +31,67 @@ class aw2_apps_library{
 		if(current_user_can('develop_for_awesomeui') || !empty(\aw2_library::get('debug_config.output'))){
 			setcookie("wordpress_no_cache", 'yes', time()+3600);  /* expire in 1 hour */
 		}
+		
+		$flag=true;
+		
+		if(current_user_can('develop_for_awesomeui') && isset($_REQUEST['del_env'])){
+				aw2\global_cache\del(['main'=>'#cached_enviroment'],null,null);
+		}	
+		
+		if((current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+			echo '/*' .  'no cache*/';	
+		}
+		
+		if(!(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+			$cached=aw2\global_cache\get(["main"=>'#cached_enviroment'],null,null);
+			if($cached){
+				$cached=unserialize($cached);
+				$ref=&aw2_library::get_array_ref();
+				$ref['handlers']=$cached['handlers'];
+				$ref['apps']=$cached['apps'];
+				$ref['apphelp']=$cached['apphelp'];
+				$ref['awesome_core']=$cached['awesome_core'];
+				//$ref['content_types']=$cached['content_types'];
+				$ref['settings']=$cached['settings'];
+				//echo '/*' .  'from cache*/';
+				$flag=false;
+			}
+		}
+		
+		if($flag){
+				self::load_apps();
+				\aw2\debug\flow(['main'=>'Apps Loaded']);
+
+
+				aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>'awesome_core']);
+				self::run_core('services');
+				\aw2\debug\flow(['main'=>'Services Setup']);
+
+				self::run_core('config');
+				self::load_env_settings();
+				\aw2\debug\flow(['main'=>'Env Setup']);
+				
+				//self::run_core('content-types');
+				// \aw2\debug\flow(['main'=>'Content Types']);
 	
-		self::load_apps();
-		
-		\aw2\debug\flow(['main'=>'Apps Loaded']);
-
+				if(!current_user_can('develop_for_awesomeui') ){
+					$ref=aw2_library::get_array_ref();
+					$cached=array();
+					$cached['handlers']=$ref['handlers'];
+					$cached['apps']=$ref['apps'];
+					$cached['apphelp']=$ref['apphelp'];
+					$cached['awesome_core']=$ref['awesome_core'];
+					//$cached['content_types']=isset($ref['content_types'])? $ref['content_types'] : array();
+					$cached['settings']=$ref['settings'];
+					aw2\global_cache\set(["key"=>'#cached_enviroment',"prefix"=>""],serialize($cached),null);
+					//echo 'caching';
+				}	
 	
-		self::setup_services();
-
-		\aw2\debug\flow(['main'=>'Services Setup']);
-		
-		self::run_core('config');
-		self::load_env_settings();
-
-		\aw2\debug\flow(['main'=>'Env Setup']);
-		
+		} 
 		//time/zone
 		$time_zone = aw2_library::get('settings.time_zone');
 		if(!empty($time_zone))date_default_timezone_set($time_zone);
 		
-		self::load_content_types();
-		
-		
-	}
-	
-	static function setup_services(){
-		
-		aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>'awesome_core']);
-		
-		self::run_core('services');
 		
 	}
 	
@@ -126,7 +158,47 @@ class aw2_apps_library{
 		
 		if(is_admin())return;
 		
-		self::run_core('init');
+		$flag=true;
+
+		
+		if(current_user_can('develop_for_awesomeui') && isset($_REQUEST['del_env'])){
+				aw2\global_cache\del(['main'=>'#cached_content_types'],null,null);
+		}	
+		
+		if(!(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+
+			
+			$cached=aw2\global_cache\get(["main"=>'#cached_content_types'],null,null);
+
+			//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+			//echo '<h4>' .  '::after cache get:' .$timeConsumed . '</h4>';
+			
+			if($cached){
+				$cached=unserialize($cached);
+				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+				//echo '<h4>' .  '::after unserialize:' .$timeConsumed . '</h4>';
+				$ref=&aw2_library::get_array_ref();
+				$ref['content_types']=$cached['content_types'];
+				$ref['handlers']=$cached['handlers'];				
+
+				//echo 'from cache content type'	;
+				$flag=false;
+			}
+		}
+	
+		if($flag){
+			self::run_core('init');			
+			if(!current_user_can('develop_for_awesomeui')){
+				$ref=aw2_library::get_array_ref();
+				$cached=array();
+				$cached['handlers']=$ref['handlers'];
+				$cached['content_types']=isset($ref['content_types'])? $ref['content_types'] : array();
+				aw2\global_cache\set(["key"=>'#cached_content_types',"prefix"=>""],serialize($cached),null);
+
+			}	
+	
+		} 
+		
 
 		
 		if(current_user_can('develop_for_awesomeui') && isset($_COOKIE['debug_init_module']) && !empty($_COOKIE['debug_init_module'])){
@@ -134,7 +206,6 @@ class aw2_apps_library{
 			self::run_core($user_init_module);
 		} 	
 		\aw2\debug\flow(['main'=>'Init fired']);			
-
 
 		//Decide caching or not caching
 		$cache=array();
@@ -326,41 +397,6 @@ class aw2_apps_library{
 		
 	}
 	
-	// loads content types and cache them
-	static function load_content_types() {
-
-		if(is_admin()) return;
-		
-		$content_types_key='env_content_types';
-		$return_value = null;
-		if(!current_user_can('develop_for_awesomeui')){
-			$return_value=aw2\global_cache\get(["main"=>$content_types_key,"prefix"=>""],null,null);
-			$return_value=json_decode($return_value,true);
-			$return_value = is_array($return_value)?$return_value:array();
-			\aw2_library::set('content_types',$return_value);
-		}
-
-		// \util::var_dump($return_value);
-		if(empty($return_value)){
-			try {
-				//run content_types
-				self::run_core('content-types');
-			}
-
-			//catch exception
-			catch(Exception $e) {
-				die('Something Wierd Happened (CT Issue)');
-			}
-			
-			
-			
-			if(current_user_can('develop_for_awesomeui')){
-					$content_types = \aw2_library::get_array_ref('content_types');	
-					aw2\global_cache\set(["key"=>$content_types_key,"prefix"=>""],json_encode($content_types),null);
-			}	
-		}
-		
-	}
 	
 	static function load_apps(){
 		
@@ -454,7 +490,11 @@ class aw2_apps_library{
 			$app_slug=$app->get_app_ticket($ticket);
 			array_unshift($pieces,$app_slug);
 		}
-
+		if($app_slug==='ts'){
+			$ticket=$pieces[1];
+			$app_slug=$app->get_app_ts($ticket);
+			array_unshift($pieces,$app_slug);
+		}
 		
 		
 		if($app->exists($app_slug)){
@@ -546,12 +586,10 @@ class aw2_apps_library{
 			wp_redirect( esc_url_raw( add_query_arg( array( 'awesome_purge' =>'done' ) ) ) );
 	}
 	
-	static function show_app_pages($app){
-		if('root' != $app['slug']){
-			rights_options_page($app);
-		}else{
-			echo 'not yet implemented';
-		}
+	static function show_app_pages(){
+		echo '<div class="wrap ">';        	
+		echo 'Not Yet Implemented';
+		echo '</div>';		
 	}
 	
 	
@@ -569,27 +607,6 @@ class aw2_apps_library{
 		
 		$wp_rewrite->rules = $rules + $wp_rewrite->rules;
 	
-	}
-	
-	static function fix_app_slug( $post_link, $post, $leavename ) {
- 		//now apps show list show up in the menu to make it easy to add to nav menu
-		if ( 'aw2_app' != $post->post_type || 'publish' != $post->post_status ) {
-			return $post_link;
-		}
-		
-		$post_link = str_replace( '/' . $post->post_type . '/', '/', $post_link );
-		return $post_link;
-	}
-	
-	static function nav_menu_css_class( $classes , $item, $args){
-		//ensures currect classes in menu if app is set
-		$current_app_id=aw2_library::get('app.post_id');
-		
-		if($current_app_id == $item->object_id && $item->current_item_parent === false){
-			$classes[] = 'current-menu-item';
-		}
-		
-		return $classes;
 	}
 	
 	//supporting functions
@@ -669,234 +686,12 @@ class aw2_apps_library{
 	}	
 	
 	static function wp_footer(){
+	//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+	//echo '<h4>' .  '::ticket time:' .$timeConsumed . '</h4>';
+		
 		self::run_core('footer-scripts');
-	}
-	
-	static function  add_apps_to_yoast_sitemap(){
-		global $wpseo_sitemaps;
-		global $wpdb;
-		
-		$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
-						FROM	$wpdb->posts AS p
-						WHERE post_status IN ('publish') AND post_type = %s ", 'aw2_app' );
-		$mod = $wpdb->get_var( $sql )." +00:00";
-				
-		//$date = $wpseo_sitemaps->get_last_modified('aw2_app');
-		if(!class_exists(WPSEO_Date_Helper)){
-			$timezone =  new WPSEO_Sitemap_Timezone();
-			$mod = $timezone->format_date($mod );
-		}
-		else{
-			$date = new WPSEO_Date_Helper();
-			$mod = $date->format($mod );
-		}
-		
-		$registered_apps=&aw2_library::get_array_ref('apps');
-		
-		
-		$smp ='';
-		foreach($registered_apps as $key=>$app){
-			
-			if(!self::enable_sitemap($app)) continue;
-			
-			$smp .= '<sitemap>' . "\n";
-			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-app-sitemap.xml</loc>' . "\n";
-			$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
-			$smp .= '</sitemap>' . "\n";
-		}
-		
-		/* $smp .= '<sitemap>' . "\n";
-		$smp .= '<loc>' . site_url() .'/awesome-apps-sitemap.xml</loc>' . "\n";
-		$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
-		$smp .= '</sitemap>' . "\n"; */
-		
-		return $smp;
-		
-	}
-	
-	static function setup_yoast_links($slug){
-		add_action( "wpseo_do_sitemap_".$slug."-app",  function() use ($slug){
-														aw2_apps_library::awesome_apps_pages_sitemap($slug);
-												});
-	}
-	
-	static function enable_sitemap($app){
-		
-		if(!isset($app['collection']['config'])) return false;
-			
-		$arr=aw2_library::get_module($app['collection']['config'],'settings');
-		if(!$arr) return false;
-		aw2_library::module_run($app['collection']['config'],'settings');
-		$enable_sitemap = aw2_library::get_post_meta($arr['id'],'enable_sitemap');
-		
-		if($enable_sitemap !== 'yes')  return false;
-		
-		return true;
-	}
-	static function awesome_apps_pages_sitemap($slug){
-		global $wpseo_sitemaps;
-		global $wpdb;
-		
-		$registered_apps=&aw2_library::get_array_ref('apps');
+	}	
 
-		$skip_slugs=array('single','archive','header','footer');
-		
-		$output = '';
-		$app=$registered_apps[$slug];
-		
-		//foreach($registered_apps as $key => $app){
-		if(!self::enable_sitemap($app)) {
-            $wpseo_sitemaps->bad_sitemap = true;
-			return;
-		}	
-			
-		if(isset($app['collection']['pages']['post_type'])){
-			$args = array(
-				'posts_per_page'   => 500,
-				'orderby'          => 'post_date',
-				'order'            => 'DESC',
-				'post_type'        => $app['collection']['pages']['post_type'],
-				'post_status'      => 'publish',
-				'meta_query'  => array(
-					'relation' => 'OR',
-				   array(
-				   'key'      => '_yoast_wpseo_meta-robots-noindex',
-				   'compare' => 'NOT EXISTS'
-				   )
-				   ,array(
-				   'key'      => '_yoast_wpseo_meta-robots-noindex',
-				   'value'      => '2'
-				   )
-			   ),
-				'suppress_filters' => true
-			);
-			
-			$app_pages = new WP_Query( $args );
-			
-			
-			if( $app_pages->have_posts() ){
-				$chf = 'weekly';
-				$pri = 1.0;
-				foreach ( $app_pages->posts as $p ) {
-					if(in_array($p->post_name,$skip_slugs)){
-						continue;
-					}
-					$slug= $p->post_name.'/';
-					if($slug=='home/')
-						$slug='';
-					
-					$url = array();
-					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
-						$url['mod'] = $p->post_modified_gmt;
-					} else {
-						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
-							$url['mod'] = $p->post_date_gmt;
-						} else {
-							$url['mod'] = $p->post_date;
-						}
-					}
-					$url['loc'] = $app['path'].'/'.$slug;
-					$url['chf'] = $chf;
-					$url['pri'] = $pri;
-					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
-				}
-			}
-		}
-			
-		
-		if(isset($app['collection']['posts']['post_type'])){
-			$args = array(
-				'posts_per_page'   => 500,
-				'orderby'          => 'post_date',
-				'order'            => 'DESC',
-				'post_type'        => $app['collection']['posts']['post_type'],
-				'post_status'      => 'publish',
-				'meta_query'  => array(
-					'relation' => 'OR',
-				   array(
-				   'key'      => '_yoast_wpseo_meta-robots-noindex',
-				   'compare' => 'NOT EXISTS'
-				   )
-				   ,array(
-				   'key'      => '_yoast_wpseo_meta-robots-noindex',
-				   'value'      => '2'
-				   )
-			   ),
-				'suppress_filters' => true
-			);
-			
-			$app_posts = new WP_Query( $args );
-			
-			
-			if( $app_posts->have_posts() ){
-				$chf = 'weekly';
-				$pri = 1.0;
-				foreach ( $app_posts->posts as $p ) {
-							
-					$url = array();
-					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
-						$url['mod'] = $p->post_modified_gmt;
-					} else {
-						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
-							$url['mod'] = $p->post_date_gmt;
-						} else {
-							$url['mod'] = $p->post_date;
-						}
-					}
-					$url['loc'] = site_url().'/'.$app['slug'].'/'.$p->post_name.'/';
-					$url['chf'] = $chf;
-					$url['pri'] = $pri;
-					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
-				}
-			}
-		}
-			
-			
-		$arr=aw2_library::get_module($app['collection']['config'],'settings');
-		$default_taxonomy = aw2_library::get_post_meta($arr['id'],'default_taxonomy');
-		
-			
-		if(!empty($default_taxonomy)){
-			$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
-					FROM	$wpdb->posts AS p
-					WHERE post_status IN ('publish') AND post_type = %s ", $app['collection']['posts']['post_type'] );
-			$mod = $wpdb->get_var( $sql );
-
-			$terms = get_terms( array(
-						'taxonomy' => $default_taxonomy,
-						'hide_empty' => false,
-					) );
-			if( ! empty( $terms ) && ! is_wp_error( $terms )  ){
-				$chf = 'weekly';
-				$pri = 1.0;
-				foreach ( $terms as $term  ) {
-
-					$url = array();
-					$url['loc'] = site_url().'/'.$app['slug'].'/'.$term->slug.'/';
-					$url['pri'] = $pri;
-					$url['mod'] = $mod;
-					$url['chf'] = $chf;
-					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
-					
-				}
-			}
-			
-		} 
-			
-	
-		
-		
-		if(aw2_library::get_module($app['collection']['config'],'custom-sitemap',true))
-			$output .= aw2_library::module_run($app['collection']['config'],'custom-sitemap');
-		
-		//Build the full sitemap
-        $sitemap = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
-        $sitemap .= 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" ';
-        $sitemap .= 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-        $sitemap .= $output . '</urlset>';
-        //echo $sitemap;
-        $wpseo_sitemaps->set_sitemap($sitemap);
-	}
 }
 
 class awesome_app{
@@ -1011,115 +806,56 @@ class awesome_app{
 		aw2_library::parse_shortcode($init['code']);
 	}
 	
-	public function check_rights($query){		//any changes to this function or related to this function should reflect in the if.user_can_access service
+	public function check_rights($query){
+		
 		if(current_user_can('administrator'))return;
 		
-		if(isset($this->configs['rights'])){
-			
-			aw2_library::parse_shortcode($this->configs['rights']['code']);
-			
-			$rights =&aw2_library::get_array_ref('app','rights');
-			
-			if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
-			
-			if(strtolower($rights['access']['mode']) === 'private'){
-				wp_die('Access to this app is private.');
-			}
-			
-			// must be logged in
-			if(!isset($rights['auth']) && is_user_logged_in() )return;
+		if(!isset($this->configs['rights']))return;
+		
+		aw2_library::parse_shortcode($this->configs['rights']['code']);
+		
+		$rights =&aw2_library::get_array_ref('app','rights');
+		
+		if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
+		
+		if(strtolower($rights['access']['mode']) === 'private'){
+			wp_die('Access to this app is private.');
+		}
+		
+		// must be logged in
+		if(!isset($rights['auth']) && is_user_logged_in() )return;
+		
+		
+		//must be authenticated
 
-			foreach($rights['auth'] as $auth){
-				if(is_callable(array('awesome_auth', $auth['method']))){
-					$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
-					if($pass === true)return;
-				}
-			}
-		
-			$login_url=wp_login_url();
-			if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
-			$login_url=site_url().'/'. $rights['access']['unlogged'];
-			}
-			
-			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
-			
-			if(isset($rights['access']['title'])){
-				$login_url .= '&title='. urlencode($rights['access']['title']);
-			}
-			
-			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-			wp_redirect( $login_url );
-			exit();
-		
-		}else{
-			$options = get_option('awesome-app-' . $this->slug);
-			if(!isset($options) || ('1' != $options['enable_rights'])) return true;
-			
-			if('1' == $options['enable_vsession']){
-				$vsession_key = $options['vsession_key'] ? $options['vsession_key'] : 'email';
-				$vsession = awesome_auth::vsession2($vsession_key);
-				if($vsession) return;
-			}
-			
-			if('1' == $options['enable_single_access']){
-				$auth_for_single = array();
-				$auth_for_single['all_roles'] = $options['single_access_roles'];
-				$has_single_access = awesome_auth::single_access($auth_for_single);
-				if($has_single_access) return;
-			}
-			
-			$modular_check = $this->check_modulewise_rights($options);
-			if($modular_check) return;
-			
-			$login_url=wp_login_url();
-			if('' != $options['unlogged'] && $options['unlogged'] !== 'wp_login'){
-				$login_url=site_url().'/'. $options['unlogged'];
-			}
-			
-			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
-			
-			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-			wp_redirect( $login_url );
-			exit();
-		}
-	}
 
-	public function check_modulewise_rights($options){
-		if(!is_user_logged_in()) return false;
-		
-		global $wp;
-		$current_url = home_url( add_query_arg( array(), $wp->request ) );
-		$path = str_replace($this->base_path, '', $current_url);
-		$path = explode('/', $path);
-		$module = $path[1];
-		
-		if('ajax' == $module){
-			$module = $path[2];
-		}
-		
-		if('css' == $module || 'js' == $module || 't' == $module){
-			return true;
-		}
-		
-		if(!$module){
-			$module = 'home';
-		}
-		
-		$roles = $options['roles'];
-		if( 0 == count($roles) ) return true;		//return true if no roles selected
-		
-		foreach($roles as $key => $val){
-			if(current_user_can($key)){
-				if('1' == $val['access']) return true;
-				
-				$acees_cap = 'm_' . $this->slug . '_' . $module;
-				if(current_user_can($acees_cap)) return true;
+					
+		foreach($rights['auth'] as $auth){
+			if(is_callable(array('awesome_auth', $auth['method']))){
+				$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
+				if($pass === true)return;
 			}
 		}
+			
+		//all conditions failed, but use needs to be logged-in so redirect
+
+		$login_url=wp_login_url();
+		if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
+		   $login_url=site_url().'/'. $rights['access']['unlogged'];
+		}
 		
-		return false;
+		$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
+		$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+		
+		if(isset($rights['access']['title'])){
+			$login_url .= '&title='. urlencode($rights['access']['title']);
+		}
+		
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+		wp_redirect( $login_url );
+		exit();
+		
+		
 	}
 	
 	public function resolve_route($pieces,$query){
@@ -1140,6 +876,14 @@ class awesome_app{
 		}
 		return $ticket_activity['app'];
 	}
+	public function get_app_ts($ticket){
+		$slug=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'app'],null,null);
+		if(!$slug){
+			echo 'Ts App is not set in ticket: ' . $ticket;
+			exit();			
+		}
+		return $slug;
+	}	
 	
 }
 
@@ -1312,6 +1056,24 @@ class awesome_auth{
 class controllers{
 	static $module;
 	static $template;
+	
+	static function set_index_header(){
+		
+
+		$app=&aw2_library::get_array_ref('app');
+		if(!isset($app['collection']['config'])) return false;
+		
+		$arr=aw2_library::get_module($app['collection']['config'],'settings');
+		if(!$arr) return false;
+		
+		aw2_library::module_run($app['collection']['config'],'settings');
+		$no_index = aw2_library::get_post_meta($arr['id'],'no_index');
+		
+		if($no_index !== 'yes')  return false;
+		
+		header("X-Robots-Tag: noindex", true);
+		
+	}
 	
 	static function set_cache_header($cache){
 		
@@ -1495,7 +1257,7 @@ class controllers{
 		
 		header('Content-Disposition: attachment;filename="' . $filename.'"');
 		self::set_cache_header('no');
-
+		self::set_index_header();
 		
 		$result=file_get_contents($path);	
 		echo $result;
@@ -1556,7 +1318,8 @@ class controllers{
 		header('Content-Disposition: attachment;filename="' . $filename.'"');
 		
 		self::set_cache_header('no');
-
+		self::set_index_header();
+		
 		$result=file_get_contents($path);	
 		echo $result;
 		exit();	
@@ -1587,6 +1350,7 @@ class controllers{
 			);
 
 			self::set_cache_header('no');
+			self::set_index_header();
 			
 			$results = new WP_Query( $args );
 			$my_posts=$results->posts;
@@ -1665,6 +1429,29 @@ class controllers{
 	}
 	
 	static function controller_csv_download($o){
+
+		$csv_ticket=array_shift($o->pieces);
+		self::set_qs($o);
+		
+		$filename=$_REQUEST['filename'];
+		
+		header("Content-type: application/csv");
+		header('Content-Disposition: attachment;filename="' . $filename);
+		
+		self::set_cache_header('no');
+
+		
+		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		if($redis->exists($csv_ticket)){
+			$result = $redis->zRange($csv_ticket, 0, -1);
+			$output=implode('',$result);
+			echo $output;
+		}
+		exit();	
+	}
+	
+	static function controller_send_mail($o){
 
 		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
@@ -1791,6 +1578,8 @@ class controllers{
 	else	
 			self::set_cache_header('no'); // HTTP 1.1.
 	
+	self::set_index_header();
+	
 		if(isset($app['collection']['pages'])){
 			$post_type = $app['collection']['pages']['post_type'];
 			
@@ -1850,7 +1639,7 @@ class controllers{
 
 		
 		self::set_cache_header('no'); // HTTP 1.1.
-		
+		self::set_index_header();
 		
 		$app=&aw2_library::get_array_ref('app');
 		self::$module= $o->pieces[0];
@@ -1929,6 +1718,37 @@ class controllers{
 			
 		exit();	
 	}
+
+	static function controller_ts($o){ 
+		if(empty($o->pieces))return;
+
+		self::set_cache_header('no'); // HTTP 1.1.
+		
+		$app=&aw2_library::get_array_ref('app');
+		$ticket=array_shift($o->pieces);
+		
+
+		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
+		if(!$hash || !$hash['payload']){
+			echo 'Ticket is invalid: ' . $ticket;
+			exit();			
+		}
+		$payload=json_decode($hash['payload'],true);
+		//\util::var_dump($payload);
+		self::set_qs($o);
+		$app['active']['controller'] = 'ticket';
+		$app['active']['ticket'] = $ticket;
+		$result=array();
+		foreach ($payload as $one) {
+			$arr=isset($one['data'])?$one['data']:array();
+			$arr['service']=$one['service'];
+			$result[]=\aw2\service\run($arr,null,[]);
+		}
+		echo implode('',$result);
+		//render debug bar if needs to be rendered	
+		echo \aw2\debugbar\ajax_render([]);		
+		exit();	
+	}	
 	
 	static function controller_posts($o, $query){
 	
@@ -1941,6 +1761,8 @@ class controllers{
 		}
 		else	
 				self::set_cache_header('no'); // HTTP 1.1.
+		
+		self::set_index_header();
 		
 		if(!isset($app['collection']['posts'])) return;
 		
@@ -2000,6 +1822,7 @@ class controllers{
 		else	
 				self::set_cache_header('no'); // HTTP 1.1.
 		
+		self::set_index_header();
 		
 		if(!isset($app['settings']['default_taxonomy'])) return;
 		
@@ -2031,6 +1854,7 @@ class controllers{
 		}
 		else	
 				self::set_cache_header('no'); // HTTP 1.1.
+		self::set_index_header();
 		
 		$post_type = $app['collection']['modules']['post_type'];
 		
@@ -2180,5 +2004,237 @@ class controllers{
 		self::$module=$parts[0];
 		array_shift($parts);
 		self::$template=implode('.',$parts);
+	}
+	
+	/// New function by Sam on 9th august related to Ag Grid 
+	static function controller_report_grid($o){
+
+		$grid_ticket=array_shift($o->pieces);
+		
+		$sql=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'sql'],null,null);
+		
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . $grid_ticket;
+			exit();			
+		}
+		
+		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+
+		$report_header_name= "";
+		$header= "";
+		$rows=array();
+		
+		if(mysqli_multi_query($conn,$sql)){
+
+
+			do{
+				if ($result=mysqli_store_result($conn)) {
+
+					$first_row=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'first_row'],null,null);
+					$header=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'custom_aggrid_header'],null,null);
+					$report_header_name=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'header_name'],null,null);
+					
+					for($i = 0; $row = mysqli_fetch_assoc($result); $i++){
+
+						$rows[] = $row;
+
+				
+					}
+	
+				}
+			} while(mysqli_more_results($conn) && mysqli_next_result($conn));
+
+
+			if(is_array($rows) && count($rows))
+			{
+				$total_records = count($rows);
+			}
+
+			
+			
+			//$json_decoded_header = json_decode($header);
+
+			$json_decoded_header = json_decode($header,true);
+			// print "<pre>";
+			// print_r($json_decoded_header);
+			$temp_arr = array();
+
+			/* Few variables we have to change here as Ag Grid internally needs Capital case for ex. headerName, enableValue, however our awesome code is 
+			making it all lower case of all the array keys hence we are using below code to change the keys in ag grid expected format */
+
+			if(is_array($json_decoded_header) && count($json_decoded_header))
+			{
+				foreach($json_decoded_header as $key_outer=>$array1)
+				{
+					if(is_array($array1) && count($array1))
+					{
+						foreach($array1 as $key_inner=>$array2)
+						{
+							if($key_inner=="header_name")
+							{
+								$temp_arr[$key_outer]['headerName'] = $json_decoded_header[$key_outer]['header_name'];
+							}
+							else if($key_inner=="enable_value")
+							{
+								$temp_arr[$key_outer]['enableValue'] = (bool)$json_decoded_header[$key_outer]['enable_value'];
+							}
+							else if($key_inner=="enable_row_group")
+							{
+								$temp_arr[$key_outer]['enableRowGroup'] = (bool) $json_decoded_header[$key_outer]['enable_row_group'];
+							}
+							else if($key_inner=="row_group")
+							{
+								$temp_arr[$key_outer]['rowGroup'] = (bool)$json_decoded_header[$key_outer]['row_group'];
+							}
+							else if($key_inner=="hide")
+							{
+								$temp_arr[$key_outer]['hide'] = (bool)$json_decoded_header[$key_outer]['hide'];
+							}
+							else if($key_inner=="agg_func")
+							{
+								$temp_arr[$key_outer]['aggFunc'] = $json_decoded_header[$key_outer]['agg_func'];
+							}
+							else if($key_inner=="enable_pivot")
+							{
+								$temp_arr[$key_outer]['enablePivot'] = (bool)$json_decoded_header[$key_outer]['enable_pivot'];
+							}
+							else{
+								$temp_arr[$key_outer][$key_inner] = $json_decoded_header[$key_outer][$key_inner];
+							}
+
+							$temp_arr[$key_outer]['filter'] = 'agSetColumnFilter';
+							// echo "<br>=> key inner ".$key_inner;
+							// echo "<br>=> array2 ".$array2;
+						}
+
+						if(isset($json_decoded_header[$key_outer]['to_int']) && $json_decoded_header[$key_outer]['to_int'] == 'yes')
+						{
+							for($counter = 0; $counter<$total_records;$counter++)
+							{
+								// print_r($temp_arr[$key_outer]);
+
+								$key_name = $temp_arr[$key_outer]['field'];
+								
+								$rows[$counter][$key_name] = (int) $rows[$counter][$key_name]; 
+							}
+						}						
+
+						
+					}
+					
+				}
+	
+			}
+
+			
+			$columns_json = json_encode($temp_arr);
+			
+			
+
+			// print "<pre>";
+			// print_r($rows);
+			// exit;
+
+			if(isset($rows) && is_array($rows) && count($rows))
+			{
+				$rows  = json_encode($rows);
+			}
+			else
+			{
+				echo "<div style='text-align:center;'><h1>$report_header_name </h1><br><br><h3>No data to display for this selection</h3></div>";
+				exit;
+			}
+			echo "
+			<script>
+				function onBtExport()
+				{
+					var params = {
+					};					
+					gridOptions.api.exportDataAsCsv(params);
+				}
+
+			</script>
+			<label style='margin-left: 20px;'>
+            	
+			</label>
+			
+			<div style='text-align:center;'>
+			<button onclick='onBtExport()'>Export to CSV</button><h1>$report_header_name </h1>
+			</div>
+			";
+
+			echo '<div id="grid-wrapper" style="padding: 1rem; padding-top: 0; overflow:hidden;">';
+			echo '<div id="myGrid" style="height: 85%; overflow:hidden;" class="ag-theme-balham" >';
+			echo "</div></div>";			
+
+
+			
+			echo "
+			<script src='https://unpkg.com/ag-grid-enterprise@21.0.1/dist/ag-grid-enterprise.min.js' ></script>
+				<script >
+				
+				
+			var columnDefs = $columns_json ;
+			var gridOptions = {
+			   defaultColDef: {
+				   sortable: true,
+				   resizable: true
+			   },
+			   // set rowData to null or undefined to show loading panel by default
+			   
+			   rowData: $rows,
+			   columnDefs: columnDefs,
+			   popupParent: document.body,
+			   rowGroupPanelShow: 'always',
+			   animateRows: true,
+			   sideBar: 'columns',
+			   enableCharts: true,
+			   pivotMode: true, 
+			   groupIncludeFooter: true,
+               groupIncludeTotalFooter: true,
+    		   pivotColumnGroupTotals: 'before',
+			   enableRangeSelection: true,
+			   enableRangeHandle: false,
+			   enableFillHandle: false,    
+			   rowSelection: 'multiple',
+			   rowDeselection: true,
+			   enablePivot: true,
+			   filter: true,
+			   sideBar: {
+				toolPanels: [
+					{
+						id: 'columns',
+						labelDefault: 'Columns',
+						labelKey: 'columns',
+						iconKey: 'columns',
+						toolPanel: 'agColumnsToolPanel',
+					},
+					{
+						id: 'filters',
+						labelDefault: 'Filters',
+						labelKey: 'filters',
+						iconKey: 'filter',
+						toolPanel: 'agFiltersToolPanel',
+					}
+				],
+				defaultToolPanel: 'columns'
+			}
+			};
+
+			 var gridDiv = document.querySelector('#myGrid');
+			 new agGrid.Grid(gridDiv, gridOptions);		
+			 
+			 
+
+		</script>
+		<script type='text/javascript'>window.NREUM||(NREUM={});NREUM.info={'beacon':'bam.nr-data.net','licenseKey':'0dcebb20b3',
+			'applicationID':'171679852','transactionName':'bldbMBMEDBFXAUIMWlcdbBYISgsMUgdOS0VRQg==','queueTime':0,
+			'applicationTime':526,'atts':'QhBYRlseHx8=','errorBeacon':'bam.nr-data.net','agent':''}</script>
+		";			
+			
+		}		
+		exit();	
 	}
 }

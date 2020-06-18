@@ -19,6 +19,10 @@ set_exception_handler(function($e) {
 	header("HTTP/1.0 500"); 
 	\aw2\debug\throw_error($errno, $errstr, $errfile, $errline,$trace);
 	
+	if(isset($_COOKIE['debug_wp_debug'])){
+		exit($e->getMessage());
+	}
+	
 	if(function_exists('wp_get_current_user') &&  current_user_can('develop_for_awesomeui')){
 		exit('hello' . $e->getMessage());
 	} 

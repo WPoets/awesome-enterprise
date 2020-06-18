@@ -747,6 +747,9 @@ static function service_run($tag,$attr,$content,$default='service'){
 		case 'int':
 			return (int) $tag;
 			break;		
+		case 'comma':
+			return explode(',',(string)$tag);
+			break;
 			
 		case 'bool':
 			if($tag === '' || $tag === 'false')
@@ -1237,6 +1240,9 @@ static function add_service($service,$desc=null,$atts=array()) {
 	return;
 }
 
+static function add_ref($service,$ref_to) {
+	self::$stack['handlers'][$service]=&self::get_array_ref('handlers',$ref_to);
+}
 /*
 static function add_collection($name,$atts,$desc=null) {
 	$arr=$atts;
@@ -1406,6 +1412,21 @@ static function pre_action_parse(&$atts) {
 				$atts[$key]=self::parse_shortcode($value);
 			}
 
+		}
+		if(is_string($atts[$key])){
+			$parts=explode(':',$atts[$key],2);
+			if(count($parts)===2){
+				if($parts[0]==='int')$atts[$key]=(int)$parts[1];
+				if($parts[0]==='num')$atts[$key]=(float)$parts[1];
+				if($parts[0]==='str')$atts[$key]=(string)$parts[1];
+				if($parts[0]==='comma')$atts[$key]=explode(',', (string)$parts[1]);
+				if($parts[0]==='bool'){
+					if($parts[1] === '' || $parts[1] === 'false')
+						$atts[$key]=false;
+					else
+						$atts[$key]=(bool)$parts[1];
+				}
+			}
 		}
 		
 	}
@@ -4403,6 +4424,13 @@ static function module_push($arr){
 
 	
 static function module_forced_run($collection,$module,$template,$content,$atts){
+
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start forced module:' . $module . ' ' . $timeConsumed . '*/';
+		
+	}
+	
 		$start=microtime(true);		
 	
 	$arr=self::get_module($collection,$module);
@@ -4468,6 +4496,12 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 
 static function module_run($collection,$module,$template=null,$content=null,$atts=null){
+
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start module:' . $module . ' ' . $timeConsumed . '*/';
+		
+	}
 
 	$start=microtime(true);	
 
@@ -4547,12 +4581,24 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	
 	aw2_library::pop_child($stack_id);
 	
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::end module:' . $module . ' ' . $timeConsumed . '*/';
+		
+	}
 	
 	return $return_value;	
 }
 
 
 static function template_run($template,$content=null,$atts=array()){
+
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start template:' . $template . ' ' . $timeConsumed . '*/';
+		
+	}
+	
 	$content=self::removesmartquotes($content);		
 	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found - '.$template ;
 	$template_ptr=self::$stack['module']['templates'][$template];
@@ -4857,12 +4903,17 @@ private function new_node($text,$state){
 			}
 		}	
 	}
-	
+
 	if(!empty($atts)){
 		foreach ($atts as $key => $value) {
+			if($key==='_value'){
+				$ptr=null;
+				$ptr=$value;
+			}
+			else		
 				$ptr[$key]=$value;
 		}
-	}	
+	}
 	
 	if($state==']'){
 		$o=new stdClass();

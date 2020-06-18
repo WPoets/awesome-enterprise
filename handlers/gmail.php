@@ -57,7 +57,7 @@ function overview($atts,$content=null,$shortcode){
 //by default attachment download set to no
 //this function accept 6  parameters
 function attachment($connection,$structure,$email_number,$attachment_save="no",$lapp_id="",$config=null){
-			
+	
 	$counter=0;
 	/* if any attachments found... */
 	
@@ -121,29 +121,31 @@ function attachment($connection,$structure,$email_number,$attachment_save="no",$
 				
 				
 				/* iterate through each attachment and save it */
-				foreach($attachments as $attachment)
-				{
-					//echo 'reached here';
-						if($attachment['is_attachment'] == 1)
-						{
-								$filename = $attachment['name'];
-								if(empty($filename)) $filename = $attachment['filename'];
+				if(!empty($attachments)){
+					foreach($attachments as $attachment)
+					{
+						//echo 'reached here';
+							if($attachment['is_attachment'] == 1)
+							{
+									$filename = $attachment['name'];
+									if(empty($filename)) $filename = $attachment['filename'];
 
-								if(empty($filename)) $filename = time() . ".dat";
+									if(empty($filename)) $filename = time() . ".dat";
 
-								 
-								$path=$config['path'].$lapp_id."/";
-								
-								if(!is_dir($path)){
-									//echo "Not Found";
-									mkdir($path,0755,true);
-								}  
-								//put a unique token before 
-								$fp = fopen($path . time() .'_'. $filename, "w+");
-								fwrite($fp, $attachment['attachment']);
-								fclose($fp);
-						}
+									 
+									$path=$config['path'].$lapp_id."/";
+									
+									if(!is_dir($path)){
+										//echo "Not Found";
+										mkdir($path,0755,true);
+									}  
+									//put a unique token before 
+									$fp = fopen($path . time() .'_'. $filename, "w+");
+									fwrite($fp, $attachment['attachment']);
+									fclose($fp);
+							}
 
+					}
 				}
 			}
 }
@@ -166,6 +168,7 @@ function search($atts,$content=null,$shortcode){
 		
 	//Grab all the emails inside the inbox
 	$uids = imap_search($connection,MESSAGESTATUS,SE_UID);
+	
 	$emails=array();
 	foreach($uids as $uid){	
 	    
@@ -202,8 +205,9 @@ function delete_email($atts,$content=null,$shortcode){
 		//$header = imap_fetch_overview($connection,$uid,FT_UID);	
 		//$emails=json_decode(json_encode($header), True);				
 		$rr=imap_delete($connection, $uid,FT_UID); 
+		//echo "<br> UID :- ";$uid;
 		
-		$tt =imap_mail_move($connection, "$msgno:$msgno", '[Gmail]/Trash');
+		//$tt =imap_mail_move($connection, "$msgno:$msgno", '[Gmail]/Trash');
 		
 		imap_expunge($connection);
 		// close the connection
@@ -231,7 +235,7 @@ function save_attachments($atts,$content=null,$shortcode){
 	//$header = imap_fetch_overview($connection,$uid,FT_UID);	
 	//$emails=json_decode(json_encode($header), True);
     	
-	
+	//echo $msgno;
 	$structure = imap_fetchstructure($connection, $msgno);
 	
 	attachment($connection,$structure,$msgno,"yes",$lapp_id,$config);
@@ -286,25 +290,29 @@ function single_email_data($connection,$config,$uid,$validation="yes"){
 		    $result['message']="no record found";
 			return $result;
 		}
-		//echo "<pre>";print_r($emails);echo "</pre>";
 		
+			
 		if($validation==="yes"){
 
 			$valid_mail=isset($emails[0]['to']) ? $emails[0]['to'] : '' ;
+			$criteria= $config['criteria']; 	  	
 			
-			$criteria= $config['criteria']; 
-		//	echo "TO :- ".$emails[0]['to']."</br>";
-			//echo "TO 1 :- ".$emails[1]['to']."</br>";
-			preg_match("/$criteria/",$valid_mail,$match);
 			
+			$header = imap_fetchheader($connection, $emails[0]['msgno']);
+			preg_match("/$criteria/",$header,$match);
+			if(isset($_COOKIE['vaibhav_test_123'])){
+			echo $criteria;
+			}
+			
+			//preg_match("/$criteria/",$valid_mail,$match);
+		
 			if(isset($match['found'])){
 				$valid_mail=$match['found'];
 				$emails[0]['object_id']=strtoupper(strstr($valid_mail,'@',true));
-		//		echo "TO :- ".$emails[0]['object_id']."</br>";
-			}else{
-				
+		
+			}else{				
 				//check in cc
-				$header = imap_headerinfo($connection, $emails[0]['msgno']);
+				$header = imap_headerinfo($connection, $emails[0]['msgno']);				
 				
 				if(isset($header->ccaddress)){
 					//echo "CC :- ".$header->ccaddress."</br>";
@@ -326,16 +334,13 @@ function single_email_data($connection,$config,$uid,$validation="yes"){
 
 
 function gmail_connection($config){
-	// 
-	$username =$config['username'];
 	
-	//
+	$username =$config['username'];	
+	
 	$password =$config['password'] ;
-	 
 	 
 	//Gmail host with folder
 	$hostname = IMAPADDRESS . IMAPMAINBOX;
-
 	 
 	//Open the connection
 	$connection = imap_open($hostname,$username,$password) or die('Cannot connect to Gmail: ' . imap_last_error());
