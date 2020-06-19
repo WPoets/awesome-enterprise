@@ -586,10 +586,15 @@ class aw2_apps_library{
 			wp_redirect( esc_url_raw( add_query_arg( array( 'awesome_purge' =>'done' ) ) ) );
 	}
 	
-	static function show_app_pages(){
-		echo '<div class="wrap ">';        	
-		echo 'Not Yet Implemented';
-		echo '</div>';		
+	static function show_app_pages($app){
+		
+		if('root' != $app['slug']){
+			rights_options_page($app);
+		}else{
+			echo '<div class="wrap ">';        	
+			echo 'Not Yet Implemented';
+			echo '</div>';
+		}
 	}
 	
 	
@@ -607,6 +612,27 @@ class aw2_apps_library{
 		
 		$wp_rewrite->rules = $rules + $wp_rewrite->rules;
 	
+	}
+	
+	static function fix_app_slug( $post_link, $post, $leavename ) {
+ 		//now apps show list show up in the menu to make it easy to add to nav menu
+		if ( 'aw2_app' != $post->post_type || 'publish' != $post->post_status ) {
+			return $post_link;
+		}
+		
+		$post_link = str_replace( '/' . $post->post_type . '/', '/', $post_link );
+		return $post_link;
+	}
+	
+	static function nav_menu_css_class( $classes , $item, $args){
+		//ensures currect classes in menu if app is set
+		$current_app_id=aw2_library::get('app.post_id');
+		
+		if($current_app_id == $item->object_id && $item->current_item_parent === false){
+			$classes[] = 'current-menu-item';
+		}
+		
+		return $classes;
 	}
 	
 	//supporting functions
@@ -686,12 +712,234 @@ class aw2_apps_library{
 	}	
 	
 	static function wp_footer(){
-	//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-	//echo '<h4>' .  '::ticket time:' .$timeConsumed . '</h4>';
-		
 		self::run_core('footer-scripts');
-	}	
+	}
+	
+	static function  add_apps_to_yoast_sitemap(){
+		global $wpseo_sitemaps;
+		global $wpdb;
+		
+		$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
+						FROM	$wpdb->posts AS p
+						WHERE post_status IN ('publish') AND post_type = %s ", 'aw2_app' );
+		$mod = $wpdb->get_var( $sql )." +00:00";
+				
+		//$date = $wpseo_sitemaps->get_last_modified('aw2_app');
+		if(!class_exists(WPSEO_Date_Helper)){
+			$timezone =  new WPSEO_Sitemap_Timezone();
+			$mod = $timezone->format_date($mod );
+		}
+		else{
+			$date = new WPSEO_Date_Helper();
+			$mod = $date->format($mod );
+		}
+		
+		$registered_apps=&aw2_library::get_array_ref('apps');
+		
+		
+		$smp ='';
+		foreach($registered_apps as $key=>$app){
+			
+			if(!self::enable_sitemap($app)) continue;
+			
+			$smp .= '<sitemap>' . "\n";
+			$smp .= '<loc>' . site_url() .'/'.$app['slug'].'-app-sitemap.xml</loc>' . "\n";
+			$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
+			$smp .= '</sitemap>' . "\n";
+		}
+		
+		/* $smp .= '<sitemap>' . "\n";
+		$smp .= '<loc>' . site_url() .'/awesome-apps-sitemap.xml</loc>' . "\n";
+		$smp .= '<lastmod>' . htmlspecialchars( $mod ) . '</lastmod>' . "\n";
+		$smp .= '</sitemap>' . "\n"; */
+		
+		return $smp;
+		
+	}
+	
+	static function setup_yoast_links($slug){
+		add_action( "wpseo_do_sitemap_".$slug."-app",  function() use ($slug){
+														aw2_apps_library::awesome_apps_pages_sitemap($slug);
+												});
+	}
+	
+	static function enable_sitemap($app){
+		
+		if(!isset($app['collection']['config'])) return false;
+			
+		$arr=aw2_library::get_module($app['collection']['config'],'settings');
+		if(!$arr) return false;
+		aw2_library::module_run($app['collection']['config'],'settings');
+		$enable_sitemap = aw2_library::get_post_meta($arr['id'],'enable_sitemap');
+		
+		if($enable_sitemap !== 'yes')  return false;
+		
+		return true;
+	}
+	static function awesome_apps_pages_sitemap($slug){
+		global $wpseo_sitemaps;
+		global $wpdb;
+		
+		$registered_apps=&aw2_library::get_array_ref('apps');
 
+		$skip_slugs=array('single','archive','header','footer');
+		
+		$output = '';
+		$app=$registered_apps[$slug];
+		
+		//foreach($registered_apps as $key => $app){
+		if(!self::enable_sitemap($app)) {
+            $wpseo_sitemaps->bad_sitemap = true;
+			return;
+		}	
+			
+		if(isset($app['collection']['pages']['post_type'])){
+			$args = array(
+				'posts_per_page'   => 500,
+				'orderby'          => 'post_date',
+				'order'            => 'DESC',
+				'post_type'        => $app['collection']['pages']['post_type'],
+				'post_status'      => 'publish',
+				'meta_query'  => array(
+					'relation' => 'OR',
+				   array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'compare' => 'NOT EXISTS'
+				   )
+				   ,array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'value'      => '2'
+				   )
+			   ),
+				'suppress_filters' => true
+			);
+			
+			$app_pages = new WP_Query( $args );
+			
+			
+			if( $app_pages->have_posts() ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $app_pages->posts as $p ) {
+					if(in_array($p->post_name,$skip_slugs)){
+						continue;
+					}
+					$slug= $p->post_name.'/';
+					if($slug=='home/')
+						$slug='';
+					
+					$url = array();
+					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
+						$url['mod'] = $p->post_modified_gmt;
+					} else {
+						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
+							$url['mod'] = $p->post_date_gmt;
+						} else {
+							$url['mod'] = $p->post_date;
+						}
+					}
+					$url['loc'] = $app['path'].'/'.$slug;
+					$url['chf'] = $chf;
+					$url['pri'] = $pri;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
+				}
+			}
+		}
+			
+		
+		if(isset($app['collection']['posts']['post_type'])){
+			$args = array(
+				'posts_per_page'   => 500,
+				'orderby'          => 'post_date',
+				'order'            => 'DESC',
+				'post_type'        => $app['collection']['posts']['post_type'],
+				'post_status'      => 'publish',
+				'meta_query'  => array(
+					'relation' => 'OR',
+				   array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'compare' => 'NOT EXISTS'
+				   )
+				   ,array(
+				   'key'      => '_yoast_wpseo_meta-robots-noindex',
+				   'value'      => '2'
+				   )
+			   ),
+				'suppress_filters' => true
+			);
+			
+			$app_posts = new WP_Query( $args );
+			
+			
+			if( $app_posts->have_posts() ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $app_posts->posts as $p ) {
+							
+					$url = array();
+					if ( isset( $p->post_modified_gmt ) && $p->post_modified_gmt != '0000-00-00 00:00:00' && $p->post_modified_gmt > $p->post_date_gmt ) {
+						$url['mod'] = $p->post_modified_gmt;
+					} else {
+						if ( '0000-00-00 00:00:00' != $p->post_date_gmt ) {
+							$url['mod'] = $p->post_date_gmt;
+						} else {
+							$url['mod'] = $p->post_date;
+						}
+					}
+					$url['loc'] = site_url().'/'.$app['slug'].'/'.$p->post_name.'/';
+					$url['chf'] = $chf;
+					$url['pri'] = $pri;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
+				}
+			}
+		}
+			
+			
+		$arr=aw2_library::get_module($app['collection']['config'],'settings');
+		$default_taxonomy = aw2_library::get_post_meta($arr['id'],'default_taxonomy');
+		
+			
+		if(!empty($default_taxonomy)){
+			$sql  = $wpdb->prepare(" SELECT MAX(p.post_modified_gmt) AS lastmod
+					FROM	$wpdb->posts AS p
+					WHERE post_status IN ('publish') AND post_type = %s ", $app['collection']['posts']['post_type'] );
+			$mod = $wpdb->get_var( $sql );
+
+			$terms = get_terms( array(
+						'taxonomy' => $default_taxonomy,
+						'hide_empty' => false,
+					) );
+			if( ! empty( $terms ) && ! is_wp_error( $terms )  ){
+				$chf = 'weekly';
+				$pri = 1.0;
+				foreach ( $terms as $term  ) {
+
+					$url = array();
+					$url['loc'] = site_url().'/'.$app['slug'].'/'.$term->slug.'/';
+					$url['pri'] = $pri;
+					$url['mod'] = $mod;
+					$url['chf'] = $chf;
+					$output .= $wpseo_sitemaps->renderer->sitemap_url( $url );
+					
+				}
+			}
+			
+		} 
+			
+	
+		
+		
+		if(aw2_library::get_module($app['collection']['config'],'custom-sitemap',true))
+			$output .= aw2_library::module_run($app['collection']['config'],'custom-sitemap');
+		
+		//Build the full sitemap
+        $sitemap = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
+        $sitemap .= 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" ';
+        $sitemap .= 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $sitemap .= $output . '</urlset>';
+        //echo $sitemap;
+        $wpseo_sitemaps->set_sitemap($sitemap);
+	}
 }
 
 class awesome_app{
@@ -806,57 +1054,118 @@ class awesome_app{
 		aw2_library::parse_shortcode($init['code']);
 	}
 	
-	public function check_rights($query){
-		
+	
+	public function check_rights($query){		//any changes to this function or related to this function should reflect in the if.user_can_access service
 		if(current_user_can('administrator'))return;
 		
-		if(!isset($this->configs['rights']))return;
+		if(isset($this->configs['rights'])){
+			
+			aw2_library::parse_shortcode($this->configs['rights']['code']);
+			
+			$rights =&aw2_library::get_array_ref('app','rights');
+			
+			if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
+			
+			if(strtolower($rights['access']['mode']) === 'private'){
+				wp_die('Access to this app is private.');
+			}
+			
+			// must be logged in
+			if(!isset($rights['auth']) && is_user_logged_in() )return;
+
+			foreach($rights['auth'] as $auth){
+				if(is_callable(array('awesome_auth', $auth['method']))){
+					$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
+					if($pass === true)return;
+				}
+			}
 		
-		aw2_library::parse_shortcode($this->configs['rights']['code']);
+			$login_url=wp_login_url();
+			if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
+			$login_url=site_url().'/'. $rights['access']['unlogged'];
+			}
+			
+			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			
+			if(isset($rights['access']['title'])){
+				$login_url .= '&title='. urlencode($rights['access']['title']);
+			}
+			
+			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+			wp_redirect( $login_url );
+			exit();
 		
-		$rights =&aw2_library::get_array_ref('app','rights');
+		}else{
+			$options = get_option('awesome-app-' . $this->slug);
+			if(!isset($options) || ('1' != $options['enable_rights'])) return true;
+			
+			if('1' == $options['enable_vsession']){
+				$vsession_key = $options['vsession_key'] ? $options['vsession_key'] : 'email';
+				$vsession = awesome_auth::vsession2($vsession_key);
+				if($vsession) return;
+			}
+			
+			if('1' == $options['enable_single_access']){
+				$auth_for_single = array();
+				$auth_for_single['all_roles'] = $options['single_access_roles'];
+				$has_single_access = awesome_auth::single_access($auth_for_single);
+				if($has_single_access) return;
+			}
+			
+			$modular_check = $this->check_modulewise_rights($options);
+			if($modular_check) return;
+			
+			$login_url=wp_login_url();
+			if('' != $options['unlogged'] && $options['unlogged'] !== 'wp_login'){
+				$login_url=site_url().'/'. $options['unlogged'];
+			}
+			
+			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			
+			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+			wp_redirect( $login_url );
+			exit();
+		}
+	}
+
+	public function check_modulewise_rights($options){
+		if(!is_user_logged_in()) return false;
 		
-		if(!isset($rights['access']) || strtolower($rights['access']['mode']) === 'public')return;
+		global $wp;
+		$current_url = home_url( add_query_arg( array(), $wp->request ) );
+		$path = str_replace($this->base_path, '', $current_url);
+		$path = explode('/', $path);
+		$module = $path[1];
 		
-		if(strtolower($rights['access']['mode']) === 'private'){
-			wp_die('Access to this app is private.');
+		if('ajax' == $module){
+			$module = $path[2];
 		}
 		
-		// must be logged in
-		if(!isset($rights['auth']) && is_user_logged_in() )return;
+		if('css' == $module || 'js' == $module || 't' == $module){
+			return true;
+		}
 		
+		if(!$module){
+			$module = 'home';
+		}
 		
-		//must be authenticated
-
-
-					
-		foreach($rights['auth'] as $auth){
-			if(is_callable(array('awesome_auth', $auth['method']))){
-				$pass = call_user_func(array('awesome_auth', $auth['method']),$auth);
-				if($pass === true)return;
+		$roles = $options['roles'];
+		if( 0 == count($roles) ) return true;		//return true if no roles selected
+		
+		foreach($roles as $key => $val){
+			if(current_user_can($key)){
+				if('1' == $val['access']) return true;
+				
+				$acees_cap = 'm_' . $this->slug . '_' . $module;
+				if(current_user_can($acees_cap)) return true;
 			}
 		}
-			
-		//all conditions failed, but use needs to be logged-in so redirect
-
-		$login_url=wp_login_url();
-		if(isset($rights['access']['unlogged']) && $rights['access']['unlogged'] !== 'wp_login'){
-		   $login_url=site_url().'/'. $rights['access']['unlogged'];
-		}
 		
-		$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-		$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
-		
-		if(isset($rights['access']['title'])){
-			$login_url .= '&title='. urlencode($rights['access']['title']);
-		}
-		
-		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-		wp_redirect( $login_url );
-		exit();
-		
-		
+		return false;
 	}
+	
 	
 	public function resolve_route($pieces,$query){
 		controllers::resolve_route($pieces,$query);
