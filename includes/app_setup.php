@@ -1151,6 +1151,8 @@ class awesome_app{
 			$module = 'home';
 		}
 		
+		$module = explode(".", $module)[0];
+		
 		$roles = $options['roles'];
 		if( 0 == count($roles) ) return true;		//return true if no roles selected
 		
