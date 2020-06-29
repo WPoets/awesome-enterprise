@@ -13,16 +13,25 @@
         
         $lib_path = plugin_dir_path( __DIR__ ) . 'libraries/docx-creator/vendor/autoload.php';
         require_once $lib_path;
-        
+
         \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
         $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($path);
+
+        foreach( $data['sections'] as $item => $value ){
+            if('true' == $value){
+                $templateProcessor->cloneBlock($item, 1, true, false);
+            }else{
+                $templateProcessor->cloneBlock($item, 0, true, false);
+            }
+        }
+
         foreach( $data['flat'] as $item=> $value ){
             $templateProcessor->setValue($item, $value);
         }
         
         foreach( $data['rows'] as $item=> $value ){
             $templateProcessor->cloneRowAndSetValues($item, $value);
-        }
+        }        
         
         header("Content-Description: File Transfer");
         header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -31,5 +40,6 @@
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
         $templateProcessor->saveAs('php://output');
+        exit();
     }
 ?>
