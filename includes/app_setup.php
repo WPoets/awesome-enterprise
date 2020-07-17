@@ -38,11 +38,12 @@ class aw2_apps_library{
 				aw2\global_cache\del(['main'=>'#cached_enviroment'],null,null);
 		}	
 		
-		if((current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
-			echo '/*' .  'no cache*/';	
+		if((current_user_can('develop_for_awesomeui') || isset($_COOKIE['dev_no_cache']))){
+			//echo '/*' .  'no cache*/';
+			header("Awesome-Cache: NO");			
 		}
 		
-		if(!(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+		if(!(current_user_can('develop_for_awesomeui') || isset($_COOKIE['dev_no_cache']))){
 			$cached=aw2\global_cache\get(["main"=>'#cached_enviroment'],null,null);
 			if($cached){
 				$cached=unserialize($cached);
@@ -54,6 +55,7 @@ class aw2_apps_library{
 				//$ref['content_types']=$cached['content_types'];
 				$ref['settings']=$cached['settings'];
 				//echo '/*' .  'from cache*/';
+				header("Awesome-Cache: YES");
 				$flag=false;
 			}
 		}
@@ -74,7 +76,7 @@ class aw2_apps_library{
 				//self::run_core('content-types');
 				// \aw2\debug\flow(['main'=>'Content Types']);
 	
-				if(!current_user_can('develop_for_awesomeui') ){
+				if(!current_user_can('develop_for_awesomeui')  && !isset($_COOKIE['dev_no_cache']) ){
 					$ref=aw2_library::get_array_ref();
 					$cached=array();
 					$cached['handlers']=$ref['handlers'];
@@ -165,7 +167,7 @@ class aw2_apps_library{
 				aw2\global_cache\del(['main'=>'#cached_content_types'],null,null);
 		}	
 		
-		if(!(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
+		if(!(current_user_can('develop_for_awesomeui') || isset($_COOKIE['dev_no_cache']))){
 
 			
 			$cached=aw2\global_cache\get(["main"=>'#cached_content_types'],null,null);
@@ -185,9 +187,9 @@ class aw2_apps_library{
 				$flag=false;
 			}
 		}
-	
+		self::run_core('init');	 // this was done as init may set variables in the env that are not cached.
 		if($flag){
-			self::run_core('init');			
+			//self::run_core('init');			
 			if(!current_user_can('develop_for_awesomeui')){
 				$ref=aw2_library::get_array_ref();
 				$cached=array();
