@@ -1587,7 +1587,10 @@ class controllers{
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
 		
-		$filename=$_REQUEST['filename'];	
+		$filename=$_REQUEST['filename'];
+		$file_extension=explode('.',$filename);
+		$extension=end($file_extension);
+		
 		$folder=aw2_library::get('realpath.app_folder');
 		$path=$folder . $filename;
 	
