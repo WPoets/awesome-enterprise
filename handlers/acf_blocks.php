@@ -84,17 +84,16 @@ class awesome2_acfblock{
 	}
 	
 	function render_callback($block, $content = '', $is_preview = false, $post_id = 0){
-		// \util::var_dump($block);
-		
+
 		$result='service handler not set';
 		if(isset($block['service_handler']) && !empty($block['service_handler'])){
-		//	$result=\aw2\service\run($block['service_handler'],null,[]);
+			// convert name ("acf/testimonial") into path friendly slug ("testimonial")
+			$slug = str_replace('acf/', '', $block['name']);
+			$block['slug_name']=$slug;
 			$result=\aw2_library::service_run($block['service_handler'],$block,null,'service');
 			
 		 }
-		// echo 'xyz='.\aw2\service\run('g2aui.test.test_choose',null,[]);
-		// echo 'xyz='.\aw2_library::service_run('g2aui.test.test_choose',$block,null,'service');
-		// \aw2_library::d();
+		
 		echo $result;
 	}
 	
