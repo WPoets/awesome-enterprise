@@ -4215,7 +4215,8 @@ static function removesmartquotes($content) {
 
 	static function the_content_filter($content){
 		global $wp_embed;
-			
+		
+		$content = do_blocks($content);		
 		$content = wptexturize($content);
 		$content = convert_smilies($content);
 		$content = wpautop($content);

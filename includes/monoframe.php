@@ -90,8 +90,10 @@ class Monoframe
                 
                 
                 // include zoho SDK
-                require_once (  $plugin_path .'/libraries/zoho/zoho.php');
+        require_once (  $plugin_path .'/libraries/zoho/zoho.php');
 		require_once( $plugin_path . '/libraries/metaboxes.php' );
+		require_once( $plugin_path . '/libraries/acf-blocks.php' );
+		
 		// Include Module Distributable files.
 		require_once( $plugin_path . '/libraries/module-distribution/code-distributables.php' );
 		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
