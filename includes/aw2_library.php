@@ -4215,11 +4215,14 @@ static function removesmartquotes($content) {
 
 	static function the_content_filter($content){
 		global $wp_embed;
+		$has_blocks = has_blocks($content);	
 		
 		$content = do_blocks($content);		
 		$content = wptexturize($content);
 		$content = convert_smilies($content);
-		$content = wpautop($content);
+		if(!$has_blocks){ //workaround for stray closing p tags in GT blocks.
+			$content = wpautop($content);
+		}
 		$content = shortcode_unautop($content);
 		$content = prepend_attachment($content);
 		$content = wp_make_content_images_responsive($content);
