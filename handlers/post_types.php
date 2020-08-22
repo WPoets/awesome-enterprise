@@ -14,8 +14,6 @@ function add($atts,$content=null,$shortcode){
 	
 	if(empty($main)) return;
 	
-	if(!isset($_COOKIE['amit'])) return;
-	
 	unset($atts['main']);
 	unset($atts['desc']);
 	$tags_left = $shortcode['tags_left'];
