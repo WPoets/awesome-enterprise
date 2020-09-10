@@ -67,6 +67,7 @@ function auth($atts,$content=null,$shortcode){
 	extract( shortcode_atts( array(
 	'ticket_id'=>null,
 	'scope'=>null,
+	'version'=>7.4,
 	'app_id'=>null,
 	'app_secret'=>null
 	), $atts) );
