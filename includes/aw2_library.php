@@ -4217,7 +4217,10 @@ static function removesmartquotes($content) {
 		global $wp_embed;
 		$has_blocks = has_blocks($content);	
 		
-		$content = do_blocks($content);		
+		if($has_blocks){ 
+			$content = do_blocks($content);
+		}
+				
 		$content = wptexturize($content);
 		$content = convert_smilies($content);
 		if(!$has_blocks){ //workaround for stray closing p tags in GT blocks.
