@@ -27,35 +27,9 @@ class Monoframe
 		 * Initialize the CMB 2 metabox class.  help is currently at https://github.com/WebDevStudios/CMB2/wiki/Basic-Usage
 		 */
 	/* 
-		if ( file_exists(  __DIR__ . '/monoframe/cmb/core/init.php' ) ) {
-			require_once  __DIR__ . '/monoframe/cmb/core/init.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/field-gallery/cmb-field-gallery.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/field_map/cmb-field-map.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/rgba_picker/jw-cmb2-rgba-colorpicker.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/cmb2-attached-posts/cmb2-attached-posts-field.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/post-search-field/cmb2_post_search_field.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/field-select2/cmb-field-select2.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/field-slider/cmb2_field_slider.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/remote-image-select-field/cmb2-remote-img-sel.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/date-range-field/wds-cmb2-date-range-field.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/user-search-field/cmb2_user_search_field.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/cmb2-conditionals/cmb2-conditionals.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/cmb2-yesno-field/cmb2-yesno-field.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/cmb2-field-type-tags/cmb2-field-type-tags.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/post-list-select.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/cmb2-field-ajax-search/cmb2-field-ajax-search.php';
-			require_once __DIR__ . '/monoframe/cmb/extras/select-multiple-field-type.php';
-		}
-		 
+		
 		require_once __DIR__ . '/monoframe/basic-maintenance.php';
 
-		// initialize cmb2 site settings/site-settings
-		//require_once( dirname( __FILE__ ) . '/monoframe/site-settings/site-settings.php' );
-		//require_once( dirname( __FILE__ ) . '/monoframe/site-settings-config.php' );
-
-		//require_once( dirname( __FILE__ ) . '/monoframe/hm-rewrites.php' ); // to ensure and give easy ability to add new rewrite rules
-		// Automatically compiles any .less file to css.
-		require_once( dirname( __FILE__ ) . '/monoframe/wp-less/wp-less.php' );
 		
 		//Include CSV/Excel file Importer, Example to use it is in Site_specific plugin
 		//require_once( dirname( __FILE__ ) . '/monoframe/mm-csv-importer.php' );
@@ -70,47 +44,30 @@ class Monoframe
 		require_once( dirname( __FILE__ ) . '/monoframe/duplicate-posts.php' );
 		require_once( dirname( __FILE__ ) . '/monoframe/admin-meta-search.php' );
 		
-		//nav walkers
-		require( dirname( __FILE__ ) . '/monoframe/menu-walkers/navwalkers.php' ); 
-		
 		//optimised default functions
 		require( dirname( __FILE__ ) . '/monoframe/optimized-functions.php' ); 
 		 */
+		 
 		$plugin_path=plugin_dir_path( __DIR__ );
 		// Include Ace Editor files.
-		require_once( $plugin_path . '/libraries/social-login-improved.php' );
+		//require_once( $plugin_path . '/libraries/social-login-improved.php' );
 
 		require_once( $plugin_path . '/libraries/editor/aw-code-editor.php' );
 		require_once( $plugin_path . '/libraries/editor/devcap.php' );
-		//require_once( dirname( __FILE__ ) . '/monoframe/editor/preset.php' );
-		//require_once( $plugin_path . '/libraries/editor/gmet.php' );
 		
 		require_once( $plugin_path . '/libraries/Mobile_Detect.php' );
 		require(  $plugin_path . '/libraries/menu-walkers/navwalkers.php' ); 
-                
+              
                 
                 // include zoho SDK
         require_once (  $plugin_path .'/libraries/zoho/zoho.php');
 		require_once( $plugin_path . '/libraries/metaboxes.php' );
 		require_once( $plugin_path . '/libraries/acf-blocks.php' );
-		
+		require_once( $plugin_path . '/libraries/export-apps/import-export-apps.php' ); 
+		 
 		// Include Module Distributable files.
 		require_once( $plugin_path . '/libraries/module-distribution/code-distributables.php' );
-		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );
-		
-		//Apps Inclusion
-		
-	
-		//require_once( dirname( __FILE__ ) . '/monoframe/awesome-app.php' );
-		//zoho
-//		require_once( dirname( __FILE__ ) . '/monoframe/zoho-crm.php' );
-		
-		
-		//notification
-		//require_once( dirname( __FILE__ ) . '/monoframe/notifications.php' );
-		//require_once( dirname( __FILE__ ) . '/monoframe/WebSocket/autoload.php' );
-		
-		//require_once( dirname( __FILE__ ) . '/monoframe/awesome-app-o.php' );
+		//require_once( dirname( __FILE__ ) . '/monoframe/module-distribution/shortcode-generator.php' );	
 	}
 		
 		// use the action to create a place for your meta box
