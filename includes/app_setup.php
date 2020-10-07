@@ -326,7 +326,7 @@ class aw2_apps_library{
 			'query_var' => false,
 			'menu_icon'=>'dashicons-archive',
 			'supports' => array('title','editor','revisions','thumbnail','custom-fields'),
-			'rewrite' => true,
+			'rewrite' => false,
 			'delete_with_user' => false,
 			'labels' => array (
 				  'name' => 'Local Apps',

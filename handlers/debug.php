@@ -407,11 +407,12 @@ function module($atts,$content=null,$shortcode=null){
 		[
 			'type'=>'html',
 			'value'	=>"Module Array"
-		],
-		[
-			'type'=>'arr',
-			'value'	=>\aw2_library::get('module')
 		]
+//		,
+//		[
+//			'type'=>'arr',
+//			'value'	=>\aw2_library::get('module')
+//		]
 	]		
 	,
 	"Module: " . \aw2_library::$stack['module']['collection']['post_type'] . '::' . \aw2_library::$stack['module']['slug'] . ' Time Taken:' . diff_time($start)

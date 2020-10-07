@@ -188,6 +188,36 @@ function create($atts,$content=null,$shortcode){
 
 
 /*
+	[date.modify date='' frequency='' o.set=template.modified_date /]
+
+	- frequency will be of the format : '+1 day','+2 months', '-36 minutes' etc
+	- modified_date will be of DateTime format
+	
+*/
+\aw2_library::add_service('date.modify','Modify & return DateTime',['namespace'=>__NAMESPACE__]);
+function modify($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'date'=>null,
+	'frequency'=>null
+	), $atts, 'aw2_get' ) );
+	
+	if(is_null($date) || is_null($frequency)) return ;
+
+	if(!is_a($date, 'DateTime')) {
+	  $date = new \DateTime($date);
+	}
+	
+	$return_value = $date->modify($frequency);
+
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
+
+/*
 [date.diff date1= date2='' diff_type]
 
 date1 is string or datetime object
