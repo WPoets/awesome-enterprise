@@ -41,7 +41,50 @@ function run($atts,$content=null,$shortcode=null){
 	return $return_value;
 }
 
+ 
+\aw2_library::add_service('service.template.add','Add a New Template',['func'=>'template_add','namespace'=>__NAMESPACE__]);
+ 
+function template_add($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'desc'=>null
+	), $atts) );
+	unset($atts['main']);
+	unset($atts['desc']);
+	$atts['name']=$main;	
+	$atts['namespace']=__NAMESPACE__;	
+	$atts['func']='template_run';	
+	$atts['code']=$content;	
 
+	\aw2_library::add_service($main,$desc,$atts);
+}
+
+\aw2_library::add_service('service.template.run','Used to run a service',['func'=>'template_run','namespace'=>__NAMESPACE__]);
+
+function template_run($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract( shortcode_atts( array(
+		'main'=>null,
+		'service'=>null,
+		'template'=>null,
+		'module'=>null,
+		'_default'=>'service'
+	), $atts) );
+	
+	\util::var_dump($atts);
+	\util::var_dump($shortcode);
+	
+	$return_value=\aw2_library::service_template_run($shortcode['handler'],$atts);		
+
+	\util::var_dump($return_value);
+	
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	//if(is_object($return_value))$return_value='Object';
+ 	
+	return $return_value;
+}
 
 function runbackup($atts,$content,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;

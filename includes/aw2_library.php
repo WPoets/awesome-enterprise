@@ -4598,6 +4598,29 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 }
 
 
+static function service_template_run($template,$atts=array()){
+
+	if(isset($_COOKIE['aws_update'])){
+		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+		echo '/*' .  '::start template:' . $template['name'] . ' ' . $timeConsumed . '*/';
+		
+	}
+	
+	$stack_id=self::push_child('template',$template['name']);
+	
+	self::push_this($stack_id);
+	self::push_atts($stack_id,$atts);
+
+	
+	$return_value=self::parse_shortcode($template['code']);
+	if(isset(self::$stack['template']['_return'])){
+		unset(self::$stack['_return']);
+		$return_value=self::$stack['template']['_return'];
+	}
+	aw2_library::pop_child($stack_id);
+	return $return_value;	
+}
+
 static function template_run($template,$content=null,$atts=array()){
 
 	if(isset($_COOKIE['aws_update'])){
