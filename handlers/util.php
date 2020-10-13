@@ -96,8 +96,6 @@ function nonce($atts,$content=null,$shortcode){
 	if(!$main)return 'Main must be set';
 	
 	$return_value = wp_create_nonce($main);
-	echo 'RET';
-	\util::var_dump($return_value);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	

@@ -38,7 +38,7 @@ function run($atts,$content=null,$shortcode){
 		$json=json_encode($payload);
 		$redis->hSet($ticketid,'payload',$json);
 		$redis->setTimeout($ticketid, 60*60);
-		//echo site_url() . '/ts/' . $ticketid;
+//		echo site_url() . '/ts/' . $ticketid;
 	
 		
 
