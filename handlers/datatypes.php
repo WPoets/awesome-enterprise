@@ -409,3 +409,24 @@ function create($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('arr.search_deep','Allows you to search for a value in an array of arrays or an array of objects, and return the key of the value that matches the search criteria.',['namespace'=>__NAMESPACE__]);
+function search_deep($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+	
+	extract( shortcode_atts( array(
+	'main'=>null,
+	'search'=>null,
+	'field'=>FALSE
+	), $atts, 'aw2_get' ) );
+	
+	if(is_null($main) || is_null($search)) return ;
+	
+	$arr_to_search = \aw2_library::get($main);
+	
+	$return_value =\util::array_search_deep($arr_to_search, $search,$field);
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
