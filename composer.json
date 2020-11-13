@@ -1,0 +1,36 @@
+{
+    "name": "wpoets/awesome-enterprise",
+    "license": "GPL V3.0",
+    "type": "project",
+    "description": "The Awesome Enterprise Framework for low code development in PHP",
+	"keywords": ["WordPress", "Low Code"," Awesome Enterprise","Shortcode"],
+	"homepage": "https://getawesomestudio.com/",
+	"authors": [
+         {
+            "name": "Vikas Kumar",
+            "homepage": "https://www.wpoets.com"
+        },
+		{
+            "name": "Amit Singh",
+            "homepage": "https://www.wpoets.com"
+        }
+       
+    ],
+	 "support": {
+        "docs": "https://www.getawesomestudio.com/enterprise-tutorial/"
+    },
+    "require": {
+        "php": "^7.0|^7.4|^8",
+        "maximebf/debugbar": "^1.16"
+    },
+    "config": {
+		"process-timeout": 600,
+        "sort-packages": true
+    },
+	 "suggest": {
+        "maximebf/debugbar": "Debug bar in the browser for php application",
+        "monolog/monolog": "Log using Monolog",
+        "react/react": "ReactPHP: Event-driven, non-blocking I/O with PHP"
+    },
+	"prefer-stable": true
+}
