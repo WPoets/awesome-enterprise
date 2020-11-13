@@ -1,6 +1,6 @@
 {
     "name": "wpoets/awesome-enterprise",
-    "license": "GPL V3.0",
+    "license": "GPL-3.0-or-later",
     "type": "project",
     "description": "The Awesome Enterprise Framework for low code development in PHP",
 	"keywords": ["WordPress", "Low Code"," Awesome Enterprise","Shortcode"],
