@@ -23,6 +23,12 @@
         "php": ">=7.0",
         "maximebf/debugbar": "^1.16"
     },
+	"extra": {
+        "installer-types": ["awesome-handler"],
+        "installer-paths": {
+            "extra-handlers/{$name}/": ["type:awesome-handler"]
+        }
+    },
     "config": {
 		"process-timeout": 600,
         "sort-packages": true
