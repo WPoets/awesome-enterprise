@@ -462,7 +462,7 @@ class controllers{
 	static function controller_pages($o, $query){
 		if(empty($o->pieces))return;
 
-		\aw2\debug\flow(['main'=>'Before running Page/Module']);			
+		if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'Before running Page/Module']);			
  
 	
 		$slug= $o->pieces[0];
@@ -492,7 +492,7 @@ class controllers{
 			
 				if($output !== false){
 					echo $output; 
-					\aw2\debug\flow(['main'=>'After running Page']);			
+					if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'After running Page']);			
 				
 					exit();
 				}
@@ -518,7 +518,7 @@ class controllers{
 				$output = self::run_layout($app, 'modules', $slug,$query);
 				if($output !== false){
 					echo $output;
-					\aw2\debug\flow(['main'=>'After running Module']);		
+					if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'After running Module']);		
 
 				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 				//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
@@ -548,7 +548,7 @@ class controllers{
 		self::module_parts();
 		
 		$post_type = $app['collection']['modules']['post_type'];
-		if(aw2_library::post_exists($slug,$post_type)){
+		if(aw2_library::post_exists(self::$module,$post_type)){
 			array_shift($o->pieces);
 
 			$app['active']['collection'] = $app['collection']['modules'];
@@ -566,7 +566,7 @@ class controllers{
 			//echo '/*' .  '::after module:' .$timeConsumed . '*/';				
 			echo $result;
 			//render debug bar if needs to be rendered	
-			echo \aw2\debugbar\ajax_render([]);
+			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
 
 			exit();	
 		}
@@ -597,7 +597,7 @@ class controllers{
 			$result=\aw2\service\run($hash,null,[]);
 			echo $result;
 			//render debug bar if needs to be rendered	
-			echo \aw2\debugbar\ajax_render([]);		
+			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
 			exit();	
 		}
 		
@@ -629,7 +629,7 @@ class controllers{
 
 		echo $result;
 		//render debug bar if needs to be rendered	
-		echo \aw2\debugbar\ajax_render([]);
+		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
 			
 		exit();	
 	}
@@ -662,7 +662,7 @@ class controllers{
 		}
 		echo implode('',$result);
 		//render debug bar if needs to be rendered	
-		echo \aw2\debugbar\ajax_render([]);		
+		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
 		exit();	
 	}	
 	

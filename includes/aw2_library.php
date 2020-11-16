@@ -44,12 +44,13 @@ static function load_all_extra_handlers(){
 	
 	$handler_path = AWESOME_PATH.'/extra-handlers';
         
-	if(!is_dir($handlers_path ))
+	if(!is_dir($handler_path ))
 		return;
 	
-	$folders = glob($handlers_path . "*",GLOB_ONLYDIR);
+	$folders = glob($handler_path . "/*",GLOB_ONLYDIR);
+		
 	foreach ($folders as $folder){
-		$files = glob($handlers_path . "/".$folder."/*.php");
+		$files = glob($folder."/*.php");
 		foreach ($files as $filename){
 			require_once $filename;
 		}
@@ -4882,7 +4883,7 @@ static function setup_env_cache($key){
 		if(isset($_COOKIE['use_env_cache']) && $_COOKIE['use_env_cache']==='no')
 			define('USE_ENV_CACHE', false);	
 		else
-			define('USE_ENV_CACHE', false);	
+			define('USE_ENV_CACHE', true);	
 	}
 
 	if(isset($_REQUEST['use_env_cache']) && $_REQUEST['use_env_cache']==='delete_cookie'){

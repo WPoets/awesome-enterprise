@@ -50,7 +50,7 @@ aw2_library::setup_develop_for_awesomeui();
 //standard setup for cache
 aw2_library::setup_env_cache('bootstrap_env_cache');
 
-define('HANDLERS_PATH', '/var/www/awesome-enterprise/handlers');
+define('HANDLERS_PATH', '/var/www/awesome-enterprise/core-handlers');
 define('EXTRA_HANDLERS_PATH', AWESOME_PATH.'/extra-handlers');
 
 //load whatever handlers we want
