@@ -51,16 +51,17 @@ aw2_library::setup_develop_for_awesomeui();
 aw2_library::setup_env_cache('bootstrap_env_cache');
 
 define('HANDLERS_PATH', '/var/www/awesome-enterprise/handlers');
+define('EXTRA_HANDLERS_PATH', AWESOME_PATH.'/extra-handlers');
 
 //load whatever handlers we want
-aw2_library::loader_handlers_from_path(HANDLERS_PATH,'structure','lang','cache','session');
-//aw2_library::loader_handlers_from_path(HANDLERS_PATH,'debug');
-aw2_library::loader_handlers_from_path(HANDLERS_PATH,'utils');
-aw2_library::loader_handlers_from_path(HANDLERS_PATH,'database');
-aw2_library::loader_handlers_from_path(HANDLERS_PATH,'front-end');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'structure','lang','cache','session');
+aw2_library::load_handlers_from_path(EXTRA_HANDLERS_PATH,'debug');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'utils');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'database');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'front-end');
 
 //load controllers
-aw2_library::loader_handlers_from_path(HANDLERS_PATH,'controllers');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'controllers');
 
 //Load the initial services	
 awesome_flow::env_setup();

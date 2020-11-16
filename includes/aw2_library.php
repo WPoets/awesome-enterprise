@@ -25,7 +25,7 @@ static $redis_conn=null;
 static $mysqli=null;
 
 
-static function loader_handlers_from_path($handlers_path,...$paths){
+static function load_handlers_from_path($handlers_path,...$paths){
 	foreach ($paths as $path) {
         
 		if(!is_dir($handlers_path . "/".$path))
@@ -37,6 +37,23 @@ static function loader_handlers_from_path($handlers_path,...$paths){
 		}
     }
 	
+}
+
+//this function is used to load all the handlers, this will load communication as well as all others like google
+static function load_all_extra_handlers(){
+	
+	$handler_path = AWESOME_PATH.'/extra-handlers';
+        
+	if(!is_dir($handlers_path ))
+		return;
+	
+	$folders = glob($handlers_path . "*",GLOB_ONLYDIR);
+	foreach ($folders as $folder){
+		$files = glob($handlers_path . "/".$folder."/*.php");
+		foreach ($files as $filename){
+			require_once $filename;
+		}
+	}
 }
 
 
