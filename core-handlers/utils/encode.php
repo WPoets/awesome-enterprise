@@ -100,8 +100,8 @@ function str($atts,$content=null,$shortcode){
 	$main = \aw2_library::resolve_chain($main);
 	
 	/** Include htmlpurifier **/
-	$path = \aw2_library::$plugin_path . "libraries";
-	require_once $path . '/htmlpurifier/library/HTMLPurifier.auto.php';
+	//$path = \aw2_library::$plugin_path . "libraries";
+	//require_once $path . '/htmlpurifier/library/HTMLPurifier.auto.php';
 	
 	//**Purify the HTML**//
 	$config = \HTMLPurifier_Config::createDefault();
@@ -123,8 +123,8 @@ function options($atts,$content=null,$shortcode){
 	$main = \aw2_library::resolve_chain($main);
 	
 	/** Include htmlpurifier **/
-	$path = \aw2_library::$plugin_path . "libraries";
-	require_once $path . '/htmlpurifier/library/HTMLPurifier.auto.php';
+	//$path = \aw2_library::$plugin_path . "libraries";
+	//require_once $path . '/htmlpurifier/library/HTMLPurifier.auto.php';
 	
 	$config = \HTMLPurifier_Config::createDefault();
 	$purifier = new \HTMLPurifier($config);

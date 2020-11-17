@@ -16,9 +16,9 @@ function set($atts,$content=null,$shortcode){
 	$r=\aw2\multi\select(array(),$sql,null);
 	$id=$r[0]['ID'];
 
-	$plugin_path=plugin_dir_path( __DIR__ );
-	require_once( $plugin_path . '/libraries/Hashids/HashGenerator.php' );
-	require_once( $plugin_path . '/libraries/Hashids/Hashids.php' );
+	//$plugin_path=plugin_dir_path( __DIR__ );
+	//require_once( $plugin_path . '/libraries/Hashids/HashGenerator.php' );
+	//require_once( $plugin_path . '/libraries/Hashids/Hashids.php' );
 
 	$hashids = new \Hashids\Hashids('this is Bingo',10,"abcdefghijklmnopqrstuvwxyz1234567890");
 	$hash = $hashids->encode($id);
@@ -50,9 +50,9 @@ function get($atts,$content=null,$shortcode){
 
 	
 	if($flag){
-		$plugin_path=plugin_dir_path( __DIR__ );
-		require_once( $plugin_path . '/libraries/Hashids/HashGenerator.php' );
-		require_once( $plugin_path . '/libraries/Hashids/Hashids.php' );
+		//$plugin_path=plugin_dir_path( __DIR__ );
+		//require_once( $plugin_path . '/libraries/Hashids/HashGenerator.php' );
+		//require_once( $plugin_path . '/libraries/Hashids/Hashids.php' );
 
 		$hashids = new \Hashids\Hashids('this is Bingo',10,"abcdefghijklmnopqrstuvwxyz1234567890");
 		$reply = $hashids->decode($hash);

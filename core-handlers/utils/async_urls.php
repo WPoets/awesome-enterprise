@@ -7,8 +7,8 @@ function run($atts,$content=null,$shortcode){
  	extract(\aw2_library::shortcode_atts( array(
 		'tickets'=>null
 	), $atts) );
-	$path = \aw2_library::$plugin_path . "/libraries";
-	require_once $path . '/reactphp/autoload.php';
+	//$path = \aw2_library::$plugin_path . "/libraries";
+	//require_once $path . '/reactphp/autoload.php';
 
 	if(!$tickets)return 'Payload not defined';
 	

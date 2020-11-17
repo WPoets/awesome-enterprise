@@ -13,8 +13,8 @@ function run($atts,$content=null,$shortcode){
 		'app'=>null,
 		'payload_size'=>1,
 	), $atts) );
-	$path = \aw2_library::$plugin_path . "/libraries";
-	require_once $path . '/reactphp/autoload.php';
+	//$path = \aw2_library::$plugin_path . "/libraries";
+	//require_once $path . '/reactphp/autoload.php';
 
 	if(!$tickets)return 'Payload not defined';
 	

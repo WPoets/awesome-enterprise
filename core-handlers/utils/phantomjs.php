@@ -19,8 +19,8 @@ function generate($atts,$content=null,$shortcode){
 		), $atts) );
 	
 	/*Needed to load required files from JonnyW-PhantomJs Library*/
-	$plugin_path=plugin_dir_path( __DIR__ );
-	require_once($plugin_path . '/libraries/phantomjs/autoload.php');
+	//$plugin_path=plugin_dir_path( __DIR__ );
+	//require_once($plugin_path . '/libraries/phantomjs/autoload.php');
 	
 	$client = Client::getInstance();
 	
