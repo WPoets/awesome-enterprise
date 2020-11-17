@@ -16,7 +16,7 @@ require_once '../wp-config.php';
 
 
 // Include Util so that you can do var_dump
-require_once AWESOME_PATH.'/libraries/util/util.php';
+require_once AWESOME_PATH.'/includes/util.php';
 
 //Main library of awesome
 require_once AWESOME_PATH.'/includes/aw2_library.php';
