@@ -17,5 +17,9 @@ Above example is for Nginx server.
 
 ### Changelog  
 
+##### 3.0.1  
+* Added missing util.php
+* Added Simple-MySQLi Library
+
 ##### 3.0.0  
 * Initial release
