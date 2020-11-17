@@ -21,7 +21,7 @@
     },
     "require": {
         "php": ">=7.0",
-        "maximebf/debugbar": "^1.16"
+        "wpoets/debug-handler": ">=1.0"
     },
 	"extra": {
         "installer-types": ["awesome-handler"],
@@ -34,9 +34,15 @@
         "sort-packages": true
     },
 	 "suggest": {
-        "maximebf/debugbar": "Debug bar in the browser for php application",
-        "monolog/monolog": "Log using Monolog",
-        "react/react": "ReactPHP: Event-driven, non-blocking I/O with PHP"
+        "wpoets/communication-handler": "Email, SMS and Push notification API Integration handler for Awesome enterprise",
+        "wpoets/docx-handler": "Add support for parsing docx file by introducing docx.parse_template shortcode",
+        "wpoets/facebook-handler": "Facebook API Integration handler for Awesome enterprise",
+        "wpoets/google-handler": "Google API Integration handler for Awesome enterprise",
+        "wpoets/linkedin-handler": "LinkedIn API Integration handler for Awesome enterprise",
+        "wpoets/payments-handler": "Adds support for payment gateway integrations by introducing aw2.pay shortcode",
+        "wpoets/pdf-handler": "Handler for PDF creation and parsing in Awesome Enterprise",
+        "wpoets/woocommerce-handler": "Handler for working with WooCommerce products in Awesome Enterprise",
+        "wpoets/exotel-handler": "Adds support to work with Exotel API within Awesome Enterprise, introduces exotel.* shortcodes"
     },
 	"prefer-stable": true
 }
