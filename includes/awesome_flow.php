@@ -21,7 +21,6 @@ class awesome_flow{
 			$ref['settings']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"settings"]));
 			//These are content type stubs and not actual content types
 			$ref['content_types']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"content_types"]));
-			echo 'cache was used';
 		}
 		else{
 			
