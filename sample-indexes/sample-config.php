@@ -2,6 +2,7 @@
 
 
 define('SITE_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
+define('HOME_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
 
 define( 'REDIS_HOST', '127.0.0.1' );
 define( 'REDIS_PORT', '6379' );

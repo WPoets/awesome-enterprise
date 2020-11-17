@@ -8,7 +8,7 @@ namespace aw2\css;
 
 \aw2_library::add_service('less','LESS Compiler',['namespace'=>__NAMESPACE__]);
 function less($atts,$content=null,$shortcode){
-	require_once (AWESOME_PATH . "/libraries/wp-less/wp-less.php");
+	//require_once (AWESOME_PATH . "/libraries/wp-less/wp-less.php");
 	$string=\aw2_library::parse_shortcode($content);
 	$less = new \lessc;
 	$less_variables=\aw2_library::get('less_variables');
@@ -20,7 +20,7 @@ function less($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('minify','Minify CSS and return',['namespace'=>__NAMESPACE__]);
 function minify($atts,$content=null,$shortcode){
-	$path =AWESOME_PATH . "/libraries";
+	/* $path =AWESOME_PATH . "/libraries";
 	require_once $path . '/minify2/Minify.php';
 	require_once $path . '/minify2/CSS.php';
 	require_once $path . '/minify2/JS.php';
@@ -29,7 +29,7 @@ function minify($atts,$content=null,$shortcode){
 	require_once $path . '/minify2/Exceptions/FileImportException.php';
 	require_once $path . '/minify2/Exceptions/IOException.php';
 	require_once $path . '/minify2/path-converter/ConverterInterface.php';
-	require_once $path . '/minify2/path-converter/Converter.php';
+	require_once $path . '/minify2/path-converter/Converter.php'; */
 	
 	
 	$string=\aw2_library::parse_shortcode($content);

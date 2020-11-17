@@ -10,7 +10,7 @@ function minify($atts,$content=null,$shortcode){
 	$string=\aw2_library::parse_shortcode($content);
 	
 
-	$path = \aw2_library::$plugin_path . "/libraries";
+	/* $path = \aw2_library::$plugin_path . "/libraries";
 	require_once $path . '/minify2/Minify.php';
 	require_once $path . '/minify2/CSS.php';
 	require_once $path . '/minify2/JS.php';
@@ -19,7 +19,7 @@ function minify($atts,$content=null,$shortcode){
 	require_once $path . '/minify2/Exceptions/FileImportException.php';
 	require_once $path . '/minify2/Exceptions/IOException.php';
 	require_once $path . '/minify2/path-converter/ConverterInterface.php';
-	require_once $path . '/minify2/path-converter/Converter.php';
+	require_once $path . '/minify2/path-converter/Converter.php'; */
 	
 	$minifier = new \MatthiasMullie\Minify\JS();
 	$minifier->add($string);
