@@ -1,2 +1,12 @@
 # Awesome Enterprise Framework
-The Awesome Enterprise Low Code Framework for PHP
+
+Awesome Enterprise is a shortcode based low code platform for PHP and WordPress.
+
+You can set it up using composer
+
+`composer create-project wpoets/awesome-enterprise`
+
+### Changelog  
+
+##### 3.0.0  
+* Initial release
