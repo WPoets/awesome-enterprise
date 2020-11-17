@@ -19,9 +19,17 @@
 	 "support": {
         "docs": "https://www.getawesomestudio.com/enterprise-tutorial/"
     },
+	"repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/WPoets/Simple-MySQLi"
+        }
+    ],
     "require": {
         "php": ">=7.0",
-        "wpoets/debug-handler": ">=1.0"
+		"brandonwamboldt/utilphp": "1.1.*",
+        "wpoets/debug-handler": ">=1.0",
+        "wpoets/simple-mysqli": ">=1.5.6"
     },
 	"extra": {
         "installer-types": ["awesome-handler"],

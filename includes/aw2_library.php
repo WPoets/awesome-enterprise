@@ -381,8 +381,8 @@ static function new_mysqli(){
 //ok
 	// if admin then throw error
 	
-	$path = AWESOME_PATH . "/libraries";
-	require_once $path . '/simple-mysqli/simple-mysqli.php';
+	//$path = AWESOME_PATH . "/libraries";
+	//require_once $path . '/simple-mysqli/simple-mysqli.php';
 	/*
 	set_exception_handler(function($e) {
 		error_log($e->getMessage());

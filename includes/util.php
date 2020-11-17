@@ -1,8 +1,6 @@
 <?php
 
-require __DIR__ . '/src/utilphp/util.php';
-
-/**
+/** util.php library is in vendor
  * Globally namespaced version of the class.
  *
  * @author Brandon Wamboldt <brandon.wamboldt@gmail.com>
