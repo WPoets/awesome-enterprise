@@ -36,7 +36,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 ##### 3.0.0  
 * Initial release
 
-## Interesting? We're Hiring!
+## We're Hiring!
 
 <p align="center">
 <a href="https://www.wpoets.com/careers/"><img src="https://www.wpoets.com/wp-content/uploads/2020/11/work-with-us_1776x312.png" alt="Join us at WPoets, We specialize in designing, building and maintaining complex enterprise websites and portals in WordPress."></a>
