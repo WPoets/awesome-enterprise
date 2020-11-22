@@ -29,6 +29,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.0.2
+* Added missing Mobile Detect Library  
+
 ##### 3.0.1  
 * Added missing util.php
 * Added Simple-MySQLi Library
