@@ -208,14 +208,9 @@ function implode_on($value, $atts){
 		case 'space':
 			$value = implode(' ',$value);
 			break;
-		case 'quote_comma':
-			if(count($value)<1)
-				$value='';
-			
-			if(count($value)===1)
-				$value="'" . $value[0] . "'";
-				
-			if(count($value)>1)
+		case 'quote_comma':			
+			$value="''";
+			if(count($value)>0)
 				$value="'" . implode ( "','" , $value ) . "'";
 			break;
 		case 'dot':
