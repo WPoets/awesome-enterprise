@@ -209,9 +209,11 @@ function implode_on($value, $atts){
 			$value = implode(' ',$value);
 			break;
 		case 'quote_comma':			
-			$value="''";
+			if(count($value)<1)
+					$value='';
+				
 			if(count($value)>0)
-				$value="'" . implode ( "','" , $value ) . "'";
+				$value="'" . implode ( "','" , $value ) . "'";				
 			break;
 		case 'dot':
 			$value = implode('.',$value);
