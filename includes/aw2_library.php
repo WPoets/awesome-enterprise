@@ -1,5 +1,6 @@
 <?php
 use DebugBar\StandardDebugBar;
+use aw2\wp\aw2wp_get;
 
 define('AW2_ERROR','_error');
 define('AW2_APOS',"'");
@@ -25,7 +26,115 @@ static $redis_conn=null;
 static $mysqli=null;
 
 
+static function log_datatype_mismatch($arr){
+	//amit	
+	$module=self::get_array_ref('module');
+	$template=self::get('template.name');
+	
+	$conditional= isset($arr['condition'])?$arr['condition']:'';
+	$module_slug='';
+	$invalid_lhs_dt='no';
+	$invalid_rhs_dt='no';
+	$invalid_match='no';
+
+	$lhs_datatype='lhs';
+	$rhs_datatype='rhs';
+	
+	$flag=false;
+	
+	if(is_array($module)){
+		if(isset($module['slug']))$module_slug =$module['slug'];
+		if(isset($module['collection']['post_type']))$post_type=$module['collection']['post_type'];
+	}
+	
+
+	
+	$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
+	if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
+	$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
+	$valid = self::datatype_test($lhs,$lhs_dt);
+	if($valid === false ){
+		$flag=true;
+		$invalid_lhs_dt='yes';
+
+	}
+
+
+	$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
+	if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
+	$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
+	$valid = self::datatype_test($rhs,$rhs_dt);
+	if($valid === false ){
+		$flag=true;
+		$invalid_rhs_dt='yes';
+
+	}
+
+	$must_match=isset($arr['must_match'])?$arr['must_match']:'no';
+	
+	if($must_match === 'yes'){
+		if($lhs_datatype!==$rhs_datatype){
+			$flag=true;
+			$invalid_match='yes';			
+		}
+	}
+		
+	if($flag===false)return;
+		
+	$sql = "INSERT INTO `datatype_mismatch` (`module_slug`,`template_name`,`conditional`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`) VALUES ( '".$module_slug."','".$template."','".$conditional."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."')";
+
+    $obj =\aw2\mysqli\cud(array(),$sql,null);
+	
+}
+
+static function datatype_test($val, $data_type){
+	
+	switch( $data_type){
+		case 'number':
+			return is_numeric($val);
+			break;
+		case 'boolean':
+			return is_bool($val);
+			break;
+		case 'string':
+			return is_string($val);
+			break;
+	}
+	
+	return true;
+}
+
+static function deprecated($params){
+
+	$module=self::get_array_ref('module');
+	$template=self::get('template.name');
+	
+	$module_slug = '';
+	$post_type = '';
+	
+	
+	if(is_array($module)){
+		if(isset($module['slug']))$module_slug =$module['slug'];
+		if(isset($module['collection']['post_type']))$post_type=$module['collection']['post_type'];
+	}
+	
+	
+	$func=isset($params['func'])?$params['func']:'';
+	$class=isset($params['class'])?$params['class']:'';
+	$method=isset($params['method'])?$params['method']:'';
+
+	$comment=isset($params['comment'])?$params['comment']:'';
+	
+	
+	$sql = "INSERT INTO `log_problems` (`problem_type`, `module_slug`,`template`, `post_type`, `func`, `class`, `method`, `timestamp`, `extras`) VALUES ( 'deprecated', '".$module_slug."','".$template."', '".$post_type."', '".$func."', '".$class."', '".$method."', current_timestamp(), '".$comment."')";
+	 
+    $obj =\aw2\mysqli\cud(array(),$sql,null);
+	
+}
+
 static function load_handlers_from_path($handlers_path,...$paths){
+	//php8OK
+	
 	foreach ($paths as $path) {
         
 		if(!is_dir($handlers_path . "/".$path))
@@ -41,6 +150,7 @@ static function load_handlers_from_path($handlers_path,...$paths){
 
 //this function is used to load all the handlers, this will load communication as well as all others like google
 static function load_all_extra_handlers(){
+	//php8OK
 	
 	$handler_path = AWESOME_PATH.'/extra-handlers';
         
@@ -61,12 +171,16 @@ static function load_all_extra_handlers(){
 private static $hasArray = false;
 
 static function get_results($sql){
+	//php8OK
+	
 	if(!self::$mysqli)self::$mysqli = self::new_mysqli();
 	$obj = self::$mysqli->query($sql);
 	$results = $obj->fetchAll("assoc");				
 	return $results;
 }
 static function shortcode_atts( $pairs, $atts, $shortcode = '' ) {
+	//php8OK
+	
 	$atts = (array)$atts;
 	$out = array();
 	foreach ($pairs as $name => $default) {
@@ -95,7 +209,8 @@ static function shortcode_atts( $pairs, $atts, $shortcode = '' ) {
 
 static function dump_debug($arr=array(),$title='')
 {
-//ok	
+	//php8OK
+	
 	$html = '<pre style="margin-bottom: 18px;' .
 			'background: #f7f7f9;' .
 			'border: 1px solid #e1e1e8;' .
@@ -131,7 +246,8 @@ static function dump_debug($arr=array(),$title='')
 
 static function var_dump($var, $return = false, $expandLevel = 1,$label='')
 {
-//ok
+	//php8OK
+
 		$html = '<pre style="margin-bottom: 18px;' .
 				'background: #f7f7f9;' .
 				'border: 1px solid #e1e1e8;' .
@@ -161,14 +277,15 @@ static function var_dump($var, $return = false, $expandLevel = 1,$label='')
 
 static function recursiveVarDumpHelper($var, $expLevel, $depth = 0, $done = array())
 {
-//ok
+	//php8OK
+
 		$html = '';
 
 		if ($expLevel > 0) {
 				$expLevel--;
 				$setImg = 0;
 				$setStyle = 'display:inline;';
-		} elseif ($expLevel == 0) {
+		} elseif ($expLevel === 0) {
 				$setImg = 1;
 				$setStyle='display:none;';
 		} elseif ($expLevel < 0) {
@@ -320,7 +437,8 @@ static function recursiveVarDumpHelper($var, $expLevel, $depth = 0, $done = arra
  */
 static function htmlentities($string, $preserve_encoded_entities = false)
 {
-//ok	
+	//php8OK
+	
 		if ($preserve_encoded_entities) {
 				// @codeCoverageIgnoreStart
 				if (defined('HHVM_VERSION')) {
@@ -339,7 +457,8 @@ static function htmlentities($string, $preserve_encoded_entities = false)
 
 protected static function mbInternalEncoding($encoding = null)
 {
-//ok
+	//php8OK
+
 		if (function_exists('mb_internal_encoding')) {
 				return $encoding ? mb_internal_encoding($encoding) : mb_internal_encoding();
 		}
@@ -351,7 +470,8 @@ protected static function mbInternalEncoding($encoding = null)
 		
 		
 static function user_notice($message) {
-//ok	
+	//php8OK
+	
 	$x=debug_backtrace();
 	$caller = next($x);
 	$fn = isset($caller['function']) ? $caller['function'] : 'no func';
@@ -368,7 +488,8 @@ static function user_notice($message) {
 }
 
 static function redis_connect($database_number){
-//ok	
+	//php8OK
+
 	if(!self::$redis_conn){
 		self::$redis_conn = new Redis();
 		self::$redis_conn->connect(REDIS_HOST, REDIS_PORT);
@@ -378,27 +499,16 @@ static function redis_connect($database_number){
 }
 
 static function new_mysqli(){
-//ok
-	// if admin then throw error
-	
-	//$path = AWESOME_PATH . "/libraries";
-	//require_once $path . '/simple-mysqli/simple-mysqli.php';
-	/*
-	set_exception_handler(function($e) {
-		error_log($e->getMessage());
-		if(DEVELOP_FOR_AWESOMEUI){
-			exit($e->getMessage());
-		}
-		exit('Something weird happened'); //Should be a message a typical user could understand
-	});
-	*/
+	//php8OK
+
 	$mysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
 	$mysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 	return $mysqli;
 }
 
 static function convert_name_value_string($arr){
-//ok	
+	//php8OK
+	
 	$str='';
 
 	array_walk_recursive($arr,function($item, $key) use (&$str)
@@ -411,8 +521,9 @@ static function convert_name_value_string($arr){
 
 // takes a json and returns back an array
 static function get_clean_args($content,&$atts=null){
-//ok	
-	if($content==null || $content=='')return '';
+	//php8OK
+	
+	if(is_null($content) || $content==='')return '';
 	$json=self::clean_specialchars($content);
 	$json=self::checkshortcode(self::parse_shortcode($json));
 	$args=json_decode($json, true);
@@ -424,7 +535,8 @@ static function get_clean_args($content,&$atts=null){
 
 
 static function checkshortcode($string ) {
-//ok	
+	//php8OK
+	
 	$pos = strpos($string, "{{");
 	if ($pos === false) {
 		return $string;
@@ -436,7 +548,8 @@ static function checkshortcode($string ) {
 }
 
 static function clean_specialchars($content){
-//ok	
+	//php8OK
+	
 	$content=str_replace ( "&#8216;" , "'" ,$content );
 	$content=str_replace ( "&#8217;" , "'" ,$content );
 	$content=str_replace ( "&#8220;" , '"' ,$content );
@@ -447,12 +560,14 @@ static function clean_specialchars($content){
 }
 
 static function clean_html($content){
-//ok	
+	//php8OK
+	
 	$content=preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\r\n", $content);
 	return $content;
 }
 
 static function break_words($content, $length , $tags = '<a><em><strong>',$extra = '') {
+	//php8OK
 	$output=$content;
 	if(IS_WP)$output = strip_shortcodes(strip_tags($output), $tags);
 	$output = preg_split('/\b/', $output, $length * 2 + 1);
@@ -465,7 +580,8 @@ static function break_words($content, $length , $tags = '<a><em><strong>',$extra
 
 
 static function endswith($string, $test) {
-//ok	
+	//php8OK
+	
     $strlen = strlen($string);
     $testlen = strlen($test);
     if ($testlen > $strlen) return false;
@@ -474,7 +590,8 @@ static function endswith($string, $test) {
 
 static function startsWith($haystack, $needle)
 {
-//ok	
+	//php8OK
+	
      $length = strlen($needle);
      return (substr($haystack, 0, $length) === $needle);
 }
@@ -482,11 +599,12 @@ static function startsWith($haystack, $needle)
 //----------------------------------------------------------------------------------------------
 //Shortcode Functions
 static function reg_shortcode($shortcode_name, $func_name){
-//ok	
+	//php8OK	
 		add_shortcode($shortcode_name, $func_name);
 	}
 
 static function unescape_invalid_shortcodes( $content ) {
+	//php8OK	
     // Clean up entire string, avoids re-parsing HTML.
     $trans = array(
         '&#91;' => '[',
@@ -499,7 +617,8 @@ static function unescape_invalid_shortcodes( $content ) {
     return $content;
 }
 static function parse_shortcode( $content, $ignore_html = false ) {
-//ok	
+	//php8OK	
+	
 	$content = preg_replace("/\/\/\*.*\*\/\//sU", "", $content);
 	if ( false === strpos( $content, '[' ) )return $content;
 
@@ -523,7 +642,8 @@ static function parse_shortcode( $content, $ignore_html = false ) {
 
 
 static function service_helper($tag,$attr,$content){
-//ok	
+	//php8OK	
+	
 		$tag=str_replace('service:','',$tag);
 	
 	$pieces=explode('.',$tag);
@@ -625,6 +745,7 @@ static function service_helper($tag,$attr,$content){
 		
 		
 	$handler=$sc['handler'];
+
 	if(isset($handler['type'])){
 		$service_type = $handler['type'];
 
@@ -678,7 +799,7 @@ static function service_helper($tag,$attr,$content){
 				if(isset($handler['func']))
 					$fn_name=$handler['namespace'] . '\\' . $handler['func'];
 				else{
-						$fn_name=$handler['namespace'] . '\\' . $service;					
+						$fn_name=$handler['namespace'] . '\\' . $service;
 				}
 				if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
 				if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
@@ -722,9 +843,11 @@ static function service_helper($tag,$attr,$content){
 		if($fn_name){
 			$flag = true;
 			$reply = call_user_func($fn_name, $pre['primary'], $content, $sc );
+			print_r($reply);		
 		}
 	}
-		
+
+
 	if ($flag===true){
 		if(isset($pre['m'])){
 			//$reply=self::modify_output($reply,$pre['m']);
@@ -787,6 +910,7 @@ static function service_helper($tag,$attr,$content){
 
 
 static function service_run($tag,$attr,$content,$default='service'){
+	//php8OK	
 	
 	if(is_array($tag) || is_object($tag))return $tag;
 	if(strlen($tag) <= 1)return (string)$tag;
@@ -854,13 +978,14 @@ static function service_run($tag,$attr,$content,$default='service'){
 
 
 static function shortcode_tag( $m ) {
+	//php8OK	
 	
 		
 	global $shortcode_tags;
 	if(isset(self::$stack['_return']))return '';
 	
 	// allow [[foo]] syntax for escaping a tag
-	if ( $m[1] == '[' && $m[6] == ']' ) {
+	if ( $m[1] === '[' && $m[6] === ']' ) {
 		return substr($m[0], 1, -1);
 	}
 
@@ -1153,6 +1278,7 @@ static function shortcode_tag( $m ) {
 }
 
 static function resolve_chain($str,&$atts=null,$content=null){
+	//php8OK	
 	
 	if(is_array($str))
 		return $str;
@@ -1202,6 +1328,7 @@ static function resolve_chain($str,&$atts=null,$content=null){
 
 
 static function shortcode_parse_atts($text) {
+	//php8OK	
 	$atts = array();
 	$pattern = '/([-a-zA-Z0-9_.@]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
 	$text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
@@ -1234,6 +1361,7 @@ static function shortcode_parse_atts($text) {
 }
 
 static function add_shortcode($library,$tag, $func,$desc=null) {
+	//php8OK	
 	$handler=&self::get_array_ref('handlers',$library);
 	$handler[$tag]=array();
 	$handler[$tag]['name']=$tag;
@@ -1244,6 +1372,7 @@ static function add_shortcode($library,$tag, $func,$desc=null) {
 static $libraries=array();
 
 static function add_library($library,$desc=null,$alias=null) {
+	//php8OK	
 	$handler=&self::get_array_ref('handlers',$library);
 	if(!$alias)$alias=$library;
 	$handler['alias']=$alias;
@@ -1251,6 +1380,7 @@ static function add_library($library,$desc=null,$alias=null) {
 }
 
 static function remove_service($keys) {
+	//php8OK	
 	$current=&self::get_array_ref('handlers');
 	
 	if(!is_array($keys))$keys=explode('.',$keys);	
@@ -1266,6 +1396,7 @@ static function remove_service($keys) {
 }
 
 static function add_service($service,$desc=null,$atts=array()) {
+	//php8OK	
 	$atts['desc']=$desc;
 
 	if(isset($atts['content_type_def'])){
@@ -1334,6 +1465,7 @@ static function add_service($service,$desc=null,$atts=array()) {
 }
 
 static function add_ref($service,$ref_to) {
+	//php8OK	
 	self::$stack['handlers'][$service]=&self::get_array_ref('handlers',$ref_to);
 }
 /*
@@ -1348,6 +1480,7 @@ static function add_collection($name,$atts,$desc=null) {
 
 
 static function register_service($name,$atts,$desc=null) {
+	//php8OK	
 	$arr=$atts;
 	$arr['alias']='service';
 	$arr['desc']=$desc;
@@ -1357,12 +1490,14 @@ static function register_service($name,$atts,$desc=null) {
 
 
 static function collection_define($collection,$atts){
+	//php8OK	
 	if (!is_array(self::$stack['collections']))self::$stack['collections']=array();
 	self::$stack['collections'][$collection]=$atts;
 	self::add_library($collection,'Collection','collection'); 
 }
 
 static function get_shortcode_regex() {
+	//php8OK	
 
 	if(IS_WP){
 		global $shortcode_tags;
@@ -1411,6 +1546,7 @@ static function get_shortcode_regex() {
 // ------------------------------------------------------------------------------------
 //stack functions
 static function &get_array_ref($context1=null,$context2=null,$context3=null){
+	//php8OK	
 	if(!$context1)
 		return self::$stack;
 	if(!array_key_exists($context1,self::$stack))
@@ -1432,8 +1568,9 @@ static function &get_array_ref($context1=null,$context2=null,$context3=null){
 }
 
 static function push_obj($type,$create=true){
+	//php8OK	
 	//Create Local Data
-	if($create==true){
+	if($create===true){
 		$array_name=self::rand_gen();
 		$new_data=&self::get_array_ref('data','history');
 		$new_data[$array_name]=array();
@@ -1456,6 +1593,7 @@ static function push_obj($type,$create=true){
 }
 
 static function set_error($msg){
+	//php8OK	
 	self::set('errors.new',$msg);
 }
 
@@ -1463,6 +1601,7 @@ static function set_error($msg){
 
 //pre actions	
 static function pre_actions($actions,&$atts=null,$content,$shortcode=null){
+	//php8OK	
 	$return_value=true;
 	if(!$atts) return $return_value;
 	if($actions==='all'){
@@ -1483,6 +1622,7 @@ static function pre_actions($actions,&$atts=null,$content,$shortcode=null){
 }
 
 static function pre_action_parse(&$atts) {
+	//php8OK	
 	foreach ($atts as $key => $value) {
 		if (is_int($key)) {
 			$atts['main']=$value;	
@@ -1534,6 +1674,7 @@ static function pre_action_parse(&$atts) {
 }
 	
 static function checkcondition(&$atts){
+	//php8Issue	
 	if(!$atts)return true;
 
 
@@ -1552,6 +1693,7 @@ static function checkcondition(&$atts){
 		
 		
 		if(array_key_exists('odd',$atts)){
+			self::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd']);
 			if((int)$atts['odd'] % 2 == 0)
 		return false;
 	else
@@ -1559,6 +1701,7 @@ static function checkcondition(&$atts){
 		}
 		
 		if(array_key_exists('even',$atts)){
+			self::log_datatype_mismatch(['lhs'=>$atts['even'],'lhs_dt'=>'number','condition'=>'even']);
 			if((int)$atts['even'] % 2 != 0)
 		return false;
 	else
@@ -1566,6 +1709,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('true',$atts)){
+			self::log_datatype_mismatch(['lhs'=>$atts['true'],'lhs_dt'=>'boolean','condition'=>'true']);
 			if($atts['true']!=true)
 		return false;
 	else
@@ -1573,6 +1717,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('false',$atts)){
+			self::log_datatype_mismatch(['lhs'=>$atts['false'],'lhs_dt'=>'boolean','condition'=>'false']);
 			if($atts['false']==true)
 		return false;
 	else
@@ -1580,6 +1725,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('yes',$atts)){
+		self::log_datatype_mismatch(['lhs'=>$atts['yes'],'lhs_dt'=>'string','condition'=>'yes']);
 		if($atts['yes']!=='yes')
 			return false;
 		else
@@ -1587,6 +1733,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('no',$atts)){
+		self::log_datatype_mismatch(['lhs'=>$atts['no'],'lhs_dt'=>'string','condition'=>'no']);
 		if($atts['no']!=='no')
 			return false;
 		else
@@ -1679,6 +1826,7 @@ static function checkcondition(&$atts){
 	}
 	
 	if(array_key_exists('date_obj',$atts)){
+		if(is_null($atts['date_obj']))return false;
 		if(!get_class($atts['date_obj'])=='DateTime')
 			return false;
 		else
@@ -1686,7 +1834,8 @@ static function checkcondition(&$atts){
 	}
 	
 	if(array_key_exists('not_date_obj',$atts)){
-		if(get_class($atts['date_obj']))
+		//check if used. If not then resolve
+		if(!is_null($atts['not_date_obj']) && get_class($atts['date_obj'])=== 'DateTime')
 			return false;
 		else
 			unset($atts['not_date_obj']); 
@@ -1763,14 +1912,14 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('request_exists',$atts)){
-	if(self::get_request($atts['request_exists'])==null)
+	if(self::get_request($atts['request_exists'])===null)
 		return false;
 	else
 		unset($atts['request_exists']); 		  
 		}	  
 	
 		if(array_key_exists('request_not_exists',$atts)){
-	if(self::get_request($atts['request_not_exists'])!=null)
+	if(self::get_request($atts['request_not_exists'])!==null)
 		return false;
 	else
 		unset($atts['request_not_exists']); 		  
@@ -1820,6 +1969,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal']);
 			if($atts['cond']!=$atts['not_equal'])
 		{unset($atts['cond']);unset($atts['not_equal']); }		
 			else 
@@ -1827,6 +1977,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['equal'],'must_match'=>'yes','condition'=>'equal']);
 			if($atts['cond']==$atts['equal'])
 		{unset($atts['cond']);unset($atts['equal']); }		
 			else 
@@ -1834,6 +1985,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_than',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_than']);
 			if($atts['cond']>$atts['greater_than'])
 		{unset($atts['cond']);unset($atts['greater_than']); }		
 			else 
@@ -1841,6 +1993,7 @@ static function checkcondition(&$atts){
 		}
 	
 		if(array_key_exists('cond',$atts) && array_key_exists('less_than',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_than']);
 			if($atts['cond']<$atts['less_than'])
 		{unset($atts['cond']);unset($atts['less_than']); }		
 			else 
@@ -1848,6 +2001,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_equal',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_equal']);
 			if($atts['cond']>=$atts['greater_equal'])
 		{unset($atts['cond']);unset($atts['greater_equal']); }		
 			else 
@@ -1855,6 +2009,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('less_equal',$atts) ){
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_equal']);
 			if($atts['cond']<=$atts['less_equal'])
 		{unset($atts['cond']);unset($atts['less_equal']); }		
 			else 
@@ -1875,8 +2030,7 @@ static function checkcondition(&$atts){
 
 
 		if(array_key_exists('device',$atts)){
-		require_once( AWESOME_PATH  . '/libraries/Mobile_Detect.php' );
-			//monoframe
+		 //monoframe
 			$detect = new Mobile_Detect;
 			$device_status=false;
 			$arr= explode( ',' ,$atts['device'] );
@@ -1889,7 +2043,7 @@ static function checkcondition(&$atts){
 			if(!$detect->isMobile() && !$detect->isTablet() && in_array('desktop',$arr) )
 				$device_status=true;
 
-			if($device_status==false)
+			if($device_status===false)
 				return false;		
 			else 
 				unset($atts['device']);	
@@ -1915,6 +2069,8 @@ static function checkcondition(&$atts){
 
 // post actions	
 static function post_actions($actions,$value,&$atts=null){
+	//php8Issue	
+	//$actions='all' is wrong
 	$return_value=$value;
 	if(!$atts) return $return_value;
 	if($actions='all'){
@@ -1936,6 +2092,7 @@ static function post_actions($actions,$value,&$atts=null){
 }
 
 static function modify_output($value,&$atts){
+	//php8OK	
 	
 		if($atts==null)return $value;
 
@@ -2151,6 +2308,7 @@ static function modify_output($value,&$atts){
 	}	
 
 static function sentenceCase($value) { 
+	//php8OK	
     $sentences = preg_split('/([.?!]+)/', $value, -1,PREG_SPLIT_NO_EMPTY|PREG_SPLIT_DELIM_CAPTURE); 
     $return_value = ''; 
     foreach ($sentences as $key => $sentence) { 
@@ -2162,6 +2320,7 @@ static function sentenceCase($value) {
 }
 
 static function redirect_output($value,&$atts){
+	//php8OK	
 		if($atts==null)return $value;
 
 		if(array_key_exists('exit',$atts)){
@@ -2209,6 +2368,7 @@ static function redirect_output($value,&$atts){
 //common functions
 
 static function post_exists($slug,$posttype){
+	//php8OK	
 		global $table_prefix;
 		
 		$sql="select ID from ".$table_prefix."posts where post_type='" . $posttype . "' and post_name='".$slug."'";
@@ -2222,6 +2382,7 @@ static function post_exists($slug,$posttype){
 	}
 
 static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
+	//php8Amit	
 		//should be only called from WP 
 		if(!IS_WP)die('Not in WP');
 		if(!is_null($site_id))
@@ -2250,6 +2411,7 @@ static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
 //Stack implementation
 
 static function push_child($obj_type,$name){
+	//php8OK	
 	$call_id=self::get_rand(6);
 	$stack_id=$obj_type . ':' .  $name . ':' . $call_id;
 	$obj=array();
@@ -2266,6 +2428,7 @@ static function push_child($obj_type,$name){
 }
 
 static function pop_child($stack_id){
+	//php8OK	
 
 	$stack=&self::get_array_ref('call_stack');
 	$reverse=array_reverse ($stack);
@@ -2287,6 +2450,7 @@ static function pop_child($stack_id){
 }
 	
 static function last_child($obj_type){
+	//php8OK	
 	//echo $obj_type;
 	$stack=&self::get_array_ref('call_stack');
 	$new_obj=null;
@@ -2307,6 +2471,7 @@ static function last_child($obj_type){
 }
 
 static function push_atts($stack_id,$atts=null){
+	//php8OK	
 	if(!$atts) return;
 		$stack_ref=&self::get_array_ref('call_stack',$stack_id);
 		foreach ($atts as $key => $value) {
@@ -2315,6 +2480,7 @@ static function push_atts($stack_id,$atts=null){
 }
 
 static function push_this($stack_id){
+	//php8OK	
 	$stack=&aw2_library::get_array_ref();
 	if(array_key_exists('this',$stack)){
 		$ref=aw2_library::get_array_ref('this');
@@ -2343,6 +2509,7 @@ static function push_this($stack_id){
 
 //-------------------------------------------------------------------------------------------------------------------------------
 static function get_rand($length=8,$chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+	//php8OK	
 	return substr( str_shuffle( $chars ), 0, $length );
 }
 
@@ -2452,6 +2619,7 @@ static function set($key,$value,$content=null,$atts=null){
 
 
 static function set_cookie($key,$value,$overwrite='yes'){
+	//php8OK	
 	$flag=true;
 	if (array_key_exists($key, $_COOKIE) && $overwrite=='no')$flag=false;
 	if (array_key_exists($key, $_COOKIE) && $_COOKIE[$key]!='' & $_COOKIE[$key]!=null & $overwrite=='empty')$flag=false;	
@@ -2467,6 +2635,7 @@ static function set_cookie($key,$value,$overwrite='yes'){
 
 		
 static function set_session($key,$value,$overwrite='yes'){
+	//php8OK	
 	$flag=true;
 	if (!isset($_SESSION)) return;
 	if (array_key_exists($key, $_SESSION) && $overwrite=='no')$flag=false;
@@ -2476,6 +2645,7 @@ static function set_session($key,$value,$overwrite='yes'){
 }
 
 static function set_option($key,$value,$overwrite='yes'){
+	//php8Amit	
 	add_option( $key, $value, '', 'no' );
 }
 
@@ -2483,6 +2653,8 @@ static function set_option($key,$value,$overwrite='yes'){
 // -------------------------------------------------------------------------------------------------------------------------------
 // implementation of get
 static function get($main,&$atts=null,$content=null){
+	//php8OK	
+
 	$o=new stdClass();
 	$o->main=$main;
 	$o->atts=$atts;
@@ -2526,6 +2698,8 @@ static function get($main,&$atts=null,$content=null){
 // Individual get functions
 
 static function get_start($o){
+	//php8OK
+	
 	$key=$o->pieces[0];
 
 	switch ($key) {
@@ -2566,7 +2740,7 @@ static function get_start($o){
 			break;
 		case 'option':
 			array_shift($o->pieces);
-			self::get_option($o); 
+			self::aw2wpget('option',$o);
 			break;
 		case 'url':
 			array_shift($o->pieces);
@@ -2595,18 +2769,15 @@ static function get_start($o){
 			break;
 		case 'wpdb':
 			array_shift($o->pieces);
-			global $wpdb;
-			$o->value=$wpdb;
+			self::aw2wpget('wpdb',$o);
 			break;
 		case 'post':
 			array_shift($o->pieces);
-			global $post;
-			$o->value=$post;
+			self::aw2wpget('post',$o);
 			break;
 		case 'wp_query':
 			array_shift($o->pieces);
-			global $wp_query;
-			$o->value=$wp_query;
+			self::aw2wpget('wp_query',$o);
 			break;
 		case 'token':
 			array_shift($o->pieces);
@@ -2643,7 +2814,7 @@ static function get_start($o){
 			break;
 		case 'current_user':
 			array_shift($o->pieces);
-			$o->value=wp_get_current_user();
+			self::aw2wpget('current_user',$o);
 			break;
 		case 'logged_in':
 			array_shift($o->pieces);
@@ -2730,58 +2901,62 @@ static function get_start($o){
 			break;
 		case 'term_link':
 			array_shift($o->pieces);
-			$o->value=get_term_link($o->atts['slug'], $o->atts['taxonomy'] );
+			self::aw2wpget('term_link',$o);
 			unset($o->atts['slug']);
 			unset($o->atts['taxonomy']);
 			break;
 		case 'term_meta':
 			array_shift($o->pieces);
-			$o->value=get_term_meta($o->atts['term_id'], $o->atts['key'], true);
+			self::aw2wpget('term_meta',$o);
 			unset($o->atts['term_id']);
 			unset($o->atts['key']);
 			unset($o->atts['single']);
 			break;
 		case 'menu':
 			array_shift($o->pieces);
-			$o->value=self::get_menu($o);
+			self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get menu is deprecated, use wp.menu"]);
+			$o->value=aw2\wp\menu([],$o->content);
 			break;
 		case 'image_alt':
 			array_shift($o->pieces);
-			$o->value=self::get_image_alt($o);
+			
+			self::aw2wpget('image_alt',$o);
+			
 			unset($o->atts['post_id']);
 			break;
 		case 'attachment':
 			array_shift($o->pieces);
-			$o->value=self::get_attachment_details($o);
+
+			self::aw2wpget('attachment',$o);
+			
+			
 			unset($o->atts['attachment_id']);
+			
 			break;
 		case 'breadcrumb':
 			array_shift($o->pieces);
-			if(isset($o->atts['seperator']))
-				$sep = $o->atts['seperator'];
-			else
-				$sep = '&raquo;';			
-			$o->value = "<div class='breadcrumb'>".self::get_breadcrumb($o->atts['main_menu_slug'], $sep, $o->atts['show_home'])."</div>";
+			
+			self::aw2wpget('breadcrumb',$o);
+						
 			unset($o->atts['main_menu_slug']);
 			unset($o->atts['seperator']);
 			break;
 		case 'attachment_url':
 			array_shift($o->pieces);
-			$size=isset($o->atts['size'])?$o->atts['size']:'thumbnail';
+						
+			self::aw2wpget('attachment_url',$o);
 			
-			$img=wp_get_attachment_image_src( $o->atts['attachment_id'], $size );
-			$o->value = $img[0]; 
 			unset($o->atts['size']);
 			unset($o->atts['attachment_id']);
 			break;
 		case 'next_post':
 			array_shift($o->pieces);				
-			$o->value =  self::get_next_post( $o );
+			self::aw2wpget('next_post',$o);
 			break;
 		case 'prev_post':
 			array_shift($o->pieces);
-					
-			$o->value =  self::get_prev_post( $o );
+			self::aw2wpget('prev_post',$o);		
+			
 			break;	
 		case 'country':			
 			array_shift($o->pieces);
@@ -2804,24 +2979,12 @@ static function get_start($o){
 			break;		
 		case 'nonce':
 			array_shift($o->pieces);
-			$o->value=wp_create_nonce($o->pieces[0]) . '::' . $o->pieces[0];
-			array_shift($o->pieces);
+			self::aw2wpget('nonce',$o);
 			break;		
 		case 'denonce':
 			array_shift($o->pieces);
-			$a=split('::',$o->pieces[0]);
-			if(count($a)==2){
-				$returnvalue=wp_verify_nonce( $a[0], $a[1]);
-				if($returnvalue==false)
-					$o->value='error';
-				else
-					$o->value=$a[1];
-			}
-			else{
-				$o->value='no';
-			}
-			
-			array_shift($o->pieces);
+			self::aw2wpget('denonce',$o);
+
 			break;		
 		case 'const':
 			array_shift($o->pieces);
@@ -2841,23 +3004,25 @@ static function get_start($o){
 		
 		case 'sidebar':
 			array_shift($o->pieces);
-			self::get_sidebar($o);
+			
+			self::aw2wpget('sidebar',$o);
+			
 			break;
 		case 'sideload_media':
 			array_shift($o->pieces);
-			self::get_sideload_media($o);
+			self::aw2wpget('sideload_media',$o);
+			
 			break;
 			
 		case 'device_tokens':
 			array_shift($o->pieces);
 			self::get_device_tokens($o);
 			break;	 
-
-
-			
+		
 		case 'taxonomy_term_list':
 			array_shift($o->pieces);
-			self::get_taxonomy_term_list($o);
+			self::aw2wpget('taxonomy_term_list',$o);
+
 			break;
 			
 		default:
@@ -2872,7 +3037,24 @@ static function get_start($o){
 	}
 }
 
+static function aw2wpget($action,$o){
+	
+	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get $action is deprecated, use wp.get"]);
+	
+	$main_piece='';
+	if(!empty($o->pieces))
+		$main_piece = array_shift($o->pieces);
+		
+	$aw2wp_get=new aw2\wp\aw2wp_get($action,$o->atts,$o->content,$main_piece);
+	$o->value = $aw2wp_get->run();
+	
+	util::var_dump($action);
+	util::var_dump($o->value);
+	
+}
+
 static function get_content_type($o){
+	//php8OK
 	if(empty($o->pieces))return;
 	$key=array_shift($o->pieces);
 	
@@ -2919,6 +3101,8 @@ static function get_content_type($o){
 }
 
 static function get_device_tokens($o){
+	//php8Amit
+	
 	if(empty($o->pieces)&& !isset($o->atts['user_id'])){
 		$o->value='_error';
 		return;
@@ -2938,6 +3122,8 @@ static function get_device_tokens($o){
 }
 
 static function dataset_values($o){
+	//php8Deprecated
+	
 	$arr=array();
 
 	$arr['pagesize']=$o->atts['pagesize'];
@@ -2973,7 +3159,7 @@ static function dataset_values($o){
 
 
 static function get_organic(){
-
+	//php8Ok
 $organic_sources = array(
 		'google'=>'www.google',
 		'yahoo.com'=>'yahoo.com/',
@@ -2992,49 +3178,9 @@ $organic_sources = array(
 	return '';
 }
 
-static function get_taxonomy_term_list($o){
-	if(!isset($o->atts['post_id'])){
-		$o->value='_error';
-		return;
-	}
-	
-	//get all taxonomies attached to the post
-	$result=array();
-	$all_tax=get_post_taxonomies($o->atts['post_id']);	
-	//for each taxonomy get the applied terms
-	if(isset($o->atts['fields'])){
-		$field=$o->atts['fields'];
-	} else {
-		$field='all';
-	}
-	
-	foreach($all_tax as $tax){
-		
-		$result[$tax]= wp_get_post_terms( $o->atts['post_id'], $tax,  array("fields" => $field) );
-	}
 
-	$o->value=$result;
-
-	return;
-}
-
-static function get_option($o){
-	if(empty($o->pieces)){
-		$o->value='_error';
-	}
-	$option=$o->pieces[0];
-	array_shift($o->pieces);
-	if (isset($o->atts['default']))
-		$o->value=get_option( $option,$o->atts['default']);
-	else	
-		$o->value=get_option( $option);
-	
-	if($o->value===false)
-		$o->value='_error';
-	return;
-	
-}
 static function get_url($o) {
+	//php8Ok
 	if(empty($o->pieces)){
 		 $pageURL = 'http';
 		 if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
@@ -3080,6 +3226,8 @@ static function get_url($o) {
 
 
 static function get_realpath($o) {
+	//php8Amit
+	
 	if(empty($o->pieces)){
 		$o->value='_error';
 		return;
@@ -3108,6 +3256,8 @@ static function get_realpath($o) {
 }
 
 static function get_lipsum($o) {
+	//php8Ok
+	
 	//$amount isï¿½ how much of $what you want. 
 	//$what is either paras, words, bytes or lists. 
 	//$start is whether or not to start the result with Lorem ipsum dolor sit ametï¿½
@@ -3122,6 +3272,7 @@ static function get_lipsum($o) {
 }
 
 static function get_now($o){
+	//php8Ok
 	$date_format=isset($o->atts['format'])?$o->atts['format']:'M d, Y';
 	unset($o->atts['format']);
 	$o->value=date($date_format);
@@ -3129,6 +3280,8 @@ static function get_now($o){
 }
 
 static function get_function($o){
+	//php8Ok
+	
 	if(empty($o->pieces)){
 		$o->value='_error';
 		return;
@@ -3155,6 +3308,7 @@ static function get_function($o){
 }
 
 static function get_shortcode($o){
+	//php8Amit	
 	if(!IS_WP)die('Not WP');
 	if(empty($o->pieces)){
 		$o->value='_error';
@@ -3176,6 +3330,7 @@ static function get_shortcode($o){
 }
 
 static function get_token( $o) {
+	//php8Ok
 	$length=isset($o->atts['length'])?$o->atts['length']:12;
 	$chars=isset($o->atts['chars'])?$o->atts['chars']:'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' ;
 	$o->value=substr( str_shuffle( $chars ), 0, $length );
@@ -3183,6 +3338,8 @@ static function get_token( $o) {
 }
 
 static function get_aw2_secret( $o) {
+	//php8Ok
+	//php8amit
 	$length=isset($o->atts['length'])?$o->atts['length']:12;
 	$chars=isset($o->atts['chars'])?$o->atts['chars']:'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' ;
 	$a=array();
@@ -3195,7 +3352,7 @@ static function get_aw2_secret( $o) {
 
 
 static function get_unique_number( $o) {
-	
+	//php8Ok	
 	$s=hexdec(uniqid());
 	$t=mt_rand(1000000, 9999999);
 	$o->value=$s . $t;	
@@ -3204,12 +3361,15 @@ static function get_unique_number( $o) {
 
 
 static function get_unique_number_risky( $o) {
+	//php8Ok
 	$o->value=hexdec(uniqid());	
 	return;
 }
 
 
 static function get_client($o){
+	//php8Issue
+	//Better to explicitly may $ref an array
 	if(empty($o->pieces)){
 		$o->value='_error';
 		return;
@@ -3287,411 +3447,8 @@ static function get_client($o){
 	return;
 }
 
-
-static function get_menu($o){
-	$args=self::get_clean_args($o->content);
-	//if(isset($o->atts['no_cache'])){
-		return wp_nav_menu( $args );
-	//}
-	
-	//return aw2_optimised::cached_nav_menu( $args );
-	
-}
-
-static function get_image_alt($o){
-	if(isset($o->atts['attachment_id'])){
-		$attachment_id=$o->atts['attachment_id']; 
-	}
-	else if(isset($o->atts['post_id'])) {
-		$attachment_id=get_post_thumbnail_id( $o->atts['post_id'] ); 
-	}
-	
-	return trim(strip_tags( get_post_meta($attachment_id, '_wp_attachment_image_alt', true) ));;
-}
-
-static function get_attachment_details($o){
-	if(!isset($o->atts['attachment_id'])){
-		return '';
-	}
-	
-	$attachment_id=$o->atts['attachment_id']; 
-	
-	$return_value=array();
-	$return_value['name']=get_the_title($attachment_id);
-	$return_value['url']=wp_get_attachment_url($attachment_id);
-	$return_value['alt'] = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true);
-	$return_value['path']  = get_attached_file( $attachment_id);
-	$return_value['meta']  = wp_get_attachment_metadata( $attachment_id);
-	
-	return $return_value;
-}
-
-static function get_adjacent_post( $all=false, $in_same_term = false, $excluded_terms = '', $previous = true, $taxonomy = 'category' ) {
-	global $wpdb;
-
-	if ( ( ! $post = get_post() ) || ! taxonomy_exists( $taxonomy ) )
-		return null;
-
-	$current_post_date = $post->post_date;
-
-	$join = '';
-	$where = '';
-	$adjacent = $previous ? 'previous' : 'next';
-
-	if ( $in_same_term || ! empty( $excluded_terms ) ) {
-		if ( ! empty( $excluded_terms ) && ! is_array( $excluded_terms ) ) {
-			// back-compat, $excluded_terms used to be $excluded_terms with IDs separated by " and "
-			if ( false !== strpos( $excluded_terms, ' and ' ) ) {
-				_deprecated_argument( __FUNCTION__, '3.3.0', sprintf( __( 'Use commas instead of %s to separate excluded terms.' ), "'and'" ) );
-				$excluded_terms = explode( ' and ', $excluded_terms );
-			} else {
-				$excluded_terms = explode( ',', $excluded_terms );
-			}
-
-			$excluded_terms = array_map( 'intval', $excluded_terms );
-		}
-
-		if ( $in_same_term ) {
-			$join .= " INNER JOIN $wpdb->term_relationships AS tr ON p.ID = tr.object_id INNER JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id";
-			$where .= $wpdb->prepare( "AND tt.taxonomy = %s", $taxonomy );
-
-			if ( ! is_object_in_taxonomy( $post->post_type, $taxonomy ) )
-				return '';
-			$term_array = wp_get_object_terms( $post->ID, $taxonomy, array( 'fields' => 'ids' ) );
-
-			// Remove any exclusions from the term array to include.
-			$term_array = array_diff( $term_array, (array) $excluded_terms );
-			$term_array = array_map( 'intval', $term_array );
-
-			if ( ! $term_array || is_wp_error( $term_array ) )
-				return '';
-
-			$where .= " AND tt.term_id IN (" . implode( ',', $term_array ) . ")";
-		}
-
-		/**
-		 * Filters the IDs of terms excluded from adjacent post queries.
-		 *
-		 * The dynamic portion of the hook name, `$adjacent`, refers to the type
-		 * of adjacency, 'next' or 'previous'.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param string $excluded_terms Array of excluded term IDs.
-		 */
-		$excluded_terms = apply_filters( "get_{$adjacent}_post_excluded_terms", $excluded_terms );
-
-		if ( ! empty( $excluded_terms ) ) {
-			$where .= " AND p.ID NOT IN ( SELECT tr.object_id FROM $wpdb->term_relationships tr LEFT JOIN $wpdb->term_taxonomy tt ON (tr.term_taxonomy_id = tt.term_taxonomy_id) WHERE tt.term_id IN (" . implode( ',', array_map( 'intval', $excluded_terms ) ) . ') )';
-		}
-	}
-
-	// 'post_status' clause depends on the current user.
-	if ( is_user_logged_in() ) {
-		$user_id = get_current_user_id();
-
-		$post_type_object = get_post_type_object( $post->post_type );
-		if ( empty( $post_type_object ) ) {
-			$post_type_cap    = $post->post_type;
-			$read_private_cap = 'read_private_' . $post_type_cap . 's';
-		} else {
-			$read_private_cap = $post_type_object->cap->read_private_posts;
-		}
-
-		/*
-		 * Results should include private posts belonging to the current user, or private posts where the
-		 * current user has the 'read_private_posts' cap.
-		 */
-		$private_states = get_post_stati( array( 'private' => true ) );
-		$where .= " AND ( p.post_status = 'publish'";
-		foreach ( (array) $private_states as $state ) {
-			if ( current_user_can( $read_private_cap ) ) {
-				$where .= $wpdb->prepare( " OR p.post_status = %s", $state );
-			} else {
-				$where .= $wpdb->prepare( " OR (p.post_author = %d AND p.post_status = %s)", $user_id, $state );
-			}
-		}
-		if($all){
-			$where .= " OR p.post_status = 'pending'";
-			$where .= " OR p.post_status = 'draft'";
-		}
-		$where .= " )";
-	} else {
-		$where .= " AND p.post_status = 'publish'";
-	}
-
-	$op = $previous ? '<' : '>';
-	$order = $previous ? 'DESC' : 'ASC';
-
-	/**
-	 * Filters the JOIN clause in the SQL for an adjacent post query.
-	 *
-	 * The dynamic portion of the hook name, `$adjacent`, refers to the type
-	 * of adjacency, 'next' or 'previous'.
-	 *
-	 * @since 2.5.0
-	 * @since 4.4.0 Added the `$taxonomy` and `$post` parameters.
-	 *
-	 * @param string  $join           The JOIN clause in the SQL.
-	 * @param bool    $in_same_term   Whether post should be in a same taxonomy term.
-	 * @param array   $excluded_terms Array of excluded term IDs.
-	 * @param string  $taxonomy       Taxonomy. Used to identify the term used when `$in_same_term` is true.
-	 * @param WP_Post $post           WP_Post object.
-	 */
-	$join = apply_filters( "get_{$adjacent}_post_join", $join, $in_same_term, $excluded_terms, $taxonomy, $post );
-
-	/**
-	 * Filters the WHERE clause in the SQL for an adjacent post query.
-	 *
-	 * The dynamic portion of the hook name, `$adjacent`, refers to the type
-	 * of adjacency, 'next' or 'previous'.
-	 *
-	 * @since 2.5.0
-	 * @since 4.4.0 Added the `$taxonomy` and `$post` parameters.
-	 *
-	 * @param string $where          The `WHERE` clause in the SQL.
-	 * @param bool   $in_same_term   Whether post should be in a same taxonomy term.
-	 * @param array  $excluded_terms Array of excluded term IDs.
-	 * @param string $taxonomy       Taxonomy. Used to identify the term used when `$in_same_term` is true.
-	 * @param WP_Post $post           WP_Post object.
-	 */
-	$where = apply_filters( "get_{$adjacent}_post_where", $wpdb->prepare( "WHERE p.post_date $op %s AND p.post_type = %s $where", $current_post_date, $post->post_type ), $in_same_term, $excluded_terms, $taxonomy, $post );
-
-	/**
-	 * Filters the ORDER BY clause in the SQL for an adjacent post query.
-	 *
-	 * The dynamic portion of the hook name, `$adjacent`, refers to the type
-	 * of adjacency, 'next' or 'previous'.
-	 *
-	 * @since 2.5.0
-	 * @since 4.4.0 Added the `$post` parameter.
-	 *
-	 * @param string $order_by The `ORDER BY` clause in the SQL.
-	 * @param WP_Post $post    WP_Post object.
-	 */
-	$sort  = apply_filters( "get_{$adjacent}_post_sort", "ORDER BY p.post_date $order LIMIT 1", $post );
-
-	$query = "SELECT p.ID FROM $wpdb->posts AS p $join $where $sort";
-	$query_key = 'adjacent_post_' . md5( $query );
-	$result = wp_cache_get( $query_key, 'counts' );
-	if ( false !== $result ) {
-		if ( $result )
-			$result = get_post( $result );
-		return $result;
-	}
-
-	$result = $wpdb->get_var( $query );
-	if ( null === $result )
-		$result = '';
-
-	wp_cache_set( $query_key, $result, 'counts' );
-
-	if ( $result )
-		$result = get_post( $result );
-
-	return $result;
-}
-static function get_next_post($o){
-	if(!isset($o->atts['post_id'])){
-		return '';
-	}
-	$in_same_cat=false;
-	
-	if(isset($o->atts['in_same_cat']) && strtolower($o->atts['in_same_cat'])=='true'){
-		$in_same_cat=true;
-	}
-	
-	$out="id";
-	if(!empty($o->pieces))
-		$out=$o->pieces[0];
-		array_shift($o->pieces);
-	
-	//get_{$adjacent}_post_where
-	$all=false;
-	if(isset($o->atts['take_all_post'])){
-	/* 	//add_filter( 'get_previous_post_where', array( $this, 'filter_adjacent' ) );
-		echo 'AMIT2 ';
-		add_filter( 'get_next_post_where','aw2_library::filter_adjacent',99,1  );
-		 */
-		 $all=true;
-	}
-	
-	$post_id=$o->atts['post_id']; 
-	
-	 // Get a global post reference since get_adjacent_post() references it
-    global $post,$wpdb;
-
-    // Store the existing post object for later so we don't lose it
-    $oldGlobal = $post;
-
-    // Get the post object for the specified post and place it in the global variable
-    $post = get_post( $post_id );
-
-    // Get the post object for the previous post
-    $next_post = self::get_adjacent_post($all,$in_same_cat,'',false);
-
-    // Reset our global object
-    $post = $oldGlobal;
-
-    if ( '' == $next_post ) {
-        $next_post_id = 0;
-    }
-
-    $return_value = $next_post->ID;
-	
-	if($out == 'url'){
-		$return_value = get_permalink($next_post);
-	}
-	
-	if($out == 'slug'){
-		$return_value = $next_post->post_name;
-	}
-	
-	return $return_value;
-}
-
-static function get_prev_post($o){
-	if(!isset($o->atts['post_id'])){
-		return '';
-	}
-	$in_same_cat=false;
-	
-	if(isset($o->atts['in_same_cat']) && strtolower($o->atts['in_same_cat'])=='true'){
-		$in_same_cat=true;
-	}
-	
-	$out="id";
-	if(!empty($o->pieces))
-		$out=$o->pieces[0];
-		array_shift($o->pieces);
-	
-	$post_id=$o->atts['post_id']; 
-	
-	 // Get a global post reference since get_adjacent_post() references it
-    global $post;
-
-    // Store the existing post object for later so we don't lose it
-    $oldGlobal = $post;
-
-    // Get the post object for the specified post and place it in the global variable
-    $post = get_post( $post_id );
-	
-	$all=false;
-	if(isset($o->atts['take_all_post'])){
-		 $all=true;
-	}
-	
-    // Get the post object for the previous post
-    $prev_post = self::get_adjacent_post($all,$in_same_cat,'',true);
-
-    // Reset our global object
-    $post = $oldGlobal;
-
-    if ( '' == $prev_post ) {
-        $next_post_id = 0;
-    }
-
-    $return_value = $prev_post->ID;
-	
-	if($out == 'url'){
-		$return_value = get_permalink($prev_post);
-	}
-	
-	if($out == 'slug'){
-		$return_value = $prev_post->post_name;
-	}
-	
-	return $return_value;
-}
-
-
-static function get_breadcrumb($theme_location = 'main', $separator = ' &raquo; ', $show_home = 'yes') {
-
-    $items = wp_get_nav_menu_items($theme_location);
-    _wp_menu_item_classes_by_context( $items ); // Set up the class variables, including current-classes
-    $crumbs = array();
-	
-	if($show_home == 'yes')
-		$crumbs[] = '<a href="'.get_option('home').'">Home</a> ';
-	
-	$i=0;
-    foreach($items as $item) {
-        if ($item->current === true) {
-            $crumbs[] = "$item->title";
-        }elseif (($item->current_item_ancestor === true || $item->current_item_parent === true) && $item->current === false){
-			$crumbs[] = "<a href=\"{$item->url}\" title=\"{$item->title}\">{$item->title}</a>";
-		}
-		$i++;
-    }
-	$separator="<span class='separator'>".$separator."</span>";
-	if($i==0){
-		
-		$crumbstxt='<a href="'.get_option('home').'">Home</a> '.$separator;
-		if (is_author())
-		{
-			
-			$crumbstxt.="<a href='".get_author_posts_url( get_the_author_meta( 'ID' ) )."'>".get_the_author_meta('display_name')."</a>";
-			
-		}else{
-			
-			if($post->post_parent) {
-				$parent_id = $post->post_parent;
-				$crumbs = array();
-				$e=0;
-				
-				while ($parent_id) 
-				{
-					$page = get_page($parent_id);
-					$crumbs[] = '<a href="' . get_permalink($page->ID) . '">' . get_the_title($page->ID) . '</a>';
-					$parent_id = $page->post_parent;
-					$e++;
-				}
-				if($e!=0){
-					return implode($separator, $crumbs);
-				}
-			}
-			
-			if (is_category() || is_single()) 
-			{
-				$the_cat = get_the_category();
-				$d=0;
-				$catlinkarr="";
-				foreach($the_cat as $k => $v)
-				{
-					$category_link = get_category_link( $v->cat_ID );
-					if($d==0){
-						$catlinkarr.= '<a href="'.$category_link.'">'.$v->name.'</a>';
-					}else{
-						$catlinkarr.= ' & <a href="'.$category_link.'">'.$v->name.'</a>';
-					}
-					
-					
-					$d++;
-				}
-				
-				
-				$crumbstxt.=$catlinkarr;
-				if (is_single()) {
-					$crumbstxt.=" ".$separator." ".the_title('', '', false);
-				}
-			} elseif (is_page()) {
-				$crumbstxt.=the_title('', '', false);
-			}
-			
-			
-		}
-			
-
-			return $crumbstxt;
-		
-		
-	}else{
-		return implode($separator, $crumbs);
-	}
-    
-}
-
 static function get_newdate($o){
+	//php8ok		
 	
 	$format		= 	(isset($o->atts['format'])) ? $o->atts['format'] : "Y-m-d H:i:s";
 	$from		=	(isset($o->atts['from'])) ? $o->atts['from'] : "";
@@ -3702,42 +3459,8 @@ static function get_newdate($o){
 	return;
 }
 
-static function get_sidebar($o){
-
-	$sidebar=$o->pieces[0];
-	ob_start();
-		dynamic_sidebar( $sidebar );
-		$output = ob_get_contents();
-	ob_end_clean();
-
-	array_shift($o->pieces);
-	$o->value=$output;
-	return;
-}
-
-static function get_sideload_media($o){
-
-	$o->value='_error';
-	if(!isset($o->atts['url']))
-		return;
-	if(!isset($o->atts['post_id']))
-		return;
-	
-	$url		= 	$o->atts['url'];
-	$post_id	= $o->atts['post_id'];
-	$return	=	(isset($o->atts['return'])) ? $o->atts['return'] : "src";
-	
-	require_once(ABSPATH . 'wp-admin/includes/media.php');
-	require_once(ABSPATH . 'wp-admin/includes/file.php');
-	require_once(ABSPATH . 'wp-admin/includes/image.php');
-	
-	$output = media_sideload_image($url, $post_id,'',$return);
-	
-	$o->value=$output;
-	return;
-}
-
 static function resolve_array($o){
+	//php8ok		
 	
 	//am i special or ordinary
 	if(array_key_exists('instance',$o->value)){
@@ -3764,6 +3487,8 @@ static function resolve_array($o){
 }
 
 static function resolve_data($o){
+	//php8ok		
+	
 	if(empty($o->pieces)){
 		return;
 	}
@@ -3780,6 +3505,7 @@ static function resolve_data($o){
 }
 
 static function resolve_array_basic($o){
+	//php8ok		
 	if(empty($o->pieces)){
 		return;
 	}
@@ -3869,6 +3595,7 @@ static function resolve_array_basic($o){
 }
 
 static function resolve_string($o){
+	//php8ok		
 	if(empty($o->pieces)){
 		return;
 	}
@@ -3977,6 +3704,7 @@ static function resolve_string($o){
 }	
 
 static function resolve_object($o){
+	//php8ok		
 	//am i special or ordinary
 	$type=get_class($o->value);
 	switch ($type) {
@@ -3997,6 +3725,7 @@ static function resolve_object($o){
 }
 
 static function resolve_object_basic($o){
+	//php8ok		
 	if(empty($o->pieces)){
 		return;
 	}
@@ -4035,7 +3764,7 @@ static function resolve_object_basic($o){
 }
 
 static function resolve_post($o){
-	
+	//php8ok		
 	if(empty($o->pieces)){
 		return;
 	}
@@ -4113,6 +3842,7 @@ static function resolve_post($o){
 }
 
 static function resolve_user($o){
+	//php8ok		
 	if(empty($o->pieces)){
 		return;
 	}
@@ -4130,6 +3860,7 @@ static function resolve_user($o){
 }
 
 static function generateCallTrace(){
+	//php8ok		
     $e = new Exception();
     $trace = explode("\n", $e->getTraceAsString());
     // reverse array to make steps line up chronologically
@@ -4149,6 +3880,8 @@ static function generateCallTrace(){
 	
 
 static  function simple_encrypt($text){
+	//php8ok		
+	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
 	/*
     return urlencode(trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, 'qwertyuiopasdfgh', $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)))));
 	*/
@@ -4163,6 +3896,8 @@ static  function simple_encrypt($text){
 	return $cipher;
 }
 static function simple_decrypt($text){
+	//php8ok		
+	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
 	/*
     return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, 'qwertyuiopasdfgh', base64_decode(urldecode($text)), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 	*/	
@@ -4176,10 +3911,12 @@ static function simple_decrypt($text){
 
 
 static function d(){
-		util::var_dump(self::$stack);
+	//php8ok	
+	util::var_dump(self::$stack);
 }
 
 static function env_key_exists($keys){
+	//php8ok	
 	$current=self::$stack;		
 	if(!is_array($keys))$keys=explode('.',$keys);	
 	if($keys==='env')array_shift($keys);
@@ -4195,15 +3932,16 @@ static function env_key_exists($keys){
 }
 
 static function get_request($main=null){
+	//php8ok	
 	$value=null;
 	if(empty($main))
 		return $_REQUEST;
-	if($main=='request_body'){
+	if($main==='request_body'){
 			$value = file_get_contents('php://input');
 			return $value;
 	}
 
-	if($main=='post_json'){
+	if($main==='post_json'){
 			$value = json_encode($_POST);
 			return $value;			
 	}
@@ -4222,6 +3960,7 @@ static function get_request($main=null){
 
 
 static function pippin_excerpt_by_id($post, $length = 20, $tags = '<a><em><strong>', $extra = '') {
+	//php8amit		
 	/*
 	 * Gets the excerpt of a specific post ID or object
 	 * @param - $post - object/int - the ID or object of the post to get the excerpt of
@@ -4254,6 +3993,7 @@ static function pippin_excerpt_by_id($post, $length = 20, $tags = '<a><em><stron
 }
 
 static function in_array_r($needle, $haystack, $strict = false) {
+	//php8ok		
     foreach ($haystack as $item) {
         if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && self::in_array_r($needle, $item, $strict))) {
             return true;
@@ -4265,6 +4005,7 @@ static function in_array_r($needle, $haystack, $strict = false) {
 
 
 static function removesmartquotes($content) {
+	//php8ok		
      $content = str_replace('&#8220;', ",", $content);
      $content = str_replace('&#8221;', "'", $content);
      $content = str_replace('&#8216;', '"', $content);
@@ -4278,6 +4019,7 @@ static function removesmartquotes($content) {
 
 	
 	static function sideload_file($url, $post_id){
+	//php8amit		
 		if ( !$url || !$post_id ) return new WP_Error('missing', "Need a valid URL and post ID...");
         require_once( ABSPATH . 'wp-admin/includes/file.php' );
         // Download file to temp location, returns full server path to temp file, ex; /home/user/public_html/mysite/wp-content/26192277_640.tmp
@@ -4317,10 +4059,11 @@ static function removesmartquotes($content) {
 	
 /* Code Added by Ani - End*/
 	static function get_parameters($atts){
+	//php8amit		
 		$parameters = array();
 		$i=1;
 		$found=true;
-		while ($found==true) {
+		while ($found===true) {
 			$pname='p' . strval($i);
 			if(isset($atts[$pname])){
 				array_push($parameters,$atts[$pname]);
@@ -4335,6 +4078,7 @@ static function removesmartquotes($content) {
 // ----------------------------------------------------------------------------------------------------------------------
 
 	static function the_content_filter($content){
+	//php8amit		
 		global $wp_embed;
 		$has_blocks = has_blocks($content);	
 		
@@ -4357,6 +4101,7 @@ static function removesmartquotes($content) {
 	}
 
 static function get_collection($collection){
+	//php8ok		
 	global $table_prefix;
 	
 	if(isset($collection['post_type'])){
@@ -4394,6 +4139,7 @@ static function get_collection($collection){
 
 	
 static function get_module($collection,$module){
+	//php8ok		
 	global $table_prefix;
 	
 	if(isset($collection['post_type'])){
@@ -4496,6 +4242,7 @@ static function get_module($collection,$module){
 
 
 static function get_post_meta($post_id,$meta_key=null){
+	//php8ok		
 	$hash='meta' . '_' . $post_id;
 	
 	$return_value=null;
@@ -4531,6 +4278,7 @@ static function get_post_meta($post_id,$meta_key=null){
 }
 
 static function module_push($arr){
+	//php8ok		
 	$stack_id='module:' .  $arr['hash'] . ':' . aw2_library::get_rand(6);
 
 	$module=array();
@@ -4549,7 +4297,7 @@ static function module_push($arr){
 
 	
 static function module_forced_run($collection,$module,$template,$content,$atts){
-
+	//php8ok		
 	$arr=self::get_module($collection,$module);
 	if(!$arr){
 		$html=self::dump_debug(
@@ -4614,6 +4362,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 
 static function module_run($collection,$module,$template=null,$content=null,$atts=null){
+	//php8ok		
 	$arr=self::get_module($collection,$module);
 	/*
 	parse_content=array
@@ -4695,13 +4444,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 
 static function service_template_run($template,$atts=array()){
-
-	if(isset($_COOKIE['aws_update'])){
-		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-		echo '/*' .  '::start template:' . $template['name'] . ' ' . $timeConsumed . '*/';
-		
-	}
-	
+	//php8ok		
 	$stack_id=self::push_child('template',$template['name']);
 	
 	self::push_this($stack_id);
@@ -4718,7 +4461,7 @@ static function service_template_run($template,$atts=array()){
 }
 
 static function template_run($template,$content=null,$atts=array()){
-
+	//php8ok		
 	$content=self::removesmartquotes($content);		
 	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found - '.$template ;
 	$template_ptr=self::$stack['module']['templates'][$template];
@@ -4739,6 +4482,7 @@ static function template_run($template,$content=null,$atts=array()){
 }
 
 static function module_include($collection,$module){
+	//php8ok		
 	$arr=self::get_module($collection,$module);
 		if(!$arr){
 			$html=self::dump_debug(
@@ -4779,6 +4523,7 @@ static function module_include($collection,$module){
 }
 
 static function module_include_raw($collection,$module){
+	//php8ok	
 	$arr=self::get_module($collection,$module);
 		if(!$arr)return "$module Module not found " . self::convert_name_value_string($collection);
 	$return_value=$arr['code'];	
@@ -4789,7 +4534,7 @@ static function module_include_raw($collection,$module){
 //registeration of modules
 
 	static function register_module($post_type,$sing_name,$pl_name,$desc='',$supports=null){
-		
+	//php8amit		
 		if(!$supports)$supports = array('title','editor','revisions');
 		
 		$capabilities = array(
@@ -4840,6 +4585,7 @@ static function module_include_raw($collection,$module){
 
 
 static function load_content_type($field){
+	//php8ok	
 	$content_types=&self::get_array_ref('content_types');
 	if(!isset($content_types[$field]))return;
 	if($content_types[$field]==='#cached'){
@@ -4851,6 +4597,7 @@ static function load_content_type($field){
 
 
 static function setup_develop_for_awesomeui(){
+	//php8ok
 	//Are you a developer. A developer has certain priveleges
 	//setup DEVELOP_FOR_AWESOMEUI
 	if(isset($_COOKIE['develop_for_awesomeui'])){
@@ -4866,6 +4613,7 @@ static function setup_develop_for_awesomeui(){
 }
 
 static function setup_env_cache($key){
+	//php8ok
 	//Setting up the caching and the caching variables
 	// ENV_CACHE - where to store the cache
 	// USE_ENV_CACHE - Whether to Use the Env Cache or not
