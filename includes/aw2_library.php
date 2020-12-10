@@ -32,6 +32,9 @@ static function log_datatype_mismatch($arr){
 	$template=self::get('template.name');
 	
 	$conditional= isset($arr['condition'])?$arr['condition']:'';
+	if(isset($arr['php7result'])){
+		$php7_result = $arr['php7result']?'true':'false';
+	}
 	$module_slug='';
 	$invalid_lhs_dt='no';
 	$invalid_rhs_dt='no';
@@ -50,7 +53,12 @@ static function log_datatype_mismatch($arr){
 
 	
 	$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
+	
 	if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
+	if($lhs_datatype === 'string' && empty($lhs)){
+		$lhs='_empty_';
+	}
+	
 	$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($lhs,$lhs_dt);
 	if($valid === false ){
@@ -62,6 +70,10 @@ static function log_datatype_mismatch($arr){
 
 	$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
 	if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
+	if($rhs_datatype === 'string' && empty($rhs)){
+		$rhs='_empty_';
+	}
+	
 	$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($rhs,$rhs_dt);
 	if($valid === false ){
@@ -81,7 +93,7 @@ static function log_datatype_mismatch($arr){
 		
 	if($flag===false)return;
 		
-	$sql = "INSERT INTO `datatype_mismatch` (`module_slug`,`template_name`,`conditional`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`) VALUES ( '".$module_slug."','".$template."','".$conditional."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."')";
+	$sql = "INSERT INTO `datatype_mismatch` (`module_slug`,`template_name`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`) VALUES ( '".$module_slug."','".$template."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."')";
 
     $obj =\aw2\mysqli\cud(array(),$sql,null);
 	
@@ -1693,7 +1705,7 @@ static function checkcondition(&$atts){
 		
 		
 		if(array_key_exists('odd',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd']);
+			self::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd','php7result'=>((int)$atts['odd'] % 2 == 0)]);
 			if((int)$atts['odd'] % 2 == 0)
 				return false;
 			else
@@ -1701,7 +1713,7 @@ static function checkcondition(&$atts){
 		}
 		
 		if(array_key_exists('even',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['even'],'lhs_dt'=>'number','condition'=>'even']);
+			self::log_datatype_mismatch(['lhs'=>$atts['even'],'lhs_dt'=>'number','condition'=>'even','php7result'=>((int)$atts['even'] % 2 != 0)]);
 			if((int)$atts['even'] % 2 != 0)
 		return false;
 	else
@@ -1709,7 +1721,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('true',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['true'],'lhs_dt'=>'boolean','condition'=>'true']);
+			self::log_datatype_mismatch(['lhs'=>$atts['true'],'lhs_dt'=>'boolean','condition'=>'true','php7result'=>($atts['true']!=true)]);
 			if($atts['true']!=true)
 		return false;
 	else
@@ -1717,7 +1729,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('false',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['false'],'lhs_dt'=>'boolean','condition'=>'false']);
+			self::log_datatype_mismatch(['lhs'=>$atts['false'],'lhs_dt'=>'boolean','condition'=>'false','php7result'=>($atts['false']==true)]);
 			if($atts['false']==true)
 		return false;
 	else
@@ -1725,7 +1737,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('yes',$atts)){
-		self::log_datatype_mismatch(['lhs'=>$atts['yes'],'lhs_dt'=>'string','condition'=>'yes']);
+		self::log_datatype_mismatch(['lhs'=>$atts['yes'],'lhs_dt'=>'string','condition'=>'yes','php7result'=>($atts['yes']!=='yes')]);
 		if($atts['yes']!=='yes')
 			return false;
 		else
@@ -1733,7 +1745,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('no',$atts)){
-		self::log_datatype_mismatch(['lhs'=>$atts['no'],'lhs_dt'=>'string','condition'=>'no']);
+		self::log_datatype_mismatch(['lhs'=>$atts['no'],'lhs_dt'=>'string','condition'=>'no','php7result'=>($atts['no']!=='no')]);
 		if($atts['no']!=='no')
 			return false;
 		else
@@ -1969,7 +1981,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal','php7result'=>($atts['cond']!=$atts['not_equal'])]);
 			if($atts['cond']!=$atts['not_equal'])
 			{unset($atts['cond']);unset($atts['not_equal']); }		
 			else 
@@ -1977,7 +1989,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['equal'],'must_match'=>'yes','condition'=>'equal']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['equal'],'must_match'=>'yes','condition'=>'equal','php7result'=>($atts['cond']==$atts['equal'])]);
 			if($atts['cond']==$atts['equal'])
 		{unset($atts['cond']);unset($atts['equal']); }		
 			else 
@@ -1985,7 +1997,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_than',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_than']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_than','php7result'=>($atts['cond']>$atts['greater_than'])]);
 			if($atts['cond']>$atts['greater_than'])
 		{unset($atts['cond']);unset($atts['greater_than']); }		
 			else 
@@ -1993,7 +2005,7 @@ static function checkcondition(&$atts){
 		}
 	
 		if(array_key_exists('cond',$atts) && array_key_exists('less_than',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_than']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_than','php7result'=>($atts['cond']<$atts['less_than'])]);
 			if($atts['cond']<$atts['less_than'])
 		{unset($atts['cond']);unset($atts['less_than']); }		
 			else 
@@ -2001,7 +2013,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_equal']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_equal','php7result'=>($atts['cond']>=$atts['greater_equal'])]);
 			if($atts['cond']>=$atts['greater_equal'])
 		{unset($atts['cond']);unset($atts['greater_equal']); }		
 			else 
@@ -2009,7 +2021,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('less_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_equal']);
+			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_equal','php7result'=>($atts['cond']<=$atts['less_equal'])]);
 			if($atts['cond']<=$atts['less_equal'])
 		{unset($atts['cond']);unset($atts['less_equal']); }		
 			else 
