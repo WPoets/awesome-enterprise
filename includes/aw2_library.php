@@ -3569,14 +3569,9 @@ static function resolve_array_basic($o){
 			$o->value=implode ( ',' , $arr );
 			break;
 		case 'quote_comma':
-			array_shift($o->pieces);
-			if(count($arr)<1)
-				$o->value='';
-			
-			if(count($arr)==1)
-				$o->value="'" . $arr[0] . "'";
-				
-			if(count($arr)>1)
+			array_shift($o->pieces);			
+			$o->value="''";							
+			if(count($arr)>0)
 				$o->value="'" . implode ( "','" , $arr ) . "'";
 			break;
 
