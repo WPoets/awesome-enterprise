@@ -1695,9 +1695,9 @@ static function checkcondition(&$atts){
 		if(array_key_exists('odd',$atts)){
 			self::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd']);
 			if((int)$atts['odd'] % 2 == 0)
-		return false;
-	else
-		unset($atts['odd']);  
+				return false;
+			else
+				unset($atts['odd']);  
 		}
 		
 		if(array_key_exists('even',$atts)){
@@ -1963,17 +1963,17 @@ static function checkcondition(&$atts){
 			else
 				$arr=$atts['list']; 
 			if(in_array($atts['not_contains'],$arr))
-		return false;
+				return false;
 			else 
-	{unset($atts['list']);unset($atts['not_contains']); }		
+			{unset($atts['list']);unset($atts['not_contains']); }		
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
 			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal']);
 			if($atts['cond']!=$atts['not_equal'])
-		{unset($atts['cond']);unset($atts['not_equal']); }		
+			{unset($atts['cond']);unset($atts['not_equal']); }		
 			else 
-		return false;
+			return false;
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
@@ -2109,7 +2109,7 @@ static function modify_output($value,&$atts){
 		//the_content
 		if(array_key_exists('the_content',$atts)){
 			
-			$value = self::the_content_filter($value);
+			$value = awesome_wp_utils::the_content_filter($value);
 			$value = do_shortcode($value);
 		}		
 		
@@ -3048,9 +3048,6 @@ static function aw2wpget($action,$o){
 	$aw2wp_get=new aw2\wp\aw2wp_get($action,$o->atts,$o->content,$main_piece);
 	$o->value = $aw2wp_get->run();
 	
-	util::var_dump($action);
-	util::var_dump($o->value);
-	
 }
 
 static function get_content_type($o){
@@ -3569,9 +3566,14 @@ static function resolve_array_basic($o){
 			$o->value=implode ( ',' , $arr );
 			break;
 		case 'quote_comma':
-			array_shift($o->pieces);			
-			$o->value="''";							
-			if(count($arr)>0)
+			array_shift($o->pieces);
+			if(count($arr)<1)
+				$o->value='';
+			
+			if(count($arr)==1)
+				$o->value="'" . $arr[0] . "'";
+				
+			if(count($arr)>1)
 				$o->value="'" . implode ( "','" , $arr ) . "'";
 			break;
 
@@ -3610,7 +3612,7 @@ static function resolve_string($o){
 			array_shift($o->pieces);
 			//$string = apply_filters('the_content', $string);
 
-			$string= self::the_content_filter($string);
+			$string= awesome_wp_utils::the_content_filter($string);
 			$o->value = do_shortcode($string);
 			break;
 		case 'esc_sql':
@@ -3798,13 +3800,13 @@ static function resolve_post($o){
 			array_shift($o->pieces);
 			$length=isset($o->atts['length'])?$o->atts['length']:20;
 			$ellipsis=isset($o->atts['ellipsis'])?' &hellip; &nbsp;':'';
-			$o->value= self::pippin_excerpt_by_id($ID,$length,'<a><em><strong>',$ellipsis);
+			$o->value= awesome_wp_utils::pippin_excerpt_by_id($ID,$length,'<a><em><strong>',$ellipsis);
 			break;
 		case 'the_content':
 			array_shift($o->pieces);
 			$content = $post->post_content;
 			//$content = apply_filters('the_content', $content);
-			$content= self::the_content_filter($content);
+			$content= awesome_wp_utils::the_content_filter($content);
 			
 			$o->value= do_shortcode($content);
 			break;
@@ -3812,7 +3814,7 @@ static function resolve_post($o){
 			array_shift($o->pieces);
 			$content = $post->post_content;
 			$o->value= self::parse_shortcode($content);
-			$o->value= self::the_content_filter($o->value);
+			$o->value= awesome_wp_utils::the_content_filter($o->value);
 			break;
 		case 'taxonomy':
 			array_shift($o->pieces);
@@ -3954,39 +3956,6 @@ static function get_request($main=null){
 }
 
 
-static function pippin_excerpt_by_id($post, $length = 20, $tags = '<a><em><strong>', $extra = '') {
-	//php8amit		
-	/*
-	 * Gets the excerpt of a specific post ID or object
-	 * @param - $post - object/int - the ID or object of the post to get the excerpt of
-	 * @param - $length - int - the length of the excerpt in words
-	 * @param - $tags - string - the allowed HTML tags. These will not be stripped out
-	 * @param - $extra - string - text to append to the end of the excerpt
-	 */
-
-	if (is_int($post)) {
-		// get the post object of the passed ID
-		$post = get_post($post);
-	} elseif (!is_object($post)) {
-		return false;
-	}
-
-	if (has_excerpt($post->ID)) {
-		$the_excerpt = $post->post_excerpt;
-		return apply_filters('the_content', $the_excerpt);
-	} else {
-		$the_excerpt = $post->post_content;
-	}
-
-	$the_excerpt = strip_shortcodes(strip_tags($the_excerpt), $tags);
-	$the_excerpt = preg_split('/\b/', $the_excerpt, $length * 2 + 1);
-	$excerpt_waste = array_pop($the_excerpt);
-	$the_excerpt = implode($the_excerpt);
-	$the_excerpt .= $extra;
-
-	return apply_filters('the_content', $the_excerpt);
-}
-
 static function in_array_r($needle, $haystack, $strict = false) {
 	//php8ok		
     foreach ($haystack as $item) {
@@ -4072,28 +4041,6 @@ static function removesmartquotes($content) {
 	}	
 // ----------------------------------------------------------------------------------------------------------------------
 
-	static function the_content_filter($content){
-	//php8amit		
-		global $wp_embed;
-		$has_blocks = has_blocks($content);	
-		
-		if($has_blocks){ 
-			$content = do_blocks($content);
-		}
-				
-		$content = wptexturize($content);
-		$content = convert_smilies($content);
-		if(!$has_blocks){ //workaround for stray closing p tags in GT blocks.
-			$content = wpautop($content);
-		}
-		$content = shortcode_unautop($content);
-		$content = prepend_attachment($content);
-		$content = wp_make_content_images_responsive($content);
-		$content = str_replace(']]>', ']]&gt;', $content);
-		$content = $wp_embed->autoembed( $content );
-		
-		return $content;
-	}
 
 static function get_collection($collection){
 	//php8ok		
@@ -4528,55 +4475,6 @@ static function module_include_raw($collection,$module){
 
 //registeration of modules
 
-	static function register_module($post_type,$sing_name,$pl_name,$desc='',$supports=null){
-	//php8amit		
-		if(!$supports)$supports = array('title','editor','revisions');
-		
-		$capabilities = array(
-			"edit_post"=>"develop_for_awesomeui",
-			"read_post"=>"develop_for_awesomeui",
-			"delete_post"=>"develop_for_awesomeui",
-			"edit_posts"=>"develop_for_awesomeui",
-			"edit_others_posts"=>"develop_for_awesomeui",
-			"publish_posts"=>"develop_for_awesomeui",
-			"read_private_posts"=>"develop_for_awesomeui",
-			"delete_posts"=>"develop_for_awesomeui"
-			
-		);
-		
-		register_post_type($post_type, array(
-			'label' => $pl_name,
-			'description' => $desc,
-			'public' =>false,
-			'show_in_nav_menus'=>false,
-			'show_ui' => true,
-			'show_in_menu' => false,
-			'delete_with_user'    => false,
-			'capability_type'			=> 'post',
-			'capabilities' => $capabilities,
-			'hierarchical' => false,
-			'query_var' => false,
-			'rewrite' => false,
-			'supports' => $supports,
-			'labels' => array (
-				  'name' => $pl_name,
-				  'singular_name' => $sing_name,
-				  'menu_name' => $pl_name,
-				  'add_new' => 'Create '.$sing_name,
-				  'add_new_item' => 'Add New '.$sing_name,
-				  'new_item' => 'New '.$sing_name,
-				  'edit' => 'Edit '.$sing_name,
-				  'edit_item' => 'Edit '.$sing_name,
-				  'view' => 'View '.$sing_name,
-				  'view_item' => 'View '.$sing_name,
-				  'search_items' => 'Search '.$pl_name,
-				  'not_found' => 'No '.$sing_name.' Found',
-				  'not_found_in_trash' => 'No '.$sing_name.' Found in Trash'
-				)
-			) 
-		);
-	}
-	
 
 
 static function load_content_type($field){

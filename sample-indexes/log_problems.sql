@@ -49,6 +49,8 @@ CREATE TABLE `log_problems` (
   `extras` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE `datatype_mismatch` ADD `php7_result` VARCHAR(15) NULL AFTER `conditional`;
+
 --
 -- Indexes for dumped tables
 --
@@ -86,4 +88,5 @@ ALTER TABLE `datatype_mismatch`
 --
 ALTER TABLE `log_problems`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  
 COMMIT;
