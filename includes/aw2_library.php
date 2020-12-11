@@ -55,10 +55,7 @@ static function log_datatype_mismatch($arr){
 	$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
 	
 	if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
-	if($lhs_datatype === 'string' && empty($lhs)){
-		$lhs='_empty_';
-	}
-	
+		
 	$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($lhs,$lhs_dt);
 	if($valid === false ){
@@ -70,10 +67,7 @@ static function log_datatype_mismatch($arr){
 
 	$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
 	if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
-	if($rhs_datatype === 'string' && empty($rhs)){
-		$rhs='_empty_';
-	}
-	
+		
 	$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($rhs,$rhs_dt);
 	if($valid === false ){
