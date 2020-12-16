@@ -3046,14 +3046,10 @@ static function get_start($o){
 static function aw2wpget($action,$o){
 	
 	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get $action is deprecated, use wp.get"]);
-	
-	$main_piece='';
-	if(!empty($o->pieces))
-		$main_piece = array_shift($o->pieces);
-		
-	$aw2wp_get=new aw2\wp\aw2wp_get($action,$o->atts,$o->content,$main_piece);
+
+	$aw2wp_get=new aw2\wp\aw2wp_get($action,$o->atts,$o->content,$o->pieces);
+	$o->pieces=array(); // resovle everthing in the wp.get 
 	$o->value = $aw2wp_get->run();
-	
 }
 
 static function get_content_type($o){
