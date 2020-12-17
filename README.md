@@ -29,6 +29,13 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.0.3
+* Fixed: aw2.get was giving wrong data when we called [aw2.get post.post_title] in single-content-layout
+* Improved: added support to log evaluated conditional values as well for php 7
+* Improved: Added depreciation notice for aw2.get shortcode which should now be using wp.get
+* Removed WP specific function to it's own utility class.
+* Fixed: quote comma modifier fixed for empty return
+
 ##### 3.0.2
 * Added missing Mobile Detect Library  
 

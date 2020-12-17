@@ -55,8 +55,7 @@ function unhandled($atts,$content=null,$shortcode){
 			if($index==1)$call_stack['first']=true;
 			if($index==$call_stack['count'])$call_stack['last']=true;
 			if($index!=$call_stack['count'])$call_stack['between']=true;
-				
-			$output[]=\aw2_library::parse_shortcode($content);
+			$output[]=\aw2_library::parse_shortcode($content,false,'restore');
 			$index++;
 		}
 		$string=implode($output);	

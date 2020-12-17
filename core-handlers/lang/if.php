@@ -81,7 +81,7 @@ function _else($atts,$content=null,$shortcode){
 	if($status)
 		$return_value= '';
 	else
-		$return_value= \aw2_library::parse_shortcode($content);
+		$return_value=  \aw2_library::parse_shortcode($content,false,'restore');
 
 	\aw2_library::pop_child($stack_id);
 	return \aw2_library::post_actions('all',$return_value,$atts);
@@ -118,7 +118,7 @@ function _and($atts,$content=null,$shortcode){
 	
 	if($cond==true && $status==true){
 		$status=true;
-		$return_value= \aw2_library::parse_shortcode($content);
+		$return_value=  \aw2_library::parse_shortcode($content,false,'restore');
 	}
 	else{
 		$return_value= '';
@@ -158,7 +158,7 @@ function _or($atts,$content=null,$shortcode){
 	
 	if($cond==true || $status==true){
 		$status=true;
-		$return_value= \aw2_library::parse_shortcode($content);
+		$return_value=  \aw2_library::parse_shortcode($content,false,'restore');
 	}
 	else{
 		$return_value= '';
@@ -321,7 +321,7 @@ function aw2_if_helper($atts,$content=null,$shortcode){
 	
 	if($cond==true){
 		$status=true;
-		$return_value= \aw2_library::parse_shortcode($content);
+		$return_value= \aw2_library::parse_shortcode($content,false,'restore');
 	}
 	else
 		$status=false;

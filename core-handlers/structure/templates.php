@@ -36,6 +36,10 @@ function add($atts,$content=null,$shortcode){
 	$ref=&\aw2_library::get_array_ref('module','templates');
 	$ref[$main]['code']=$content;
 	$ref[$main]['name']=$main;
+	
+	$debug=&\aw2_library::get_array_ref('@debug');
+	if(isset($debug['content_pos']))$ref[$main]['content_pos']=$debug['content_pos'];
+	
 }
 
 \aw2_library::add_service('templates.run','Run a Template of the Active Module',['namespace'=>__NAMESPACE__]);
