@@ -24,8 +24,10 @@ class awesome_flow{
 		}
 		else{
 			
-			//load the core modules
-			self::load_core();
+		// load core
+			if(defined('AWESOME_CORE_POST_TYPE')){
+				\aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>AWESOME_CORE_POST_TYPE]);
+			}		
 
 			//load all the apps
 			self::load_apps();
@@ -68,29 +70,15 @@ class awesome_flow{
 		//echo '/*' .  '::end initialize:' .$timeConsumed . '*/';
 	}
 	
-	static function load_core(){
-		if(!defined('AWESOME_CORE_POST_TYPE')){
-			return;
-		}		
-		// load core modules
-		\aw2_library::add_service('core','core service refers to core posts for config etc.',['post_type'=>AWESOME_CORE_POST_TYPE]);
-
-		//load all config post, as they are used they will be consumed.
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
-		$awesome_core=aw2_library::get_collection(["post_type"=>AWESOME_CORE_POST_TYPE]);
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Core Loaded']);
 		
+	static function run_core($module){
+		if(!defined('AWESOME_CORE_POST_TYPE'))return;
 		
+		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],$module);
+		if($arr)\aw2_library::module_run(['post_type'=>AWESOME_CORE_POST_TYPE],$module);
+		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>$module . ' Setup']);
 	}
-	static function run_core($slug){
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
-		if(!isset($awesome_core[$slug])) return;
-		aw2_library::parse_shortcode($awesome_core[$slug]['code']);
-		//consume
-		unset($awesome_core[$slug]);
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>$slug . ' Setup']);
 		
-	}
 
 	static function load_env_settings(){
 		$settings=&aw2_library::get_array_ref('settings');
@@ -217,7 +205,6 @@ class awesome_flow{
 		
 		$request=$query->request;
 
-		
 		//remove REQUEST_START_POINT
 		if(defined('REQUEST_START_POINT'))
 			$request=substr($request, strlen(REQUEST_START_POINT));	
@@ -257,9 +244,7 @@ class awesome_flow{
 			$o=new stdClass();
 			$o->pieces=$pieces;
 			$name=array_shift($o->pieces);
-	
 			\aw2_library::service_run('controllers.' . $name,['o'=>$o],null,'service'); // run the controller service, it is responsible for handling echo and exit.
-		
 		}
 		
 		if($app->exists($app_slug)){
@@ -308,30 +293,16 @@ class awesome_flow{
 	}
 	
     static function head(){
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
 		
-		if(isset($awesome_core['scripts'])){
-			echo aw2_library::parse_shortcode($awesome_core['scripts']['code']);
-			unset($awesome_core['scripts']); // now we don't need this data
+		if(defined('AWESOME_CORE_POST_TYPE')){
+			$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],'scripts');
+			if($arr)echo \aw2_library::module_run(['post_type'=>AWESOME_CORE_POST_TYPE],'scripts');
 		}
 		
 		$app = &aw2_library::get_array_ref('app');
-		
-		if(isset($app['configs']['scripts'])){
-			$scipts = $app['configs']['scripts'];
-			echo aw2_library::parse_shortcode($scipts['code']);
-		}
-		
-		//not sure about collections
-		if(isset($app['collection']) && is_array($app['collection'])){
-			foreach($app['collection'] as $name=>$collection){
-				$collection_post = $collection['post_type'];
-				
-				if(isset($app['configs'][$collection_post.'-scripts'])){
-					$scipts = $app['configs'][$collection_post.'-scripts'];
-					echo aw2_library::parse_shortcode($scipts['code']);
-				}
-			}
+		if(isset($app['collection']['config'])){
+			$arr=\aw2_library::get_module($app['collection']['config'],'scripts');
+			if($arr)echo \aw2_library::module_run($app['collection']['config'],'scripts');
 		}		
 		
 	}

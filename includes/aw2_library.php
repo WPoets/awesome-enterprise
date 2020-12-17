@@ -1024,6 +1024,9 @@ static function shortcode_tag( $m ) {
 		if($debug['content_pos']!==-1)$debug['content_pos']=$debug['content_pos'] +  $debug['start_pos'];
 	}
 	$debug['match']=$m;
+	#generate link
+	$debug['link']=SITE_URL . '/d?module=' . ((isset($debug['module'])) ? $debug['module'] : '' ) .  '&post_type=' . ((isset($debug['collection']['post_type'])) ? $debug['collection']['post_type'] : '')  . '&pos=' . $debug['pos'] ;
+	
 	
 	// allow [[foo]] syntax for escaping a tag
 	if ( $m[1][0] === '[' && $m[6][0] === ']' ) {
