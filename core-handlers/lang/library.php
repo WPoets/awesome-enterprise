@@ -11,22 +11,25 @@ function _require($atts,$content=null,$shortcode){
 		'local_path' => null,
 		), $atts) );
 	
+	if(!empty($local_path)){
 
-	foreach (glob($local_path . "/*.php") as $filename)
+		foreach (glob($local_path . "/handlers/*.php") as $filename)
 	{
 		require_once $filename;
 	}
 	
 	
-	foreach (glob($local_path . "/*.module.html") as $filename)
+		foreach (glob($local_path . "/modules/*.module.html") as $filename)
 	{
 		$collection=array();
-		$collection['source']=$local_path;
+			$collection['source']=$local_path."/modules";
 		$module=basename($filename);
+			$module=str_replace(".module.html","",$module);
 		$template=null;
 
 		$return_value=\aw2_library::module_run($collection,$module,$template,null,[]);
 	}
+	}	
 }	 
 
 
@@ -40,11 +43,12 @@ function run($atts,$content=null,$shortcode){
 		'local_path' => null,
 		), $atts) );
 	
-	foreach (glob($local_path . "/*.module.html") as $filename)
+	foreach (glob($local_path . "/modules/*.module.html") as $filename)
 	{
 		$collection=array();
-		$collection['source']=$local_path;
+		$collection['source']=$local_path."/modules";
 		$module=basename($filename);
+		$module=str_replace(".module.html","",$module);
 		$template=null;
 
 		$return_value=\aw2_library::module_run($collection,$module,$template,null,[]);

@@ -34,11 +34,13 @@ function add($atts,$content=null,$shortcode){
 	), $atts) );
 	
 	$ref=&\aw2_library::get_array_ref('module','templates');
+	
+	
 	$ref[$main]['code']=$content;
 	$ref[$main]['name']=$main;
 	
-	$debug=&\aw2_library::get_array_ref('@debug');
-	if(isset($debug['content_pos']))$ref[$main]['content_pos']=$debug['content_pos'];
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	if(isset($sc_exec['content_pos']))$ref[$main]['content_pos']=$sc_exec['content_pos'];
 	
 }
 

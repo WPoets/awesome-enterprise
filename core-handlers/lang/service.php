@@ -56,6 +56,11 @@ function template_add($atts,$content=null,$shortcode){
 	$atts['namespace']=__NAMESPACE__;	
 	$atts['func']='template_run';	
 	$atts['code']=$content;	
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	if(isset($sc_exec['content_pos']))$atts['content_pos']=$sc_exec['content_pos'];
+	if(isset($sc_exec['module']))$atts['module']=$sc_exec['module'];
+	if(isset($sc_exec['collection']))$atts['collection']=$sc_exec['collection'];
+
 
 	\aw2_library::add_service($main,$desc,$atts);
 }
@@ -72,14 +77,8 @@ function template_run($atts,$content=null,$shortcode=null){
 		'_default'=>'service'
 	), $atts) );
 	
-	\util::var_dump($atts);
-	\util::var_dump($shortcode);
-	
 	$return_value=\aw2_library::service_template_run($shortcode['handler'],$atts);		
 
-	\util::var_dump($return_value);
-	
-	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	//if(is_object($return_value))$return_value='Object';
  	

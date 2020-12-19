@@ -177,16 +177,16 @@ static function load_all_extra_handlers(){
 private static $hasArray = false;
 
 
-static function content_debug(){
-	$debug=&self::get_array_ref('@debug');
-	$temp=$debug;	
-	$debug['start_pos']=$debug['content_pos'];
+static function sc_exec_setup_pos(){
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$temp=$sc_exec;	
+	$sc_exec['start_pos']=$sc_exec['content_pos'];
 	return $temp;
 }
 
-static function content_debug_restore($restore){
-	$debug=&self::get_array_ref('@debug');
-	$debug=$restore;
+static function sc_exec_restore($restore){
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec=$restore;
 }
 
 
@@ -636,7 +636,7 @@ static function unescape_invalid_shortcodes( $content ) {
  
     return $content;
 }
-static function parse_shortcode( $content, $ignore_html = false,$debug_type='') {
+static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore='no') {
 	//php8OK	
 	
 	$content = preg_replace("/\/\/\*.*\*\/\//sU", "", $content);
@@ -649,13 +649,10 @@ static function parse_shortcode( $content, $ignore_html = false,$debug_type='') 
 	
 	$pattern =str_replace("_handler","(?:[a-zA-Z0-9\-._@])+",$pattern);	
 
-	self::set('error_config.last_shortcode',$content); 
-
-			
-	if($debug_type==='restore')	$restore=self::content_debug();	
+	if($sc_exec_restore==='yes')$restore=self::sc_exec_setup_pos();	
 	$count=0;
 	$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
-	if($debug_type==='restore')self::content_debug_restore($restore);	
+	if($sc_exec_restore==='yes')self::sc_exec_restore($restore);	
 	//$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content );
 		
 	
@@ -1014,18 +1011,18 @@ static function shortcode_tag( $m ) {
 	global $shortcode_tags;
 	if(isset(self::$stack['_return']))return '';
 
-	$debug=&self::get_array_ref('@debug');
-	$debug['sc']=$m[0][0];
-	$debug['pos']=$m[0][1];
-	$debug['content_pos']=$m[5][1];
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec['sc']=$m[0][0];
+	$sc_exec['pos']=$m[0][1];
+	$sc_exec['content_pos']=$m[5][1];
 
-	if(isset($debug['start_pos']) && $debug['start_pos']){
-		$debug['pos']=$debug['pos'] + $debug['start_pos'];
-		if($debug['content_pos']!==-1)$debug['content_pos']=$debug['content_pos'] +  $debug['start_pos'];
+	if(isset($sc_exec['start_pos']) && $sc_exec['start_pos']){
+		$sc_exec['pos']=$sc_exec['pos'] + $sc_exec['start_pos'];
+		if($sc_exec['content_pos']!==-1)$sc_exec['content_pos']=$sc_exec['content_pos'] +  $sc_exec['start_pos'];
 	}
-	$debug['match']=$m;
+	$sc_exec['match']=$m;
 	#generate link
-	$debug['link']=SITE_URL . '/d?module=' . ((isset($debug['module'])) ? $debug['module'] : '' ) .  '&post_type=' . ((isset($debug['collection']['post_type'])) ? $debug['collection']['post_type'] : '')  . '&pos=' . $debug['pos'] ;
+	$sc_exec['link']=SITE_URL . '/d?module=' . ((isset($sc_exec['module'])) ? $sc_exec['module'] : '' ) .  '&post_type=' . ((isset($sc_exec['collection']['post_type'])) ? $sc_exec['collection']['post_type'] : '')  . '&pos=' . $sc_exec['pos'] ;
 	
 	
 	// allow [[foo]] syntax for escaping a tag
@@ -1065,6 +1062,23 @@ static function shortcode_tag( $m ) {
 				$next_tag=null;
 				if(isset($pieces[0]))$next_tag=$pieces[0];	
 			}	
+
+			#for 3rd level		
+			if(isset($sc['handler'][$next_tag])){
+				$service=array_shift($pieces);
+				$sc['handler']=$sc['handler'][$service];
+				$next_tag=null;
+				if(isset($pieces[0]))$next_tag=$pieces[0];	
+			}	
+
+			#for 4th level		
+			if(isset($sc['handler'][$next_tag])){
+				$service=array_shift($pieces);
+				$sc['handler']=$sc['handler'][$service];
+				$next_tag=null;
+				if(isset($pieces[0]))$next_tag=$pieces[0];	
+			}				
+			
 		}
 		$sc['tags_left']=$pieces;
 		
@@ -1742,9 +1756,17 @@ static function remove_service($keys) {
 }
 
 static function add_service($service,$desc=null,$atts=array()) {
+	
 	//php8OK	
 	$atts['desc']=$desc;
 
+	if(isset($atts['code'])){
+		$atts['type'] = 'namespace';
+		$atts['@service'] = true;
+		self::set('handlers.' . $service,$atts);
+		return;
+	}
+	
 	if(isset($atts['content_type_def'])){
 		$handler=&self::get_array_ref('handlers',$service);
 		$atts['type'] = 'content_type_def';
@@ -4501,7 +4523,7 @@ static function get_module($collection,$module){
 		}
 		
 		if(!$return_value){
-			$path=$collection['source'] . '/' . $module;
+			$path=$collection['source'] . '/' . $module . '.module.html';
 			$code = file_get_contents($path);
 			
 			$arr=array();
@@ -4622,10 +4644,10 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	$stack_id=self::module_push($arr);
 	
-	$debug=&self::get_array_ref('@debug');
-	$restore=$debug;	
-	$debug['collection']=$collection;
-	$debug['module']=$module;
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$restore=$sc_exec;	
+	$sc_exec['collection']=$collection;
+	$sc_exec['module']=$module;
 	
 	if($content){
 		$content=self::removesmartquotes($content);	
@@ -4648,16 +4670,18 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	aw2_library::pop_child($stack_id);
 
-	$debug=&self::get_array_ref('@debug');
-	$debug=$restore;
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec=$restore;
 	
 	return $return_value;	
 }
 
 
 static function module_run($collection,$module,$template=null,$content=null,$atts=null){
+	
 	//php8ok		
 	$arr=self::get_module($collection,$module);
+	
 	/*
 	parse_content=array
 	Build the array . and merge with atts
@@ -4707,10 +4731,10 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
 	$stack_id=self::module_push($arr);
 
-	$debug=&self::get_array_ref('@debug');
-	$restore=$debug;	
-	$debug['collection']=$collection;
-	$debug['module']=$module;
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$restore=$sc_exec;	
+	$sc_exec['collection']=$collection;
+	$sc_exec['module']=$module;
 	
 	
 	if(!$template){
@@ -4738,8 +4762,8 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	
 	aw2_library::pop_child($stack_id);
 	
-	$debug=&self::get_array_ref('@debug');
-	$debug=$restore;	
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec=$restore;	
 	
 	return $return_value;	
 }
@@ -4752,12 +4776,23 @@ static function service_template_run($template,$atts=array()){
 	self::push_this($stack_id);
 	self::push_atts($stack_id,$atts);
 
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$restore=$sc_exec;	
+	if(isset($template['module']))$sc_exec['module']=$template['module'];
+	if(isset($template['collection']))$sc_exec['collection']=$template['collection'];
+	if(isset($template['content_pos']))$sc_exec['start_pos']=$template['content_pos'];
+		
+
 	
 	$return_value=self::parse_shortcode($template['code']);
 	if(isset(self::$stack['template']['_return'])){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
 	}
+	
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec=$restore;	
+	
 	aw2_library::pop_child($stack_id);
 	return $return_value;	
 }
@@ -4774,9 +4809,9 @@ static function template_run($template,$content=null,$atts=array()){
 	self::push_atts($stack_id,$atts);
 
 	if(isset($template_ptr['content_pos'])){
-		$debug=&self::get_array_ref('@debug');
-		$restore=$debug;	
-		$debug['start_pos']=$template_ptr['content_pos'];
+		$sc_exec=&self::get_array_ref('@sc_exec');
+		$restore=$sc_exec;	
+		$sc_exec['start_pos']=$template_ptr['content_pos'];
 	}
 	
 	
@@ -4784,8 +4819,8 @@ static function template_run($template,$content=null,$atts=array()){
 	$return_value=self::parse_shortcode($template_ptr['code']);
 	
 	if(isset($template_ptr['content_pos'])){
-		$debug=&self::get_array_ref('@debug');
-		$debug=$restore;
+		$sc_exec=&self::get_array_ref('@sc_exec');
+		$sc_exec=$restore;
 	}
 
 	
@@ -4889,6 +4924,10 @@ static function setup_env_cache($key){
 
 	define('ENV_CACHE', $key);
 
+	/*
+	DEVELOP_FOR_AWESOMEUI can use the env cache. This allows him to not have to load cache unnecessarily and also test with cache on
+	*/
+	
 	//USE_ENV_CACHE
 	if(isset($_REQUEST['use_env_cache']) && $_REQUEST['use_env_cache']==='no'){
 		setcookie("use_env_cache", 'no', time()+3600,'/','',true,true);
@@ -4914,6 +4953,10 @@ static function setup_env_cache($key){
 
 		
 	//should we set cache or not 
+	/*
+	DEVELOP_FOR_AWESOMEUI cannot Set the Env Cache because he may have corrupted the environment 
+	If you are not Using the Cache then you cannot setup the cache either
+	*/
 	if(DEVELOP_FOR_AWESOMEUI || !USE_ENV_CACHE)
 		define('SET_ENV_CACHE', false);
 	else
