@@ -11,7 +11,7 @@ function less($atts,$content=null,$shortcode){
 	//require_once (AWESOME_PATH . "/libraries/wp-less/wp-less.php");
 	$string=\aw2_library::parse_shortcode($content);
 	$less = new \lessc;
-	$less_variables=\aw2_library::get('less_variables');
+	$less_variables=\aw2_library::get('css.less_variables');
 	
 	$return_value = $less->compile($less_variables .' '.$string);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);

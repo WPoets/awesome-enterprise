@@ -13,13 +13,13 @@ function _require($atts,$content=null,$shortcode){
 	
 	if(!empty($local_path)){
 
-		foreach (glob($local_path . "/handlers/*.php") as $filename)
+	foreach (glob($local_path . "/handlers/*.php") as $filename)
 	{
 		require_once $filename;
 	}
 	
 	
-		foreach (glob($local_path . "/modules/*.module.html") as $filename)
+	foreach (glob($local_path . "/modules/*.module.html") as $filename)
 	{
 		$collection=array();
 			$collection['source']=$local_path."/modules";
