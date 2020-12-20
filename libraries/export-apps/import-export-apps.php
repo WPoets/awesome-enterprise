@@ -35,7 +35,7 @@ class awesome_import_export{
 			wp_enqueue_style( 'ladda-css', '//cdnjs.cloudflare.com/ajax/libs/ladda-bootstrap/0.9.4/ladda.min.css', array(), '3.1.1' );
 		}
 		
-		wp_enqueue_script( 'awsome-import-export-script', plugins_url('import-export-apps/js/import-export.js',dirname(__FILE__)), array() );
+		wp_enqueue_script( 'awsome-import-export-script', plugins_url('export-apps/js/import-export.js',dirname(__FILE__)), array() );
 	}
 	
 	static function import_export_dashboard(){
@@ -177,12 +177,16 @@ class awesome_import_export{
 			</div>
 			</div>';
 		echo'<p class="awe-submit">
-				<button type="submit" name="action" class="button button-primary ladda-button js-app-export-button" value="export-selected" data-style="zoom-out" data-action="selected" data-file-slug="selective">Export Selected </button>
-				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-all" data-style="zoom-out" data-action="all" data-file-slug="all-awesome">Export All</button>
-				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-applist" data-style="zoom-out" data-action="applist" data-file-slug="applist">Export only App list</button>
-				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-core" data-style="zoom-out" data-action="core" data-file-slug="core">Export Core</button>
-				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-services" data-style="zoom-out" data-action="services" data-file-slug="services">Export All Service</button>
-				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-apps" data-style="zoom-out" data-action="apps" data-file-slug="all-apps">Export All Apps</button>
+				<button type="submit" name="action" class="button button-primary ladda-button js-app-export-button" value="export-selected" data-style="zoom-out" data-action="selected" data-file-slug="selective" data-format="xml">Export Selected </button>
+				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-all" data-style="zoom-out" data-action="all" data-file-slug="all-awesome" data-format="xml">Export All</button>
+				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-applist" data-style="zoom-out" data-action="applist" data-file-slug="applist" data-format="xml">Export only App list</button>
+				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-core" data-style="zoom-out" data-action="core" data-file-slug="core" data-format="xml">Export Core</button>
+				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-services" data-style="zoom-out" data-action="services" data-file-slug="services" data-format="xml">Export All Service</button>
+				<button type="submit" name="action" class="button ladda-button js-app-export-button" value="export-apps" data-style="zoom-out" data-action="apps" data-file-slug="all-apps" data-format="xml">Export All Apps</button>
+			</p>';	
+		echo'<h4>Export As HTML</h4>
+		     <p class="awe-submit">
+				<button type="submit" name="action" class="button button-primary ladda-button js-app-export-button" value="selected" data-style="zoom-out" data-action="selected" data-file-slug="selective-html" data-format="html">Export Selected Services HTML</button>
 			</p>';
 		echo'</form>';
 		
@@ -195,12 +199,14 @@ class awesome_import_export{
 		$output['status']="fail";
 		$file_slug = sanitize_text_field($_GET['file_slug']);
 		$activity = sanitize_text_field($_GET['activity']);
+		$format = sanitize_text_field($_GET['format']);
 		if(empty ( $file_slug )|| empty( $activity )){
 			$output['message']='Something\'s Wrong.';
 			echo json_encode($output);
 			wp_die();
 		}
 		
+		require_once 'export-html.php';
 		require_once 'export-xml.php';
 		$sitename = sanitize_key( get_bloginfo( 'name' ) );
 		if ( ! empty( $sitename ) ) {
@@ -212,8 +218,13 @@ class awesome_import_export{
 		$args['activity']=$activity;
 		$args['filename']=$file_slug.'-'.$sitename.date('Ymdhms').'.xml';
 		
-		awesome_export_wp($args);
-		
+		if($format === 'html' ) {
+			awesome_export_html($args);
+		}
+		else if($format === 'xml' ) {
+			awesome_export_wp($args);
+		}
+
 		wp_die();
 		
 	}

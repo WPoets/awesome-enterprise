@@ -13,7 +13,7 @@ var import_export={};
 		return vars;
 	}
 
-	import_export.bulk_initialize=function(action,file_slug,ladda,active_btn){
+	import_export.bulk_initialize=function(action,file_slug,format,ladda,active_btn){
 
 		var js_action_msg =$(active_btn).siblings('.js-action-msg');
 		var js_progress = $(active_btn).parents('td.actions').find('.js-progress');	
@@ -22,7 +22,7 @@ var import_export={};
 		if(action=='selected'){
 			selected_items = jQuery(".export form").serialize();
 		}	
-		url=ajaxurl+'?action=awesome_export_xml&activity='+action+'&file_slug='+file_slug+'&'+selected_items;
+		url=ajaxurl+'?action=awesome_export_xml&activity='+action+'&format='+format+'&file_slug='+file_slug+'&'+selected_items;
 		ladda.stop();	
 		window.location.href = url;
 		
@@ -76,7 +76,8 @@ var import_export={};
 				
 				var action = this.getAttribute('data-action');
 				var file_slug = this.getAttribute('data-file-slug');
-				import_export.bulk_initialize(action,file_slug,instance,active_btn);
+				var format = this.getAttribute('data-format');
+				import_export.bulk_initialize(action,file_slug,format,instance,active_btn);
 				
 				
 			}

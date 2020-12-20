@@ -14,8 +14,12 @@ function pay($atts,$content=null,$shortcode){
 	
 	$return_value='';
 	$pieces=explode('.',$main);
-	
+
+	$plugin_path=dirname(plugin_dir_path( __DIR__ )).'/awesome-enterprise';
+
 	if($pieces['0'] == 'sbi'){
+		require_once ($plugin_path."/libraries/pay-sbi/api.php"); //SBI
+
 		$pay=new aw2_sbi_payments($pieces['1'],$atts,$content);
 		$return_value=$pay->run();
 	}
@@ -26,7 +30,6 @@ function pay($atts,$content=null,$shortcode){
 	}
 	
 	if($pieces['0'] == 'razorpay'){
-		$plugin_path=dirname(plugin_dir_path( __DIR__ ));
 		require_once ($plugin_path."/monoframe/razorpay-php/Razorpay.php"); //Razorpay.php
 		$pay=new aw2_razor_payments($pieces['1'],$atts,$content);
 		$return_value=$pay->run();
