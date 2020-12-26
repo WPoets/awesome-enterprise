@@ -871,7 +871,7 @@ static function service_helper($tag,$attr,$content){
 		if($fn_name){
 			$flag = true;
 			$reply = call_user_func($fn_name, $pre['primary'], $content, $sc );
-			print_r($reply);		
+			
 		}
 	}
 
