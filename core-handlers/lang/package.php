@@ -1,7 +1,7 @@
 <?php
-namespace aw2\library;
+namespace aw2\package;
 
-\aw2_library::add_service('library.require','Require a Library',['func'=>'_require' ,'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('package.require','Require a Library',['func'=>'_require' ,'namespace'=>__NAMESPACE__]);
 
 
 function _require($atts,$content=null,$shortcode){
@@ -13,27 +13,27 @@ function _require($atts,$content=null,$shortcode){
 	
 	if(!empty($local_path)){
 
-	foreach (glob($local_path . "/handlers/*.php") as $filename)
-	{
-		require_once $filename;
-	}
-	
-	
-	foreach (glob($local_path . "/modules/*.module.html") as $filename)
-	{
-		$collection=array();
+		foreach (glob($local_path . "/handlers/*.php") as $filename)
+		{
+			require_once $filename;
+		}
+		
+		
+		foreach (glob($local_path . "/modules/*.module.html") as $filename)
+		{
+			$collection=array();
 			$collection['source']=$local_path."/modules";
-		$module=basename($filename);
+			$module=basename($filename);
 			$module=str_replace(".module.html","",$module);
-		$template=null;
+			$template=null;
 
-		$return_value=\aw2_library::module_run($collection,$module,$template,null,[]);
-	}
+			$return_value=\aw2_library::module_run($collection,$module,$template,null,[]);
+		}
 	}	
 }	 
 
 
-\aw2_library::add_service('library.run','Run a Library',['namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('package.run','Run a Library',['namespace'=>__NAMESPACE__]);
 
 
 function run($atts,$content=null,$shortcode){
