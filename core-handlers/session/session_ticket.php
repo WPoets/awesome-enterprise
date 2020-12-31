@@ -239,9 +239,9 @@ function get($atts,$content=null,$shortcode){
 			else	
 				$return_value=$redis->hGetAll($ticket); 
 				
-			if($field==='ticket_ttl'){
+			if($field==='ticket_expiry'){
 				$ttl=$redis->ttl($ticket);
-				$return_value['ticket_expiry']=round($ttl/60,2);
+				$return_value=round($ttl/60,2);
 			}		
 		}
 	}
