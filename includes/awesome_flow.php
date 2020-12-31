@@ -83,8 +83,11 @@ class awesome_flow{
 	static function load_env_settings(){
 		$settings=&aw2_library::get_array_ref('settings');
 		$settings=array();
-		$awesome_core=&aw2_library::get_array_ref('awesome_core');
-		if(!isset($awesome_core['settings']))return;
+		
+		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
+		if(!$arr) return;
+			
+		$post_id = $arr['id'];
 			
 		$post_id = $awesome_core['settings']['id'];
 		$all_post_meta = aw2_library::get_post_meta($post_id);
