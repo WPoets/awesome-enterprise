@@ -87,10 +87,7 @@ class awesome_flow{
 		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
 		if(!$arr) return;
 			
-		$post_id = $arr['id'];
-			
-		$post_id = $awesome_core['settings']['id'];
-		$all_post_meta = aw2_library::get_post_meta($post_id);
+		$all_post_meta = aw2_library::get_post_meta( $arr['id']);
 		
 		foreach($all_post_meta as $key=>$meta){
 			
