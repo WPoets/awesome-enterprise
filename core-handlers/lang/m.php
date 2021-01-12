@@ -12,7 +12,7 @@ function run($value, $atts){
 //the_content
 \aw2_library::add_service('m.the_content','Apply the_content filter . Use m.the_content',['namespace'=>__NAMESPACE__]);
 function the_content($value, $atts){
-	$value = \aw2_library::the_content_filter($value);
+	$value = \awesome_wp_utils::the_content_filter($value);
 	$value = do_shortcode($value);
 	return $value;
 }
