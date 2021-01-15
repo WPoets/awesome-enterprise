@@ -6,7 +6,7 @@ namespace aw2\redis_db;
 function stream_add($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts( array(
 		'main'=>null,
 		'stream_id'=>null,
 		'entry_id' => '*',
@@ -41,7 +41,7 @@ function stream_add($atts,$content=null,$shortcode){
 function stream_last($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts( array(
 		'main'=>null,
 		'stream_id'=>null,
 	), $atts) );
@@ -54,6 +54,37 @@ function stream_last($atts,$content=null,$shortcode){
 	
 		
 	$redis_ack = $redis->xREVRANGE($stream_id, '+', '-',1);
+
+	if(!empty($redis_ack)){
+
+		$return_value = array('status'=>'success', 'message'=>'Last stream fetched successfully','data'=>$redis_ack);
+	}else{
+		$return_value = array('status'=>'error', 'message'=>'Unable to fetch data from stream','data'=>$redis_ack);
+	}
+
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}
+
+\aw2_library::add_service('redis_db.stream_fetch_all','Run the Code Library',['namespace'=>__NAMESPACE__]);
+
+function stream_fetch_all($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( \aw2_library::shortcode_atts( array(
+		'main'=>null,
+		'stream_id'=>null,
+	), $atts) );
+
+	if($stream_id == null){
+		return array('status'=>'error', 'message'=>'Bad Request');
+	}
+
+	$redis = \aw2_library::redis_connect(REDIS_DATABASE_DB);
+	
+		
+	$redis_ack = $redis->xREVRANGE($stream_id, '+', '-');
 
 	if(!empty($redis_ack)){
 
