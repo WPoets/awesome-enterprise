@@ -9,7 +9,7 @@ namespace aw2\_file;
 function awesome2_file_write($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts(( array(
 	'file_name'    =>'',
 	'folder'		=>'',
 	'child_folder'		=>'',
@@ -41,7 +41,7 @@ function awesome2_file_write($atts,$content=null,$shortcode){
 function file_put($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts(( array(
 	'path'    =>'',
 	'file_content' =>'',
 	'safe'=>'',
@@ -62,7 +62,7 @@ function file_put($atts,$content=null,$shortcode){
 function file_get($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts(( array(
 	'file_url' =>'',
 	'safe'=>'',
 	), $atts, 'aw2_get' ) );
@@ -82,7 +82,7 @@ function open_file($atts,$content=null,$shortcode){
 	/*
 	This function takes a path to a file to output ($file),  the filename that the browser will see ($name) and  the MIME type of the file ($mime_type, optional).
 	*/
-	extract(\aw2_library::shortcode_atts( array(
+	extract( \aw2_library::shortcode_atts(( array(
 	'file' =>'',
 	'name'=>'',
 	'mime_type'=>'',
@@ -188,3 +188,76 @@ function open_file($atts,$content=null,$shortcode){
 	die();
 }
 
+
+\aw2_library::add_service('file.log_reader_sql_error','Will read the content from file',['namespace'=>__NAMESPACE__]);
+function log_reader_sql_error($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	$response=array();
+	extract( \aw2_library::shortcode_atts(( array(
+	'file_url' =>'',
+	'safe'=>'',
+	), $atts, 'aw2_get' ) );
+	
+	if($safe!=='yes'){
+		return $response;
+	}
+	if($file_url){
+		$fn = fopen($file_url,"r");
+		$i=0;
+		$j=0;
+		$logs = array();
+		$unrecognized = array();
+		while(! feof($fn))  {
+			$result = fgets($fn);
+			preg_match_all("~(^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ([0-z@.]+) @ ([$-z]+) ([0-z.]+) ([A-Z]+) ([0-9]+): ((.)*)$~",
+				$result,
+				$out, PREG_PATTERN_ORDER);
+			if(!empty($out[0])){
+				$logs[$i] = $out;
+				$i++;
+			}else{
+				$unrecognized[$j] = $result;
+				$j++;
+			}
+		}
+		fclose($fn);
+		$response['logs'] = $logs;
+		$response['unrecognized'] = $unrecognized;
+			return $response;
+	}
+	return $response;
+}
+
+\aw2_library::add_service('file.read_deadlock','Will read the content from query',['namespace'=>__NAMESPACE__]);
+function read_deadlock($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+		$response=array();
+		extract( \aw2_library::shortcode_atts(( array(
+		'data' =>'',
+		'safe'=>'',
+		), $atts, 'aw2_get' ) );
+
+		if($safe!=='yes'){
+		return $response;
+		}
+		
+		if($data){
+			preg_match_all("~LATEST DETECTED DEADLOCK\n------------------------\n([0-z-: *(),.'$\n\t]+)------------\n([0-z]+)\n------------((\n|.)+)~",
+				$data,
+				$out, PREG_PATTERN_ORDER);
+			preg_match_all("~(^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) [0-z]+~",
+			$out[1][0],
+			$res, PREG_PATTERN_ORDER);
+			return $data;
+			$res2 = str_replace($res[0][0], '', $out[1][0]);
+			preg_match_all("~[*]+ [0-z() ,-.]+~",
+			$res2,
+			$pattern_matched, PREG_PATTERN_ORDER);
+			$response['timestamp'] = $res[1][0];
+			$response['concerns'] = $pattern_matched;
+			return $response;
+		}
+		return $response;
+}
