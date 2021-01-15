@@ -18,6 +18,9 @@ class aw2_error{
 }
  
 
+class AwesomeException  extends ErrorException {}
+class DataTypeMisMatch  extends ErrorException {}
+
 class aw2_library{
 
 static $conn=null;
@@ -25,6 +28,120 @@ static $stack=array();
 static $redis_conn=null;
 static $mysqli=null;
 
+
+static function awesome_exception($location,$exception=null){
+	
+	$atts=array();
+	if(empty($location)) return 'location is missing.';
+	
+	
+	$atts['location']= $location;
+	$atts['post_type']= self::get('env.@sc_exec.collection.post_type');
+	$atts['source']= self::get('env.@sc_exec.collection.source');
+	$atts['module']= self::get('env.@sc_exec.module');
+	$atts['app_name']= self::get('env.app.name');
+	$atts['sc']= self::get('env.@sc_exec.sc');
+	
+	$pos = self::get('env.@sc_exec.pos');
+	$atts['position']= empty($pos)?"-1":$pos;
+	unset($pos);
+	
+	$atts['link']= self::get('env.@sc_exec.link');
+	$atts['sql_query']= self::get('env.@sc_exec.query');
+	
+	$atts['user']= self::get('app.user.email');
+	$atts['url']= isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
+	$atts['request']= empty($_REQUEST)?'':json_encode($_REQUEST);
+	$atts['header_value']= file_get_contents('php://input');	
+	
+	
+	$stack=self::get('env.call_stack');
+	$call_stack =array();
+	
+	foreach($stack as $entry){
+		$post_type='';
+		
+		if(isset($entry['collection']['post_type']))
+			$post_type=$entry['collection']['post_type'];
+		else if(isset($entry['collection']['source']))
+			$post_type=$entry['collection']['source'];
+		
+		$slug= isset($entry['slug'])?$entry['slug']:'';
+		
+		$call_stack[]=array(
+			'obj_id'=>$entry['obj_id'],
+			'obj_type'=>$entry['obj_type'],
+			'slug'=>$slug,
+			'post_type'=>$post_type
+		);
+	}
+	
+	unset($stack);
+	$atts['call_stack'] = json_encode($call_stack);
+	unset($call_stack);
+	
+	$atts['message']='';
+	$atts['errno']='';
+	$atts['errfile']='';
+	$atts['errline']='';
+	$atts['trace']='';
+	$atts['exception_type']='';
+	
+	
+	if(!is_null($exception)){
+		$atts['exception_type'] = get_class($exception);
+		$atts['errno'] = method_exists($exception,'getCode')? $exception->getCode() : '';
+		$atts['message'] = method_exists($exception,'getMessage')? $exception->getMessage() : '';
+		$atts['errfile'] = method_exists($exception,'getFile')? $exception->getFile() : '';
+		$atts['errline'] = method_exists($exception,'getLine')? $exception->getLine() : '';
+		//$atts['trace'] = method_exists($exception,'getTraceAsString')? $exception->getTraceAsString() : null;
+		
+	}
+	
+	require_once('error_log.php');
+	
+	$error_id = aw2_error_log::save($atts);
+	$error_msg ='Something is wrong ('.$error_id.')';	
+	
+	$atts['error_db_id'] =$error_id;
+	self::log_error($atts);
+	return $error_msg;
+	
+}
+
+static function log_error($atts){
+	error_log("Custom Logging Start \r\n");
+	error_log(print_r($atts, true));
+	error_log("\r\n");
+	error_log("\r\n Custom Logging End \r\n");
+}
+
+static function awesome_error_handler($err_severity, $err_msg, $err_file, $err_line){
+	
+	if($err_msg == 'mysqli::real_connect() expects parameter 5 to be integer, string given') return;
+	if($err_file == '/var/www/loantap.in/htdocs/wp-admin/includes/file.php') return;
+	if($err_file == '/var/www/loantap.in/htdocs/wp-content/plugins/wordpress-seo/inc/class-wpseo-meta.php') return;
+	if($err_file == '/var/www/v4.loantap.in/htdocs/wp-includes/capabilities.php') return;
+
+	try{
+		switch($err_severity)
+		{
+				case E_USER_NOTICE: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
+				case E_USER_WARNING: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
+				case E_USER_ERROR: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
+				case E_DEPRECATED: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
+				default:
+					throw new ErrorException ($err_msg, 0, $err_severity, $err_file, $err_line);
+		}
+	}
+	catch(Throwable $e){
+		$reply=aw2_library::awesome_exception('global_error_handler',$e);
+		
+		$excpetion_class = get_class($e);
+		if($excpetion_class !== 'AwesomeException')
+			die($reply);
+	}	
+}
 
 static function log_datatype_mismatch($arr){
 	//amit	
@@ -55,6 +172,9 @@ static function log_datatype_mismatch($arr){
 	$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
 	
 	if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
+	if($lhs_datatype === 'string' && empty($lhs)){
+		$lhs='_empty_';
+	}
 		
 	$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($lhs,$lhs_dt);
@@ -67,6 +187,9 @@ static function log_datatype_mismatch($arr){
 
 	$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
 	if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
+	if($rhs_datatype === 'string' && empty($rhs)){
+		$rhs='_empty_';
+	}
 		
 	$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
 	$valid = self::datatype_test($rhs,$rhs_dt);
@@ -87,10 +210,27 @@ static function log_datatype_mismatch($arr){
 		
 	if($flag===false)return;
 		
+	$comment=array();
+	$comment['conditional'] = $conditional;
+	$comment['php7_result'] = $php7_result;
+	$comment['lhs_value'] = $lhs;
+	$comment['lhs_datatype'] = $lhs_datatype;
+	$comment['rhs_value'] = $rhs;
+	$comment['rhs_datatype'] = $rhs_datatype;
+	$comment['invalid_lhs_dt'] = $invalid_lhs_dt;
+	$comment['invalid_rhs_dt'] = $invalid_rhs_dt;
+	$comment['invalid_match'] = $invalid_match;
+	
+	$comment =  json_encode($comment);
+	
+	trigger_error($comment,E_USER_ERROR);
+
+	unset($comment);
+/* 	
 	$sql = "INSERT INTO `datatype_mismatch` (`module_slug`,`template_name`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`) VALUES ( '".$module_slug."','".$template."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."')";
 
     $obj =\aw2\mysqli\cud(array(),$sql,null);
-	
+ */	
 }
 
 static function datatype_test($val, $data_type){
@@ -112,18 +252,6 @@ static function datatype_test($val, $data_type){
 
 static function deprecated($params){
 
-	$module=self::get_array_ref('module');
-	$template=self::get('template.name');
-	
-	$module_slug = '';
-	$post_type = '';
-	
-	
-	if(is_array($module)){
-		if(isset($module['slug']))$module_slug =$module['slug'];
-		if(isset($module['collection']['post_type']))$post_type=$module['collection']['post_type'];
-	}
-	
 	
 	$func=isset($params['func'])?$params['func']:'';
 	$class=isset($params['class'])?$params['class']:'';
@@ -131,11 +259,15 @@ static function deprecated($params){
 
 	$comment=isset($params['comment'])?$params['comment']:'';
 	
+	$comment .=' function: '.$func.' class: '.$class.' Method: '.$method;
 	
-	$sql = "INSERT INTO `log_problems` (`problem_type`, `module_slug`,`template`, `post_type`, `func`, `class`, `method`, `timestamp`, `extras`) VALUES ( 'deprecated', '".$module_slug."','".$template."', '".$post_type."', '".$func."', '".$class."', '".$method."', current_timestamp(), '".$comment."')";
+	trigger_error($comment);
+	unset($comment);
+	
+	/* $sql = "INSERT INTO `log_problems` (`problem_type`, `module_slug`,`template`, `post_type`, `func`, `class`, `method`, `timestamp`, `extras`) VALUES ( 'deprecated', '".$module_slug."','".$template."', '".$post_type."', '".$func."', '".$class."', '".$method."', current_timestamp(), '".$comment."')";
 	 
     $obj =\aw2\mysqli\cud(array(),$sql,null);
-	
+	 */
 }
 
 static function load_handlers_from_path($handlers_path,...$paths){
@@ -669,7 +801,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 }
 
 
-static function service_helper($tag,$attr,$content){
+static function service_helper_old($tag,$attr,$content){
 	//php8OK	
 	
 		$tag=str_replace('service:','',$tag);
@@ -871,7 +1003,6 @@ static function service_helper($tag,$attr,$content){
 		if($fn_name){
 			$flag = true;
 			$reply = call_user_func($fn_name, $pre['primary'], $content, $sc );
-			
 		}
 	}
 
@@ -936,6 +1067,26 @@ static function service_helper($tag,$attr,$content){
 	return '';	
 }
 
+static function service_helper($tags,$atts=array(),$content=null){
+	//php8OK	
+	
+	$inputs=array();
+	$inputs['tags']= str_replace('service:','',$tags);
+	$inputs['atts'] = $atts;
+
+
+	if (!is_null($content))
+		$inputs['content']=$content;
+		
+	$reply=self::process_handler($inputs);
+		
+
+	if($reply==='#not_awesome_sc#'){
+		return '';
+	}	
+
+	return $reply;			
+}
 
 static function service_run($tag,$attr,$content,$default='service'){
 	//php8OK	
@@ -1004,7 +1155,7 @@ static function service_run($tag,$attr,$content,$default='service'){
 } 
 
 
-static function shortcode_tag( $m ) {
+static function shortcode_tag_old_jan_9( $m ) {
 	//php8OK	
 	
 		
@@ -1165,12 +1316,22 @@ static function shortcode_tag( $m ) {
 		
 
 		$handler=$sc['handler'];
+		
+		//support for new structure of handler
+		if(isset($handler['#call'])){
+			$handler['type']='call';
+		}
+		
+		
 		if(isset($handler['type'])){
 			$service_type = $handler['type'];
 
 			$fn_name=null;
 			switch($service_type){
 				
+				case 'call':
+					$fn_name=$handler['#call']['namespace'] . '\\' . $handler['#call']['func'];
+					break;
 				case 'content_type_def':
 					$sc['content_type']=$sc['handler'];	
 					$sc['handler']=$handlers['content_type_def'];					
@@ -1335,7 +1496,353 @@ static function shortcode_tag( $m ) {
 	
 }
 
+static function shortcode_tag( $m ) {
+	//php8OK	
+	
+		
+	global $shortcode_tags;
+	if(isset(self::$stack['_return']))return '';
 
+	$sc_exec=&self::get_array_ref('@sc_exec');
+	$sc_exec['sc']=$m[0][0];
+	$sc_exec['pos']=$m[0][1];
+	$sc_exec['content_pos']=$m[5][1];
+
+	if(isset($sc_exec['start_pos']) && $sc_exec['start_pos']){
+		$sc_exec['pos']=$sc_exec['pos'] + $sc_exec['start_pos'];
+		if($sc_exec['content_pos']!==-1)$sc_exec['content_pos']=$sc_exec['content_pos'] +  $sc_exec['start_pos'];
+	}
+	$sc_exec['match']=$m;
+	#generate link
+	$sc_exec['link']=SITE_URL . '/d/?module=' . ((isset($sc_exec['module'])) ? $sc_exec['module'] : '' ) .  '&post_type=' . ((isset($sc_exec['collection']['post_type'])) ? $sc_exec['collection']['post_type'] : '')  . '&pos=' . $sc_exec['pos'] ;
+	
+	// allow [[foo]] syntax for escaping a tag
+	if ( $m[1][0] === '[' && $m[6][0] === ']' ) {
+		return substr($m[0], 1, -1);
+	}
+
+	$tag = $m[2][0];
+	$attr = self::shortcode_parse_atts( $m[3][0] );
+
+	if ( isset( $m[5][0] ) )
+		$content=$m[5][0];	
+	else
+		$content=null;
+		
+	$inputs=array();
+	$inputs['tags']= $tag;
+	$inputs['atts'] = $attr;
+
+	if ( isset( $m[5][0] ) )
+		$inputs['content']=$m[5][0];	
+
+	$reply=self::process_handler($inputs);
+
+	if($reply==='#not_awesome_sc#'){
+		if(isset($shortcode_tags[$tag])){
+			return $m[1][0] . call_user_func( $shortcode_tags[$tag], $attr, $content, $tag ) . $m[6][0];
+		}
+
+		return $m[0][0];
+	}	
+
+	if(is_array($reply) || is_object($reply)){
+		//trigger error and continue		
+		//self::user_notice("[A Shortcode ($tag) has replied with an array/object and there is no set command]");
+		//return;
+	}	
+	return $m[1][0] . $reply . $m[6][0];
+}
+
+static function process_handler($inputs){
+
+	if(isset($inputs['tags']))
+		$pieces=explode('.',$inputs['tags']);
+	else
+		$pieces=$inputs['pieces'];
+	
+	if(count($pieces)<2)return '#not_awesome_sc#';
+
+	$content=null;
+	if ( isset( $inputs['content']) )
+		$content=$inputs['content'];	
+
+
+	$sc=array();
+	$sc['tags']=$pieces;
+		
+	//awesome handles this block
+	$handlers=self::get_array_ref('handlers');
+
+	$next_tag=$pieces[0];
+
+	$service=null;			
+	if(isset($handlers[$next_tag]) ){
+		$service=array_shift($pieces);
+		$sc['handler']=$handlers[$service];
+		$next_tag=$pieces[0];
+		
+		if(isset($sc['handler'][$next_tag])){
+			$service=array_shift($pieces);
+			$sc['handler']=$sc['handler'][$service];
+			$next_tag=null;
+			if(isset($pieces[0]))$next_tag=$pieces[0];	
+		}
+
+		#for 3rd level		
+		if(isset($sc['handler'][$next_tag])){
+			$service=array_shift($pieces);
+			$sc['handler']=$sc['handler'][$service];
+			$next_tag=null;
+			if(isset($pieces[0]))$next_tag=$pieces[0];	
+		}	
+
+		#for 4th level		
+		if(isset($sc['handler'][$next_tag])){
+			$service=array_shift($pieces);
+			$sc['handler']=$sc['handler'][$service];
+			$next_tag=null;
+			if(isset($pieces[0]))$next_tag=$pieces[0];	
+		}				
+		
+	}
+	$sc['tags_left']=$pieces;
+
+	if(is_null($service))return '';
+
+	$atts=array();
+	if ( isset( $inputs['atts']) )
+		$atts=$inputs['atts'];	
+
+	if(!empty($atts))self::pre_action_parse($atts);
+
+	$pre_compiler_check=array('c','and','or','m','m2','o','o2');
+	$pre=array();
+	$pre['primary']=array();
+		
+	if(!empty($atts)){
+		foreach ($atts as $key => $value) {
+			
+			$pre_key = explode('.',$key);
+			
+			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
+				$pre[$pre_key[0]][$pre_key[1]] = $value;
+			}else{
+				$pre['primary'][$key] = $value;
+			}
+		}
+	}	
+				
+	$check_cond = true ;
+	if(isset($pre['c'])){
+		//loop and call chain which will update all atts
+		foreach ($pre['c'] as $key => $value) {
+			if(isset($handlers['c'][$key])){
+				if (isset($handlers['c'][$key]['func']))
+					$c_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $handlers['c'][$key]['func'];
+				else
+					$c_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $key;
+
+				$check_cond=call_user_func($c_fn_name, $pre['c'], '', '' );
+				if($check_cond === false && !isset($pre['or']))	return '';
+				break;
+			}
+		}
+	}
+	
+	if(isset($pre['and'])){
+		foreach ($pre['and'] as $key => $value) {
+			if(isset($handlers['c'][$key])){
+				if (isset($handlers['c'][$key]['func']))
+					$and_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $handlers['c'][$key]['func'];
+				else
+					$and_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $key;
+				
+				$check_and=call_user_func($and_fn_name, $pre['and'], '', '' );
+				if($check_and === false) return '';
+				break;
+			}
+		}
+	}
+	
+	if(isset($pre['or']) && ($check_cond === false)){
+		foreach ($pre['or'] as $key => $value) {
+			if(isset($handlers['c'][$key])){
+				if (isset($handlers['c'][$key]['func']))
+					$or_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $handlers['c'][$key]['func'];
+				else
+					$or_fn_name=$handlers['c'][$key]['namespace'] . '\\' . $key;
+				
+				$check_or=call_user_func($or_fn_name, $pre['or'], '', '' );
+				if($check_or === false) return '';
+				break;
+			}
+		}
+	}
+	
+
+	
+	$flag = false;
+	
+	
+	$handler=$sc['handler'];
+	
+	//support for new structure of handler
+	if(isset($handler['#call'])){
+		$handler['type']='call';
+	}
+	
+	if(!isset($handler['type']))throw new BadMethodCallException('Handler does not have a type'); 
+	
+
+	$service_type = $handler['type'];
+
+	$fn_name=null;
+	switch($service_type){
+
+		case 'call':
+			$fn_name=$handler['#call']['namespace'] . '\\' . $handler['#call']['func'];
+			break;
+		case 'content_type_def':
+			$sc['content_type']=$sc['handler'];	
+			$sc['handler']=$handlers['content_type_def'];					
+			$service='content_type_def';
+			
+			if(isset($sc['handler'][$next_tag])){
+				$service=$next_tag;
+				$sc['handler']=$sc['handler'][$next_tag];
+				$next_tag=null;
+			}	
+			$handler = $sc['handler'];
+			
+			if(isset($handler['func']))
+				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
+			else{
+					$fn_name=$handler['namespace'] . '\\' . $service;					
+			}
+			if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			break;
+			
+		case 'collection':
+			$sc['collection']=$sc['handler'];	
+			$sc['handler']=$handlers['collection'];
+			$service='collection';
+			
+			if(isset($sc['handler'][$next_tag])){
+				$service=$next_tag;
+				$sc['handler']=$sc['handler'][$next_tag];
+				$next_tag=null;
+			}	
+			$handler = $sc['handler'];		
+
+			if(isset($handler['func']))
+				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
+			else{
+					$fn_name=$handler['namespace'] . '\\' . $service;					
+			}
+			if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			break;
+		case 'namespace':
+			if(isset($handler['func']))
+				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
+			else{
+					$fn_name=$handler['namespace'] . '\\' . $service;					
+			}
+			if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			break;
+
+		case 'awesome':
+			if(isset($handler['func']))
+				$fn_name=$handler['func'];
+			else{
+					$fn_name='aw2_' . $service;					
+			}
+			if (!is_callable($fn_name) && $next_tag)$fn_name='aw2_' .$service . '_'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name='aw2_' .$service . '_'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			break;
+			
+		case 'env_key':
+			$pre['primary']['_prefix']=$handler['env_key'];
+			$sc['handler']=$handlers['env'];
+			$service='env';
+			
+			if(isset($sc['handler'][$next_tag])){
+				$service=$next_tag;
+				$sc['handler']=$sc['handler'][$next_tag];
+				$next_tag=null;
+			}	
+			$handler = $sc['handler'];		
+
+			if(isset($handler['func']))
+				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
+			else{
+					$fn_name=$handler['namespace'] . '\\' . $service;					
+			}
+			if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			break;
+	}
+
+	if(!$fn_name)throw new BadMethodCallException('Handler does not have a func');; 
+	
+	$reply = call_user_func($fn_name, $pre['primary'], $content, $sc );
+	if(isset($pre['m'])){
+		//$reply=self::modify_output($reply,$pre['m']);
+		foreach ($pre['m'] as $key => $value) {
+			if(isset($handlers['m'][$key])){
+				if (isset($handlers['m'][$key]['func']))
+					$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $handlers['m'][$key]['func'];
+				else
+					$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $key;
+				$reply=call_user_func($m_fn_name, $reply, $pre['m'] );
+			}
+		}
+	}
+	if(isset($pre['m2'])){
+		foreach ($pre['m2'] as $key => $value) {
+			if(isset($handlers['m'][$key])){
+				if (isset($handlers['m'][$key]['func']))
+					$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $handlers['m'][$key]['func'];
+				else
+					$m_fn_name=$handlers['m'][$key]['namespace'] . '\\' . $key;
+				$reply=call_user_func($m_fn_name, $reply, $pre['m2'] );
+			}
+		}
+	}
+	if(isset($pre['o'])){
+		//$reply=self::redirect_output($reply,$pre['o']);
+		foreach ($pre['o'] as $key => $value) {
+			if(isset($handlers['o'][$key])){
+				if (isset($handlers['o'][$key]['func']))
+					$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $handlers['o'][$key]['func'];
+				else
+					$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $key;
+				$reply=call_user_func($o_fn_name, $reply, $pre['o'] );
+			}
+		}
+	}
+	if(isset($pre['o2'])){
+		//$reply=self::redirect_output($reply,$pre['o']);
+		foreach ($pre['o2'] as $key => $value) {
+			if(isset($handlers['o'][$key])){
+				if (isset($handlers['o'][$key]['func']))
+					$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $handlers['o'][$key]['func'];
+				else
+					$o_fn_name=$handlers['o'][$key]['namespace'] . '\\' . $key;
+				$reply=call_user_func($o_fn_name, $reply, $pre['o2'] );
+			}
+		}
+	}
+	return $reply;	
+}
 
 static function shortcode_tag_old( $m ) {
 	//php8OK	
@@ -1690,7 +2197,7 @@ static function resolve_chain($str,&$atts=null,$content=null){
 static function shortcode_parse_atts($text) {
 	//php8OK	
 	$atts = array();
-	$pattern = '/([-a-zA-Z0-9_.@]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+	$pattern = '/([-a-zA-Z0-9_.@\$]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@\$]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@\$]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
 	$text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
 	if ( preg_match_all($pattern, $text, $match, PREG_SET_ORDER) ) {
 		foreach ($match as $m) {
@@ -1754,6 +2261,16 @@ static function remove_service($keys) {
 		$current=&$current[$key];
 	}
 }
+
+
+static function add_handler($name,$call,$desc='',$prop=array()) {
+	$build=array();
+	$build['#desc']=$desc;
+	$build['#call']=$call;
+	$build['#prop']=$prop;
+	self::set('handlers.' . $name,$build);
+}
+
 
 static function add_service($service,$desc=null,$atts=array()) {
 	

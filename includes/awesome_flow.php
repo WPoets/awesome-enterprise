@@ -3,7 +3,10 @@
 class awesome_flow{
 	
 	static function env_setup(){
-		
+		error_reporting(E_ALL);
+		$old_error_handler = set_error_handler("aw2_library::awesome_error_handler");
+		//if($old_error_handler)restore_error_handler();
+		try {
 		if(AWESOME_DEBUG)\aw2\debug\setup([]);	
 		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'start initialize']);
 
@@ -69,6 +72,13 @@ class awesome_flow{
 		//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 		//echo '/*' .  '::end initialize:' .$timeConsumed . '*/';
 	}
+		catch(Throwable $e){
+			$reply=aw2_library::awesome_exception('env_setup',$e);
+			$excpetion_class = get_class($exception);
+			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
+				die($reply);
+		}	
+	}
 	
 		
 	static function run_core($module){
@@ -102,6 +112,7 @@ class awesome_flow{
 	}
 
 	static function init(){
+		try{	
 		self::run_core('init');
 		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Init fired']);			
 
@@ -149,6 +160,14 @@ class awesome_flow{
 		}
 		$env=&aw2_library::get_array_ref();
 		$env['cache']=$cache;
+	}
+		catch(Throwable $e){
+			$reply=aw2_library::awesome_exception('init',$e);
+			
+			$excpetion_class = get_class($exception);
+			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
+				die($reply);
+		}
 	}
 	
 	static function load_apps(){
@@ -201,6 +220,7 @@ class awesome_flow{
 	}
 		
 	static function app_takeover($query){
+		try {
 		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'App Takeover']);
 		
 		$request=$query->request;
@@ -278,6 +298,14 @@ class awesome_flow{
 			$app->resolve_route($pieces,$query);
 		}
 		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Wordpress Theme taking Over']);	
+	} 
+		catch(Throwable $e){
+			$reply=aw2_library::awesome_exception('app_takeover',$e);
+			$excpetion_class = get_class($exception);
+			
+			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
+				die($reply);
+		}	
 	} 
 	
 	static function initialize_root(){

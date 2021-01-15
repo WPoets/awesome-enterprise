@@ -44,7 +44,7 @@ function cud($atts,$content=null,$shortcode){
 	
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
-
+	try{
 	if(empty($return_value)){
 		$cud = \aw2_library::$mysqli->query($sql);
 		$return_value['status']="success";
@@ -52,13 +52,19 @@ function cud($atts,$content=null,$shortcode){
 		$return_value['matched_rows']=$cud->rowsMatched();
 		$return_value['affected_rows']=$cud->affectedRows();	
 	}
-	
+	}
+	catch(\Throwable $e){
+		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+		$sc_exec['query']=$sql;
+		throw $e;
+	}
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
 \aw2_library::add_service('mysqli.fetch','Fetch Associative Array Query',['namespace'=>__NAMESPACE__]);	
 function fetch($atts,$content=null,$shortcode){
+	
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	//**Instantiate the DB Connection**//
@@ -68,7 +74,7 @@ function fetch($atts,$content=null,$shortcode){
 	
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
-	
+	try{
 	if(empty($return_value)){
 		if(isset($shortcode['tags_left'][0])){
 			$action=$shortcode['tags_left'][0];
@@ -78,6 +84,12 @@ function fetch($atts,$content=null,$shortcode){
 		}else{
 			throw new \SimpleMySQLiException("Query should have exactly 3 parts");
 		}
+	}
+	}
+	catch(\Throwable $e){
+		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+		$sc_exec['query']=$content;
+		throw $e;
 	}
 		
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -164,7 +176,7 @@ function multi($atts,$content=null,$shortcode){
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
 	$return_value = null;
-	
+	try{
 	if(isset($shortcode['tags_left'][0])){
 		$action=array_shift($shortcode['tags_left']);
 		
@@ -178,6 +190,12 @@ function multi($atts,$content=null,$shortcode){
 	}else{
 		throw new \SimpleMySQLiException("Tags missing in Multi");
 	}
+	}
+	catch(Exception $e){
+		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+		$sc_exec['query']=$content;
+		throw $e;
+	}	
 	
 	\aw2_library::$mysqli->close();
 	 \aw2_library::$mysqli =null;
@@ -337,13 +355,22 @@ function transaction($atts,$content=null,$shortcode){
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
 	$return_value = null;
+	try{
 	
 	if(isset($shortcode['tags_left'][0])){
 		$action=array_shift($shortcode['tags_left']);		
-		$return_value=transaction_exec($content,$action);		
+		$return_value=transaction_exec($content,$action,$isolation);		
 	}else{
 		throw new \SimpleMySQLiException("Tags missing in Multi");
 	}
+	
+	}
+	catch(\Throwable $e){
+		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+		$sc_exec['query']=$content;
+		throw $e;
+	}	
+	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 	
@@ -352,11 +379,19 @@ function transaction($atts,$content=null,$shortcode){
 /**
 param $action can be commit OR rollback
 **/
-function transaction_exec($content,$action){
+function transaction_exec($content,$action,$isolation='read_committed'){
 	$return_value = array();
 	
+
+	if($isolation=='repeatable_read')
+		$isolation_statement='SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;';
+
+	if($isolation=='read_committed')
+		$isolation_statement='SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;';
+
+
 	//**Prepend "start transaction; " and append $action to the query and parse from content**//
-	$sql="start transaction; ". PHP_EOL . \aw2_library::parse_shortcode($content). " ". PHP_EOL . $action.";";
+	$sql=$isolation_statement . PHP_EOL . "start transaction; ". PHP_EOL . \aw2_library::parse_shortcode($content). " ". PHP_EOL . $action.";";
 
 	if(empty($return_value)){
 		$cud = \aw2_library::$mysqli->multi_query($sql);
