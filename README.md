@@ -29,6 +29,15 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.0.4
+* Improved: Added support to read Redis stream data.
+* Improved: Added support to trap all errors and exception in a separate database table.
+* Improved: File manipulation and added support to parse sql error log.
+* Fixed: Issues with settings not loading properly
+* Fixed: m modifier was calling wrong the_content_filter
+* Fixed: Changed the table strucutre for storing the evaluated conditional values
+
+
 ##### 3.0.3
 * Fixed: aw2.get was giving wrong data when we called [aw2.get post.post_title] in single-content-layout
 * Improved: added support to log evaluated conditional values as well for php 7
