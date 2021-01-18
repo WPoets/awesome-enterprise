@@ -32,10 +32,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 ##### 3.0.4
 * Improved: Added support to read Redis stream data.
 * Improved: Added support to trap all errors and exception in a separate database table.
-* Improved: File manipulation and added support to parse sql error log.
+* Improved: File manipulation and added support to parse SQL error log.
 * Fixed: Issues with settings not loading properly
 * Fixed: m modifier was calling wrong the_content_filter
-* Fixed: Changed the table strucutre for storing the evaluated conditional values
+* Fixed: Changed the table structure for storing the evaluated conditional values
+* Fixed: $slug was not defined in 404 function.
 
 
 ##### 3.0.3

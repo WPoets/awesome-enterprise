@@ -791,7 +791,7 @@ class controllers{
 			exit();	
 		}
 		
-		if(aw2_library::post_exists($slug,$post_type)){
+		if(aw2_library::post_exists('404-page',$post_type)){
 			array_shift($o->pieces);
 			$this->action='404';
 			
