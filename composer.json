@@ -27,7 +27,6 @@
     ],
     "require": {
         "php": ">=7.0",
-        "brandonwamboldt/utilphp": "1.1.*",
         "clue/buzz-react": "^2.9",
         "ezyang/htmlpurifier": "^4.13",
         "hashids/hashids": "^4.0",
