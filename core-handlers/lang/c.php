@@ -47,7 +47,7 @@ function gt($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$gt = \aw2_library::resolve_chain($atts['gt']);
 
-	\aw2_library::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$gt,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.gt','php7result'=>($cond > $gt)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$gt,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.gt','php7result'=>($cond > $gt)]);
 
 	
 	// default return value
@@ -67,7 +67,7 @@ function lt($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$lt = \aw2_library::resolve_chain($atts['lt']);
 
-	\aw2_library::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$lt,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.lt','php7result'=>($cond < $lt)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$lt,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.lt','php7result'=>($cond < $lt)]);
 	
 	// default return value
 	$returnValue = false;
@@ -85,7 +85,7 @@ function gte($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$gte = \aw2_library::resolve_chain($atts['gte']);
 
-	\aw2_library::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$gte,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.gte','php7result'=>($cond >= $gte)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$gte,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.gte','php7result'=>($cond >= $gte)]);
 	
 	// default return value
 	$returnValue = false;
@@ -104,7 +104,7 @@ function lte($atts,$content=null,$shortcode){
 	$cond = \aw2_library::resolve_chain($atts['cond']);
 	$lte = \aw2_library::resolve_chain($atts['lte']);
 
-	\aw2_library::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$lte,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.lte','php7result'=>($cond <= $lte)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$cond,'rhs'=>$lte,'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'c.lte','php7result'=>($cond <= $lte)]);
 	
 	// default return value
 	$returnValue = false;
@@ -253,7 +253,7 @@ function zero($atts,$content=null,$shortcode){
 \aw2_library::add_service('c.positive','Check if the param is a positive number. Use c.positive',['namespace'=>__NAMESPACE__]);
 function positive($atts,$content=null,$shortcode){
 	$positive = \aw2_library::resolve_chain($atts['positive']);
-	\aw2_library::log_datatype_mismatch(['lhs'=>$positive,'lhs_dt'=>'number','condition'=>'c.positive','php7result'=>((float)$positive <= (float)0)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$positive,'lhs_dt'=>'number','condition'=>'c.positive','php7result'=>((float)$positive <= (float)0)]);
 	if((float)$positive <= (float)0)
 		return false;
 }
@@ -261,7 +261,7 @@ function positive($atts,$content=null,$shortcode){
 \aw2_library::add_service('c.negative','Check if the param is a negative number. Use c.negative',['namespace'=>__NAMESPACE__]);
 function negative($atts,$content=null,$shortcode){
 	$negative = \aw2_library::resolve_chain($atts['negative']);
-	\aw2_library::log_datatype_mismatch(['lhs'=>$negative,'lhs_dt'=>'number','condition'=>'c.negative','php7result'=>((float)$negative >= (float)0)]);
+	\aw2_error_log::log_datatype_mismatch(['lhs'=>$negative,'lhs_dt'=>'number','condition'=>'c.negative','php7result'=>((float)$negative >= (float)0)]);
 	if((float)$negative >= (float)0)
 		return false;
 }

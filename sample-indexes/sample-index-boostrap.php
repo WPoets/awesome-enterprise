@@ -20,7 +20,16 @@ require_once AWESOME_PATH.'/includes/util.php';
 
 //Main library of awesome
 require_once AWESOME_PATH.'/includes/aw2_library.php';
+require_once AWESOME_PATH.'/includes/error_log.php';
 
+set_exception_handler(function($e) {
+	
+	$reply=aw2_error_log::awesome_exception('global_index_bootstrap',$e);
+	
+	header("HTTP/1.0 500"); 
+	die($reply);
+});
+	
 //Load the Flow Class
 require_once AWESOME_PATH.'/includes/awesome_flow.php';
 

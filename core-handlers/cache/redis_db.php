@@ -6,7 +6,7 @@ namespace aw2\redis_db;
 function stream_add($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
-	extract( \aw2_library::shortcode_atts( array(
+	extract(\aw2_library::shortcode_atts( array(
 		'main'=>null,
 		'stream_id'=>null,
 		'entry_id' => '*',
@@ -41,7 +41,7 @@ function stream_add($atts,$content=null,$shortcode){
 function stream_last($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
-	extract( \aw2_library::shortcode_atts( array(
+	extract(\aw2_library::shortcode_atts( array(
 		'main'=>null,
 		'stream_id'=>null,
 	), $atts) );

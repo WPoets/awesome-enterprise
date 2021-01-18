@@ -4,7 +4,7 @@ class awesome_flow{
 	
 	static function env_setup(){
 		error_reporting(E_ALL);
-		$old_error_handler = set_error_handler("aw2_library::awesome_error_handler");
+		$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
 		//if($old_error_handler)restore_error_handler();
 		try {
 		if(AWESOME_DEBUG)\aw2\debug\setup([]);	
@@ -13,6 +13,7 @@ class awesome_flow{
 		if(DEL_ENV_CACHE)aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
 		
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
+				header('awesome_cache: used');
 			$ref=&aw2_library::get_array_ref();
 			
 			$handlers=aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"handlers"]);
@@ -26,6 +27,7 @@ class awesome_flow{
 			$ref['content_types']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"content_types"]));
 		}
 		else{
+				header('awesome_cache: not used');
 			
 		// load core
 			if(defined('AWESOME_CORE_POST_TYPE')){
@@ -36,6 +38,9 @@ class awesome_flow{
 			self::load_apps();
 
 			self::run_core('services');
+				
+
+				
 			//self::run_core('config');
 			self::load_env_settings();
 			
@@ -73,10 +78,7 @@ class awesome_flow{
 		//echo '/*' .  '::end initialize:' .$timeConsumed . '*/';
 	}
 		catch(Throwable $e){
-			$reply=aw2_library::awesome_exception('env_setup',$e);
-			$excpetion_class = get_class($exception);
-			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
-				die($reply);
+			$reply=aw2_error_log::awesome_exception('env_setup',$e);
 		}	
 	}
 	
@@ -162,11 +164,7 @@ class awesome_flow{
 		$env['cache']=$cache;
 	}
 		catch(Throwable $e){
-			$reply=aw2_library::awesome_exception('init',$e);
-			
-			$excpetion_class = get_class($exception);
-			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
-				die($reply);
+			$reply=aw2_error_log::awesome_exception('init',$e);
 		}
 	}
 	
@@ -300,10 +298,7 @@ class awesome_flow{
 		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Wordpress Theme taking Over']);	
 	} 
 		catch(Throwable $e){
-			$reply=aw2_library::awesome_exception('app_takeover',$e);
-			$excpetion_class = get_class($exception);
-			
-			if($excpetion_class !== 'AwesomeException' && $excpetion_class !== 'DataTypeMisMatch')
+			$reply=aw2_error_log::awesome_exception('app_takeover',$e);
 				die($reply);
 		}	
 	} 

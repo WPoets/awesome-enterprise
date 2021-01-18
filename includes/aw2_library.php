@@ -18,9 +18,6 @@ class aw2_error{
 }
  
 
-class AwesomeException  extends ErrorException {}
-class DataTypeMisMatch  extends ErrorException {}
-
 class aw2_library{
 
 static $conn=null;
@@ -28,247 +25,6 @@ static $stack=array();
 static $redis_conn=null;
 static $mysqli=null;
 
-
-static function awesome_exception($location,$exception=null){
-	
-	$atts=array();
-	if(empty($location)) return 'location is missing.';
-	
-	
-	$atts['location']= $location;
-	$atts['post_type']= self::get('env.@sc_exec.collection.post_type');
-	$atts['source']= self::get('env.@sc_exec.collection.source');
-	$atts['module']= self::get('env.@sc_exec.module');
-	$atts['app_name']= self::get('env.app.name');
-	$atts['sc']= self::get('env.@sc_exec.sc');
-	
-	$pos = self::get('env.@sc_exec.pos');
-	$atts['position']= empty($pos)?"-1":$pos;
-	unset($pos);
-	
-	$atts['link']= self::get('env.@sc_exec.link');
-	$atts['sql_query']= self::get('env.@sc_exec.query');
-	
-	$atts['user']= self::get('app.user.email');
-	$atts['url']= isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
-	$atts['request']= empty($_REQUEST)?'':json_encode($_REQUEST);
-	$atts['header_value']= file_get_contents('php://input');	
-	
-	
-	$stack=self::get('env.call_stack');
-	$call_stack =array();
-	
-	foreach($stack as $entry){
-		$post_type='';
-		
-		if(isset($entry['collection']['post_type']))
-			$post_type=$entry['collection']['post_type'];
-		else if(isset($entry['collection']['source']))
-			$post_type=$entry['collection']['source'];
-		
-		$slug= isset($entry['slug'])?$entry['slug']:'';
-		
-		$call_stack[]=array(
-			'obj_id'=>$entry['obj_id'],
-			'obj_type'=>$entry['obj_type'],
-			'slug'=>$slug,
-			'post_type'=>$post_type
-		);
-	}
-	
-	unset($stack);
-	$atts['call_stack'] = json_encode($call_stack);
-	unset($call_stack);
-	
-	$atts['message']='';
-	$atts['errno']='';
-	$atts['errfile']='';
-	$atts['errline']='';
-	$atts['trace']='';
-	$atts['exception_type']='';
-	
-	
-	if(!is_null($exception)){
-		$atts['exception_type'] = get_class($exception);
-		$atts['errno'] = method_exists($exception,'getCode')? $exception->getCode() : '';
-		$atts['message'] = method_exists($exception,'getMessage')? $exception->getMessage() : '';
-		$atts['errfile'] = method_exists($exception,'getFile')? $exception->getFile() : '';
-		$atts['errline'] = method_exists($exception,'getLine')? $exception->getLine() : '';
-		//$atts['trace'] = method_exists($exception,'getTraceAsString')? $exception->getTraceAsString() : null;
-		
-	}
-	
-	require_once('error_log.php');
-	
-	$error_id = aw2_error_log::save($atts);
-	$error_msg ='Something is wrong ('.$error_id.')';	
-	
-	$atts['error_db_id'] =$error_id;
-	self::log_error($atts);
-	return $error_msg;
-	
-}
-
-static function log_error($atts){
-	error_log("Custom Logging Start \r\n");
-	error_log(print_r($atts, true));
-	error_log("\r\n");
-	error_log("\r\n Custom Logging End \r\n");
-}
-
-static function awesome_error_handler($err_severity, $err_msg, $err_file, $err_line){
-	
-	if($err_msg == 'mysqli::real_connect() expects parameter 5 to be integer, string given') return;
-	if($err_file == '/var/www/loantap.in/htdocs/wp-admin/includes/file.php') return;
-	if($err_file == '/var/www/loantap.in/htdocs/wp-content/plugins/wordpress-seo/inc/class-wpseo-meta.php') return;
-	if($err_file == '/var/www/v4.loantap.in/htdocs/wp-includes/capabilities.php') return;
-
-	try{
-		switch($err_severity)
-		{
-				case E_USER_NOTICE: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
-				case E_USER_WARNING: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
-				case E_USER_ERROR: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
-				case E_DEPRECATED: throw new AwesomeException ($err_msg, 0, $err_severity, $err_file, $err_line);
-				default:
-					throw new ErrorException ($err_msg, 0, $err_severity, $err_file, $err_line);
-		}
-	}
-	catch(Throwable $e){
-		$reply=aw2_library::awesome_exception('global_error_handler',$e);
-		
-		$excpetion_class = get_class($e);
-		if($excpetion_class !== 'AwesomeException')
-			die($reply);
-	}	
-}
-
-static function log_datatype_mismatch($arr){
-	//amit	
-	$module=self::get_array_ref('module');
-	$template=self::get('template.name');
-	
-	$conditional= isset($arr['condition'])?$arr['condition']:'';
-	if(isset($arr['php7result'])){
-		$php7_result = $arr['php7result']?'true':'false';
-	}
-	$module_slug='';
-	$invalid_lhs_dt='no';
-	$invalid_rhs_dt='no';
-	$invalid_match='no';
-
-	$lhs_datatype='lhs';
-	$rhs_datatype='rhs';
-	
-	$flag=false;
-	
-	if(is_array($module)){
-		if(isset($module['slug']))$module_slug =$module['slug'];
-		if(isset($module['collection']['post_type']))$post_type=$module['collection']['post_type'];
-	}
-	
-
-	
-	$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
-	
-	if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
-	if($lhs_datatype === 'string' && empty($lhs)){
-		$lhs='_empty_';
-	}
-		
-	$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
-	$valid = self::datatype_test($lhs,$lhs_dt);
-	if($valid === false ){
-		$flag=true;
-		$invalid_lhs_dt='yes';
-
-	}
-
-
-	$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
-	if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
-	if($rhs_datatype === 'string' && empty($rhs)){
-		$rhs='_empty_';
-	}
-		
-	$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
-	$valid = self::datatype_test($rhs,$rhs_dt);
-	if($valid === false ){
-		$flag=true;
-		$invalid_rhs_dt='yes';
-
-	}
-
-	$must_match=isset($arr['must_match'])?$arr['must_match']:'no';
-	
-	if($must_match === 'yes'){
-		if($lhs_datatype!==$rhs_datatype){
-			$flag=true;
-			$invalid_match='yes';			
-		}
-	}
-		
-	if($flag===false)return;
-		
-	$comment=array();
-	$comment['conditional'] = $conditional;
-	$comment['php7_result'] = $php7_result;
-	$comment['lhs_value'] = $lhs;
-	$comment['lhs_datatype'] = $lhs_datatype;
-	$comment['rhs_value'] = $rhs;
-	$comment['rhs_datatype'] = $rhs_datatype;
-	$comment['invalid_lhs_dt'] = $invalid_lhs_dt;
-	$comment['invalid_rhs_dt'] = $invalid_rhs_dt;
-	$comment['invalid_match'] = $invalid_match;
-	
-	$comment =  json_encode($comment);
-	
-	trigger_error($comment,E_USER_ERROR);
-
-	unset($comment);
-/* 	
-	$sql = "INSERT INTO `datatype_mismatch` (`module_slug`,`template_name`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`) VALUES ( '".$module_slug."','".$template."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."')";
-
-    $obj =\aw2\mysqli\cud(array(),$sql,null);
- */	
-}
-
-static function datatype_test($val, $data_type){
-	
-	switch( $data_type){
-		case 'number':
-			return is_numeric($val);
-			break;
-		case 'boolean':
-			return is_bool($val);
-			break;
-		case 'string':
-			return is_string($val);
-			break;
-	}
-	
-	return true;
-}
-
-static function deprecated($params){
-
-	
-	$func=isset($params['func'])?$params['func']:'';
-	$class=isset($params['class'])?$params['class']:'';
-	$method=isset($params['method'])?$params['method']:'';
-
-	$comment=isset($params['comment'])?$params['comment']:'';
-	
-	$comment .=' function: '.$func.' class: '.$class.' Method: '.$method;
-	
-	trigger_error($comment);
-	unset($comment);
-	
-	/* $sql = "INSERT INTO `log_problems` (`problem_type`, `module_slug`,`template`, `post_type`, `func`, `class`, `method`, `timestamp`, `extras`) VALUES ( 'deprecated', '".$module_slug."','".$template."', '".$post_type."', '".$func."', '".$class."', '".$method."', current_timestamp(), '".$comment."')";
-	 
-    $obj =\aw2\mysqli\cud(array(),$sql,null);
-	 */
-}
 
 static function load_handlers_from_path($handlers_path,...$paths){
 	//php8OK
@@ -1518,7 +1274,7 @@ static function shortcode_tag( $m ) {
 	
 	// allow [[foo]] syntax for escaping a tag
 	if ( $m[1][0] === '[' && $m[6][0] === ']' ) {
-		return substr($m[0], 1, -1);
+		return substr($m[0][0], 1, -1);
 	}
 
 	$tag = $m[2][0];
@@ -2578,7 +2334,7 @@ static function checkcondition(&$atts){
 		
 		
 		if(array_key_exists('odd',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd','php7result'=>((int)$atts['odd'] % 2 == 0)]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['odd'],'lhs_dt'=>'number','condition'=>'odd','php7result'=>((int)$atts['odd'] % 2 == 0)]);
 			if((int)$atts['odd'] % 2 == 0)
 				return false;
 			else
@@ -2586,7 +2342,7 @@ static function checkcondition(&$atts){
 		}
 		
 		if(array_key_exists('even',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['even'],'lhs_dt'=>'number','condition'=>'even','php7result'=>((int)$atts['even'] % 2 != 0)]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['even'],'lhs_dt'=>'number','condition'=>'even','php7result'=>((int)$atts['even'] % 2 != 0)]);
 			if((int)$atts['even'] % 2 != 0)
 		return false;
 	else
@@ -2594,7 +2350,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('true',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['true'],'lhs_dt'=>'boolean','condition'=>'true','php7result'=>($atts['true']!=true)]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['true'],'lhs_dt'=>'boolean','condition'=>'true','php7result'=>($atts['true']!=true)]);
 			if($atts['true']!=true)
 		return false;
 	else
@@ -2602,7 +2358,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('false',$atts)){
-			self::log_datatype_mismatch(['lhs'=>$atts['false'],'lhs_dt'=>'boolean','condition'=>'false','php7result'=>($atts['false']==true)]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['false'],'lhs_dt'=>'boolean','condition'=>'false','php7result'=>($atts['false']==true)]);
 			if($atts['false']==true)
 		return false;
 	else
@@ -2610,7 +2366,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('yes',$atts)){
-		self::log_datatype_mismatch(['lhs'=>$atts['yes'],'lhs_dt'=>'string','condition'=>'yes','php7result'=>($atts['yes']!=='yes')]);
+		aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['yes'],'lhs_dt'=>'string','condition'=>'yes','php7result'=>($atts['yes']!=='yes')]);
 		if($atts['yes']!=='yes')
 			return false;
 		else
@@ -2618,7 +2374,7 @@ static function checkcondition(&$atts){
 	}
 
 	if(array_key_exists('no',$atts)){
-		self::log_datatype_mismatch(['lhs'=>$atts['no'],'lhs_dt'=>'string','condition'=>'no','php7result'=>($atts['no']!=='no')]);
+		aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['no'],'lhs_dt'=>'string','condition'=>'no','php7result'=>($atts['no']!=='no')]);
 		if($atts['no']!=='no')
 			return false;
 		else
@@ -2854,7 +2610,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('not_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal','php7result'=>($atts['cond']!=$atts['not_equal'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['not_equal'],'must_match'=>'yes','condition'=>'not_equal','php7result'=>($atts['cond']!=$atts['not_equal'])]);
 			if($atts['cond']!=$atts['not_equal'])
 			{unset($atts['cond']);unset($atts['not_equal']); }		
 			else 
@@ -2862,7 +2618,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['equal'],'must_match'=>'yes','condition'=>'equal','php7result'=>($atts['cond']==$atts['equal'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['equal'],'must_match'=>'yes','condition'=>'equal','php7result'=>($atts['cond']==$atts['equal'])]);
 			if($atts['cond']==$atts['equal'])
 		{unset($atts['cond']);unset($atts['equal']); }		
 			else 
@@ -2870,7 +2626,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_than',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_than','php7result'=>($atts['cond']>$atts['greater_than'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_than','php7result'=>($atts['cond']>$atts['greater_than'])]);
 			if($atts['cond']>$atts['greater_than'])
 		{unset($atts['cond']);unset($atts['greater_than']); }		
 			else 
@@ -2878,7 +2634,7 @@ static function checkcondition(&$atts){
 		}
 	
 		if(array_key_exists('cond',$atts) && array_key_exists('less_than',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_than','php7result'=>($atts['cond']<$atts['less_than'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_than'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_than','php7result'=>($atts['cond']<$atts['less_than'])]);
 			if($atts['cond']<$atts['less_than'])
 		{unset($atts['cond']);unset($atts['less_than']); }		
 			else 
@@ -2886,7 +2642,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('greater_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_equal','php7result'=>($atts['cond']>=$atts['greater_equal'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['greater_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'greater_equal','php7result'=>($atts['cond']>=$atts['greater_equal'])]);
 			if($atts['cond']>=$atts['greater_equal'])
 		{unset($atts['cond']);unset($atts['greater_equal']); }		
 			else 
@@ -2894,7 +2650,7 @@ static function checkcondition(&$atts){
 		}
 
 		if(array_key_exists('cond',$atts) && array_key_exists('less_equal',$atts) ){
-			self::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_equal','php7result'=>($atts['cond']<=$atts['less_equal'])]);
+			aw2_error_log::log_datatype_mismatch(['lhs'=>$atts['cond'],'rhs'=>$atts['less_equal'],'lhs_dt'=>'number','rhs_dt'=>'number','condition'=>'less_equal','php7result'=>($atts['cond']<=$atts['less_equal'])]);
 			if($atts['cond']<=$atts['less_equal'])
 		{unset($atts['cond']);unset($atts['less_equal']); }		
 			else 
@@ -3799,7 +3555,7 @@ static function get_start($o){
 			break;
 		case 'menu':
 			array_shift($o->pieces);
-			self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get menu is deprecated, use wp.menu"]);
+			aw2_error_log::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get menu is deprecated, use wp.menu"]);
 			$o->value=aw2\wp\menu([],$o->content);
 			break;
 		case 'image_alt':
@@ -3924,11 +3680,11 @@ static function get_start($o){
 
 static function aw2wpget($action,$o){
 	
-	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__,'comment'=>"aw2.get $action is deprecated, use wp.get"]);
 
 	$aw2wp_get=new aw2\wp\aw2wp_get($action,$o->atts,$o->content,$o->pieces);
 	$o->pieces=array(); // resovle everthing in the wp.get 
 	$o->value = $aw2wp_get->run();
+	
 }
 
 static function get_content_type($o){
@@ -4759,7 +4515,7 @@ static function generateCallTrace(){
 
 static  function simple_encrypt($text){
 	//php8ok		
-	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
+	aw2_error_log::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
 	/*
     return urlencode(trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, 'qwertyuiopasdfgh', $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)))));
 	*/
@@ -4775,7 +4531,7 @@ static  function simple_encrypt($text){
 }
 static function simple_decrypt($text){
 	//php8ok		
-	self::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
+	aw2_error_log::deprecated(['func'=>__FUNCTION__,'method'=>__METHOD__,'class'=>__CLASS__]);
 	/*
     return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, 'qwertyuiopasdfgh', base64_decode(urldecode($text)), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 	*/	

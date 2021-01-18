@@ -2,6 +2,251 @@
 
 class aw2_error_log{
 	
+	static function awesome_exception($location,$exception=null){
+		
+		$atts=array();
+		if(empty($location)) return 'location is missing.';
+		
+		
+		$atts['location']= $location;
+		$atts['post_type']= aw2_library::get('env.@sc_exec.collection.post_type');
+		$atts['source']= aw2_library::get('env.@sc_exec.collection.source');
+		$atts['module']= aw2_library::get('env.@sc_exec.module');
+		$atts['app_name']= aw2_library::get('env.app.name');
+		$atts['sc']= aw2_library::get('env.@sc_exec.sc');
+		
+		$pos = aw2_library::get('env.@sc_exec.pos');
+		$atts['position']= empty($pos)?"-1":$pos;
+		unset($pos);
+		
+		$atts['link']= aw2_library::get('env.@sc_exec.link');
+		$atts['sql_query']= aw2_library::get('env.@sc_exec.query');
+		
+		$atts['user']= aw2_library::get('app.user.email');
+		$atts['url']= isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
+		$atts['request']= empty($_REQUEST)?'':json_encode($_REQUEST);
+		$atts['header_value']= file_get_contents('php://input');	
+		
+		
+		$stack=aw2_library::get('env.call_stack');
+		$call_stack =array();
+		
+		foreach($stack as $entry){
+			$post_type='';
+			
+			if(isset($entry['collection']['post_type']))
+				$post_type=$entry['collection']['post_type'];
+			else if(isset($entry['collection']['source']))
+				$post_type=$entry['collection']['source'];
+			
+			$slug= isset($entry['slug'])?$entry['slug']:'';
+			
+			$call_stack[]=array(
+				'obj_id'=>$entry['obj_id'],
+				'obj_type'=>$entry['obj_type'],
+				'slug'=>$slug,
+				'post_type'=>$post_type
+			);
+		}
+		
+		unset($stack);
+		$atts['call_stack'] = json_encode($call_stack);
+		unset($call_stack);
+		
+		$atts['message']=aw2_library::get('env.@sc_exec.err_msg');
+		$atts['errno']=aw2_library::get('env.@sc_exec.err_severity');
+		$atts['errfile']=aw2_library::get('env.@sc_exec.err_file');
+		$atts['errline']=aw2_library::get('env.@sc_exec.err_line');
+		$atts['trace']='';
+		$atts['exception_type']='';
+		
+		if(!empty($atts['errno'])) {
+			$atts['exception_type']= array_flip( array_slice( get_defined_constants(true)['Core'], 1, 15, true ) )[$atts['errno']];
+		}
+		
+		
+		
+		if(!is_null($exception)){
+			$atts['exception_type'] = get_class($exception);
+			$atts['errno'] = method_exists($exception,'getCode')? $exception->getCode() : '';
+			$atts['message'] = method_exists($exception,'getMessage')? $exception->getMessage() : '';
+			$atts['errfile'] = method_exists($exception,'getFile')? $exception->getFile() : '';
+			$atts['errline'] = method_exists($exception,'getLine')? $exception->getLine() : '';
+			//$atts['trace'] = method_exists($exception,'getTraceAsString')? $exception->getTraceAsString() : null;
+			
+		}
+		
+		$error_id = self::save($atts);
+		$error_msg ='Something is wrong ('.$error_id.')';	
+		
+		$atts['error_db_id'] =$error_id;
+		self::log_error($atts);
+		return $error_msg;
+		
+	}
+
+	static function log_error($atts){
+		error_log("Custom Logging Start \r\n");
+		error_log(print_r($atts, true));
+		error_log("\r\n");
+		error_log("\r\n Custom Logging End \r\n");
+	}
+
+	static function awesome_error_handler($err_severity, $err_msg, $err_file, $err_line){
+		
+		if($err_msg == 'mysqli::real_connect() expects parameter 5 to be integer, string given') return;
+		if($err_file == '/var/www/loantap.in/htdocs/wp-admin/includes/file.php') return;
+		if($err_file == '/var/www/loantap.in/htdocs/wp-content/plugins/wordpress-seo/inc/class-wpseo-meta.php') return;
+		if($err_file == '/var/www/v4.loantap.in/htdocs/wp-includes/capabilities.php') return;
+		
+		$sc_exec=&aw2_library::get_array_ref('@sc_exec');
+		$sc_exec['err_msg']=$err_msg;
+		$sc_exec['err_file']=$err_file;
+		$sc_exec['err_severity']=$err_severity;
+		$sc_exec['err_line']=$err_line;
+		
+		$reply=self::awesome_exception('global_error_handler');
+		
+		return true;
+	}
+
+	static function log_datatype_mismatch($arr){
+
+		$template=aw2_library::get('template.name');
+		$post_type= aw2_library::get('env.@sc_exec.collection.post_type');
+		$source= aw2_library::get('env.@sc_exec.collection.source');
+		$module= aw2_library::get('env.@sc_exec.module');
+		$app_name= aw2_library::get('env.app.name');
+		$sc= aw2_library::get('env.@sc_exec.sc');/* */
+		$url= isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
+		
+		$pos = aw2_library::get('env.@sc_exec.pos');
+		$position= empty($pos)?"-1":$pos;
+		unset($pos);
+		
+		$link = aw2_library::get('env.@sc_exec.link');
+		
+		
+		$conditional= isset($arr['condition'])?$arr['condition']:'';
+		if(isset($arr['php7result'])){
+			$php7_result = $arr['php7result']?'true':'false';
+		}
+		$module_slug='';
+		$invalid_lhs_dt='no';
+		$invalid_rhs_dt='no';
+		$invalid_match='no';
+
+		$lhs_datatype='lhs';
+		$rhs_datatype='rhs';
+		
+		$flag=false;
+	
+		
+
+		
+		$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
+		
+		if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
+		if($lhs_datatype === 'string' && empty($lhs)){
+			$lhs='_empty_';
+		}
+		
+		$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
+		$valid = self::datatype_test($lhs,$lhs_dt);
+		if($valid === false ){
+			$flag=true;
+			$invalid_lhs_dt='yes';
+
+		}
+
+
+		$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
+		if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
+		if($rhs_datatype === 'string' && empty($rhs)){
+			$rhs='_empty_';
+		}
+		
+		$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
+		$valid = self::datatype_test($rhs,$rhs_dt);
+		if($valid === false ){
+			$flag=true;
+			$invalid_rhs_dt='yes';
+
+		}
+
+		$must_match=isset($arr['must_match'])?$arr['must_match']:'no';
+		
+		if($must_match === 'yes'){
+			if($lhs_datatype!==$rhs_datatype){
+				$flag=true;
+				$invalid_match='yes';			
+			}
+		}
+			
+		if($flag===false)return;
+		
+
+		if(!defined('AWESOME_LOG_DB'))
+			define('AWESOME_LOG_DB', DB_NAME);
+		
+		$nmysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
+		$nmysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+		
+		$sql = "
+		start TRANSACTION;
+		set @post_type='".$post_type."';
+		set @source='".addslashes($source)."';
+		set @module='".$module."';
+		set @pos='".$position."';
+		set @template='".$template."';
+		
+		SELECT @id:=ID FROM ".AWESOME_LOG_DB.".datatype_mismatch WHERE post_type=@post_type and source=@source and module_slug=@module and position=@pos and template_name=@template ;
+	
+		IF @id is null THEN
+			
+			INSERT INTO ".AWESOME_LOG_DB.".`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".addslashes($sc)."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
+			
+		END IF;
+			
+		COMMIT;
+		";
+
+		$obj = $nmysqli->multi_query($sql);
+	}
+
+	static function datatype_test($val, $data_type){
+		
+		switch( $data_type){
+			case 'number':
+				return is_numeric($val);
+				break;
+			case 'boolean':
+				return is_bool($val);
+				break;
+			case 'string':
+				return is_string($val);
+				break;
+		}
+		
+		return true;
+	}
+
+	static function deprecated($params){
+
+		
+		$func=isset($params['func'])?$params['func']:'';
+		$class=isset($params['class'])?$params['class']:'';
+		$method=isset($params['method'])?$params['method']:'';
+
+		$comment=isset($params['comment'])?$params['comment']:'';
+		
+		$comment .=' function: '.$func.' class: '.$class.' Method: '.$method;
+		
+		trigger_error($comment);
+		unset($comment);
+		
+	}
+
 	static function save($atts){
 		$nmysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
 		$nmysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
