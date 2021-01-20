@@ -14,7 +14,7 @@ function awesome2_file_write($atts,$content=null,$shortcode){
 	'folder'		=>'',
 	'child_folder'		=>'',
 	'mode'	=>'',
-	'content_to_write'	=>'',
+	'content_to_write'	=>''
 	), $atts, 'aw2_get' ) );
 
 	
@@ -44,7 +44,7 @@ function file_put($atts,$content=null,$shortcode){
 	extract( \aw2_library::shortcode_atts(( array(
 	'path'    =>'',
 	'file_content' =>'',
-	'safe'=>'',
+	'safe'=>''
 	), $atts, 'aw2_get' ) );
 	
 	if($safe!=='yes'){
@@ -64,7 +64,7 @@ function file_get($atts,$content=null,$shortcode){
 	
 	extract( \aw2_library::shortcode_atts(( array(
 	'file_url' =>'',
-	'safe'=>'',
+	'safe'=>''
 	), $atts, 'aw2_get' ) );
 	
 	if($safe!=='yes'){
@@ -86,7 +86,7 @@ function open_file($atts,$content=null,$shortcode){
 	'file' =>'',
 	'name'=>'',
 	'mime_type'=>'',
-	'safe'=>'',
+	'safe'=>''
 	), $atts, 'aw2_get' ) );
 	
 	if($safe!=='yes'){
@@ -196,7 +196,7 @@ function log_reader_sql_error($atts,$content=null,$shortcode){
 	$response=array();
 	extract( \aw2_library::shortcode_atts(( array(
 	'file_url' =>'',
-	'safe'=>'',
+	'safe'=>''
 	), $atts, 'aw2_get' ) );
 	
 	if($safe!=='yes'){
@@ -236,7 +236,7 @@ function read_deadlock($atts,$content=null,$shortcode){
 		$response=array();
 		extract( \aw2_library::shortcode_atts(( array(
 		'data' =>'',
-		'safe'=>'',
+		'safe'=>''
 		), $atts, 'aw2_get' ) );
 
 		if($safe!=='yes'){
