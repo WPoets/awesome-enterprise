@@ -28,30 +28,33 @@ class aw2_error_log{
 		$atts['header_value']= file_get_contents('php://input');	
 		
 		
+		$atts['call_stack']='';
 		$stack=aw2_library::get('env.call_stack');
 		$call_stack =array();
 		
-		foreach($stack as $entry){
-			$post_type='';
+		if(!empty($stack)){
+			foreach($stack as $entry){
+				$post_type='';
+				
+				if(isset($entry['collection']['post_type']))
+					$post_type=$entry['collection']['post_type'];
+				else if(isset($entry['collection']['source']))
+					$post_type=$entry['collection']['source'];
+				
+				$slug= isset($entry['slug'])?$entry['slug']:'';
+				
+				$call_stack[]=array(
+					'obj_id'=>$entry['obj_id'],
+					'obj_type'=>$entry['obj_type'],
+					'slug'=>$slug,
+					'post_type'=>$post_type
+				);
+			}
 			
-			if(isset($entry['collection']['post_type']))
-				$post_type=$entry['collection']['post_type'];
-			else if(isset($entry['collection']['source']))
-				$post_type=$entry['collection']['source'];
-			
-			$slug= isset($entry['slug'])?$entry['slug']:'';
-			
-			$call_stack[]=array(
-				'obj_id'=>$entry['obj_id'],
-				'obj_type'=>$entry['obj_type'],
-				'slug'=>$slug,
-				'post_type'=>$post_type
-			);
+			unset($stack);
+			$atts['call_stack'] = json_encode($call_stack);
+			unset($call_stack);
 		}
-		
-		unset($stack);
-		$atts['call_stack'] = json_encode($call_stack);
-		unset($call_stack);
 		
 		$atts['message']=aw2_library::get('env.@sc_exec.err_msg');
 		$atts['errno']=aw2_library::get('env.@sc_exec.err_severity');
