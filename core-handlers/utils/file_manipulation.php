@@ -9,13 +9,13 @@ namespace aw2\_file;
 function awesome2_file_write($atts,$content=null,$shortcode){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract( \aw2_library::shortcode_atts(( array(
+	extract( \aw2_library::shortcode_atts( array(
 	'file_name'    =>'',
 	'folder'		=>'',
 	'child_folder'		=>'',
 	'mode'	=>'',
 	'content_to_write'	=>''
-	), $atts, 'aw2_get' ) );
+	), $atts ) );
 
 	
 	if($child_folder){
@@ -41,11 +41,11 @@ function awesome2_file_write($atts,$content=null,$shortcode){
 function file_put($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract( \aw2_library::shortcode_atts(( array(
+	extract( \aw2_library::shortcode_atts( array(
 	'path'    =>'',
 	'file_content' =>'',
 	'safe'=>''
-	), $atts, 'aw2_get' ) );
+	), $atts ) );
 	
 	if($safe!=='yes'){
 		return 'error';
@@ -62,10 +62,10 @@ function file_put($atts,$content=null,$shortcode){
 function file_get($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	extract( \aw2_library::shortcode_atts(( array(
+	extract( \aw2_library::shortcode_atts(array(
 	'file_url' =>'',
 	'safe'=>''
-	), $atts, 'aw2_get' ) );
+	), $atts ) );
 	
 	if($safe!=='yes'){
 		return 'error';
@@ -82,12 +82,12 @@ function open_file($atts,$content=null,$shortcode){
 	/*
 	This function takes a path to a file to output ($file),  the filename that the browser will see ($name) and  the MIME type of the file ($mime_type, optional).
 	*/
-	extract( \aw2_library::shortcode_atts(( array(
+	extract( \aw2_library::shortcode_atts( array(
 	'file' =>'',
 	'name'=>'',
 	'mime_type'=>'',
 	'safe'=>''
-	), $atts, 'aw2_get' ) );
+	), $atts ) );
 	
 	if($safe!=='yes'){
 		return 'error';
@@ -194,10 +194,10 @@ function log_reader_sql_error($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	$response=array();
-	extract( \aw2_library::shortcode_atts(( array(
+	extract( \aw2_library::shortcode_atts( array(
 	'file_url' =>'',
 	'safe'=>''
-	), $atts, 'aw2_get' ) );
+	), $atts ) );
 	
 	if($safe!=='yes'){
 		return $response;
@@ -234,10 +234,10 @@ function read_deadlock($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 		$response=array();
-		extract( \aw2_library::shortcode_atts(( array(
+		extract( \aw2_library::shortcode_atts( array(
 		'data' =>'',
 		'safe'=>''
-		), $atts, 'aw2_get' ) );
+		), $atts ) );
 
 		if($safe!=='yes'){
 		return $response;
