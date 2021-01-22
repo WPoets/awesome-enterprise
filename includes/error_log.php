@@ -27,11 +27,9 @@ class aw2_error_log{
 		$atts['request']= empty($_REQUEST)?'':json_encode($_REQUEST);
 		$atts['header_value']= file_get_contents('php://input');	
 		
-		
 		$atts['call_stack']='';
 		$stack=aw2_library::get('env.call_stack');
 		$call_stack =array();
-		
 		if(!empty($stack)){
 			foreach($stack as $entry){
 				$post_type='';
@@ -55,7 +53,6 @@ class aw2_error_log{
 			$atts['call_stack'] = json_encode($call_stack);
 			unset($call_stack);
 		}
-		
 		$atts['message']=aw2_library::get('env.@sc_exec.err_msg');
 		$atts['errno']=aw2_library::get('env.@sc_exec.err_severity');
 		$atts['errfile']=aw2_library::get('env.@sc_exec.err_file');
@@ -207,7 +204,7 @@ class aw2_error_log{
 	
 		IF @id is null THEN
 			
-			INSERT INTO ".AWESOME_LOG_DB.".`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".addslashes($sc)."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
+			INSERT INTO ".AWESOME_LOG_DB.".`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".$sc."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
 			
 		END IF;
 			
@@ -259,7 +256,7 @@ class aw2_error_log{
 
 		$location=isset($atts['location'])?$atts['location']:'';
 		$post_type=isset($atts['post_type'])?$atts['post_type']:'';
-		$source=isset($atts['source'])?$atts['source']:'';
+		$source=isset($atts['source'])?addslashes($atts['source']):'';
 		$module=isset($atts['module'])?$atts['module']:'';
 		$app_name=isset($atts['app_name'])?addslashes($atts['app_name']):'';
 		$sc=isset($atts['sc'])?addslashes($atts['sc']):'';
@@ -275,8 +272,8 @@ class aw2_error_log{
 		$sql_query = isset($atts['sql_query'])?addslashes($atts['sql_query']):'';
 		$user = isset($atts['user'])?$atts['user']:'';
 		$url = isset($atts['url'])?$atts['url']:'';
-		$request = isset($atts['request'])?$atts['request']:'';
-		$header_value = isset($atts['header_value'])?$atts['header_value']:'';
+		$request = isset($atts['request'])?addslashes($atts['request']):'';
+		$header_value = isset($atts['header_value'])?addslashes($atts['header_value']):'';
 		$call_stack = isset($atts['call_stack'])?$atts['call_stack']:'';
 				
 		if(!defined('AWESOME_LOG_DB'))
@@ -298,7 +295,7 @@ class aw2_error_log{
 			UPDATE ".AWESOME_LOG_DB.".awesome_exceptions SET no_of_times = no_of_times + 1,  status ='active' WHERE ID=@id;
 			SELECT @id;
 		ELSE
-			INSERT INTO ".AWESOME_LOG_DB.".`awesome_exceptions` (`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`,`user`, `header_data`,`request_data`,`sql_query`,`request_url`,`message`, `errno`, `errfile`, `errline`, `call_stack`,`trace`, `no_of_times`, `status`) VALUES ( '".$exception_type."', '".$post_type."', '".$source."', '".$module."', '".$location."', '".$app_name."', '".$sc."', '".$position."', '".$link."','".$user."', '".$header_value."','".$request."','".$sql_query."','".$url."','".$message."', '".$errno."', '".$errfile."', '".$errline."', '".$call_stack."','".$trace."', '1', '".$status."');
+			INSERT INTO ".AWESOME_LOG_DB.".`awesome_exceptions` (`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`,`user`, `header_data`,`request_data`,`sql_query`,`request_url`,`message`, `errno`, `errfile`, `errline`, `call_stack`,`trace`, `no_of_times`, `status`) VALUES ( '".$exception_type."', '".$post_type."', '".$source."', '".$module."', '".$location."', '".$app_name."', '".$sc."', '".$position."', '".$link."','".$user."', ' ".$header_value."','".$request."','".$sql_query."','".$url."','".$message."', '".$errno."', '".$errfile."', '".$errline."', '".$call_stack."','".$trace."', '1', '".$status."');
 		
 			SELECT LAST_INSERT_ID();
 		END IF;
