@@ -350,7 +350,12 @@ function multi_cud($atts,$content,$tags_left){
 \aw2_library::add_service('mysqli.transaction','Multi Queries with transaction',['namespace'=>__NAMESPACE__]);	
 function transaction($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	
+	extract( \aw2_library::shortcode_atts( array(
+	'isolation'=>'read_committed'
+	), $atts) );
 
+	
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
@@ -382,7 +387,8 @@ param $action can be commit OR rollback
 function transaction_exec($content,$action,$isolation='read_committed'){
 	$return_value = array();
 	
-
+	$isolation_statement ='';
+	
 	if($isolation=='repeatable_read')
 		$isolation_statement='SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;';
 
