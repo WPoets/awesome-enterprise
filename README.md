@@ -29,6 +29,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.0.5
+* Fixed: multiple php notices & warnings
+* Fixed: in certain cases error login was creating it's own errors
+
 ##### 3.0.4
 * Improved: Added support to read Redis stream data.
 * Improved: Added support to trap all errors and exception in a separate database table.
