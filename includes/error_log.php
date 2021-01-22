@@ -62,6 +62,9 @@ class aw2_error_log{
 		
 		if(!empty($atts['errno'])) {
 			$atts['exception_type']= array_flip( array_slice( get_defined_constants(true)['Core'], 1, 15, true ) )[$atts['errno']];
+			/* ob_start();
+			debug_print_backtrace();
+			$atts['trace']=ob_get_clean(); */
 		}
 		
 		
@@ -95,10 +98,11 @@ class aw2_error_log{
 	static function awesome_error_handler($err_severity, $err_msg, $err_file, $err_line){
 		
 		if($err_msg == 'mysqli::real_connect() expects parameter 5 to be integer, string given') return;
-		if($err_file == '/var/www/loantap.in/htdocs/wp-admin/includes/file.php') return;
-		if($err_file == '/var/www/loantap.in/htdocs/wp-content/plugins/wordpress-seo/inc/class-wpseo-meta.php') return;
-		if($err_file == '/var/www/v4.loantap.in/htdocs/wp-includes/capabilities.php') return;
 		
+		if(strpos($err_file, 'wordpress-seo/inc/class-wpseo-meta.php') !== false) return;
+		if(strpos($err_file, 'wp-admin/includes/file.php') !== false) return;
+		if(strpos($err_file, 'wp-includes/capabilities.php') !== false) return;
+
 		$sc_exec=&aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['err_msg']=$err_msg;
 		$sc_exec['err_file']=$err_file;
@@ -256,7 +260,7 @@ class aw2_error_log{
 
 		$location=isset($atts['location'])?$atts['location']:'';
 		$post_type=isset($atts['post_type'])?$atts['post_type']:'';
-		$source=isset($atts['source'])?addslashes($atts['source']):'';
+		$source=isset($atts['source'])?$atts['source']:'';
 		$module=isset($atts['module'])?$atts['module']:'';
 		$app_name=isset($atts['app_name'])?addslashes($atts['app_name']):'';
 		$sc=isset($atts['sc'])?addslashes($atts['sc']):'';
