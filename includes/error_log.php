@@ -121,8 +121,8 @@ class aw2_error_log{
 		$source= aw2_library::get('env.@sc_exec.collection.source');
 		$module= aw2_library::get('env.@sc_exec.module');
 		$app_name= aw2_library::get('env.app.name');
-		$sc= aw2_library::get('env.@sc_exec.sc');/* */
-		$url= isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
+		$sc= addslashes(aw2_library::get('env.@sc_exec.sc'));/* */
+		$url= isset($_SERVER['REQUEST_URI'])?addslashes($_SERVER['REQUEST_URI']):'';
 		
 		$pos = aw2_library::get('env.@sc_exec.pos');
 		$position= empty($pos)?"-1":$pos;
@@ -214,7 +214,9 @@ class aw2_error_log{
 			
 		COMMIT;
 		";
-
+		
+		echo $sql;
+		
 		$obj = $nmysqli->multi_query($sql);
 	}
 
