@@ -18,7 +18,7 @@ function create($atts,$content=null,$shortcode){
 	$ticket=uniqid();
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
 	$redis->hSet($ticket,'ticket_id',$ticket);
-	$redis->setTimeout($ticket, 60*60);
+	$redis->expire($ticket, 60*60);
 	unset($_COOKIE[$id]);
 	if($setcookie==='yes')setcookie($id, $ticket, -1, '/');
 	

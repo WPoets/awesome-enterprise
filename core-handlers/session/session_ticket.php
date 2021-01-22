@@ -97,7 +97,7 @@ function create($atts,$content=null,$shortcode){
 	$redis->hSet($ticket,'ticket_id',$ticket);
 	
 	if((float)$time >=0)
-		$redis->setTimeout($ticket, $time*60);
+		$redis->expire($ticket, $time*60);
 	$return_value=$ticket;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
@@ -207,7 +207,7 @@ function set_timeout($atts,$content=null,$shortcode){
 
 	$ticket=$main;
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
-	$redis->setTimeout($ticket, $time*60);
+	$redis->expire($ticket, $time*60);
 	return;
 }
 
