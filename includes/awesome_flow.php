@@ -55,7 +55,6 @@ class awesome_flow{
 				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"handlers","value"=>$handlers]);				
 				aw2\global_cache\hset(
 				["main"=>ENV_CACHE,"field"=>"apps","value"=>serialize($ref['apps'])]);				
-				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"awesome_core","value"=>serialize($ref['awesome_core'])]);				
 				
 				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"settings","value"=>serialize($ref['settings'])]);
 
