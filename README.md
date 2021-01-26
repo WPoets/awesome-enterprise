@@ -32,6 +32,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 ##### 3.0.5
 * Fixed: multiple php notices & warnings
 * Fixed: in certain cases error login was creating it's own errors
+* Improved: added support to capture the position of shortcode while executing content type
 
 ##### 3.0.4
 * Improved: Added support to read Redis stream data.
