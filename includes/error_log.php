@@ -214,9 +214,7 @@ class aw2_error_log{
 			
 		COMMIT;
 		";
-		
-		echo $sql;
-		
+				
 		$obj = $nmysqli->multi_query($sql);
 	}
 
