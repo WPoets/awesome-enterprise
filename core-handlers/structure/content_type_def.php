@@ -26,6 +26,14 @@ function unhandled($atts,$content=null,$shortcode){
 
 			$template_id=\aw2_library::push_child('@template',$return_value->name);
 
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$restore=$sc_exec;	
+			if(isset($return_value->content_pos)){
+				$sc_exec['start_pos']=$return_value->content_pos;
+				$sc_exec['collection']=$return_value->collection;
+				$sc_exec['module']=$return_value->module;
+			}
+			
 			foreach ($atts as $key => $value) {
 					if(strpos($key,'@shared.')!==0)
 						$key='@template.' . $key;	
@@ -34,6 +42,9 @@ function unhandled($atts,$content=null,$shortcode){
 			}
 
 			$return_value=\aw2_library::parse_shortcode($return_value->code);
+			
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$sc_exec=$restore;
 			
 			if(isset(\aw2_library::$stack['@template']['_return'])){
 				unset(\aw2_library::$stack['_return']);
@@ -72,6 +83,14 @@ function run($atts,$content=null,$shortcode){
 			$shared_id=\aw2_library::push_child('@shared',$content_type);
 			\aw2_library::set('@shared.content_type',$content_type);
 
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$restore=$sc_exec;	
+			if(isset($return_value->content_pos)){
+				$sc_exec['start_pos']=$return_value->content_pos;
+				$sc_exec['collection']=$return_value->collection;
+				$sc_exec['module']=$return_value->module;
+			}
+			
 			$template_id=\aw2_library::push_child('@template',$return_value->name);
 
 			foreach ($atts as $key => $value) {
@@ -82,6 +101,9 @@ function run($atts,$content=null,$shortcode){
 			}
 
 			$return_value=\aw2_library::parse_shortcode($return_value->code);
+			
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$sc_exec=$restore;
 			
 			if(isset(\aw2_library::$stack['@template']['_return'])){
 				unset(\aw2_library::$stack['_return']);
@@ -140,6 +162,14 @@ function template($atts,$content=null,$shortcode){
 		$obj->code=$content;
 		$obj->name=$main;
 		
+		
+		$sc_exec=\aw2_library::get_array_ref('@sc_exec');
+		if(isset($sc_exec['content_pos'])){
+			$obj->collection=$sc_exec['collection'];
+			$obj->module=$sc_exec['module'];
+			$obj->content_pos=$sc_exec['content_pos'];
+		}
+	
 		\aw2_library::set('content_types.' . $content_type . '.' . $main,$obj);		
 	}
 

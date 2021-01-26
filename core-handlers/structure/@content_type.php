@@ -22,6 +22,14 @@ function unhandled($atts,$content=null,$shortcode){
 			$stack_id=\aw2_library::push_child('@content_type',$content_type);
 			\aw2_library::set('@content_type.content_type',$content_type);
 
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$restore=$sc_exec;	
+			if(isset($return_value->content_pos)){
+				$sc_exec['start_pos']=$return_value->content_pos;
+				$sc_exec['collection']=$return_value->collection;
+				$sc_exec['module']=$return_value->module;
+			}
+
 
 			$template_id=\aw2_library::push_child('@template',$return_value->name);
 
@@ -33,6 +41,9 @@ function unhandled($atts,$content=null,$shortcode){
 			}
 
 			$return_value=\aw2_library::parse_shortcode($return_value->code);
+			
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$sc_exec=$restore;
 			
 			if(isset(\aw2_library::$stack['@template']['_return'])){
 				unset(\aw2_library::$stack['_return']);
@@ -92,6 +103,13 @@ function run($atts,$content=null,$shortcode){
 			$stack_id=\aw2_library::push_child('@content_type',$content_type);
 			\aw2_library::set('@content_type.content_type',$content_type);
 
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$restore=$sc_exec;	
+			if(isset($return_value->content_pos)){
+				$sc_exec['start_pos']=$return_value->content_pos;
+				$sc_exec['collection']=$return_value->collection;
+				$sc_exec['module']=$return_value->module;
+			}
 
 			$template_id=\aw2_library::push_child('@template',$return_value->name);
 
@@ -104,6 +122,9 @@ function run($atts,$content=null,$shortcode){
 
 			$return_value=\aw2_library::parse_shortcode($return_value->code);
 			
+			$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+			$sc_exec=$restore;
+	
 			if(isset(\aw2_library::$stack['@template']['_return'])){
 				unset(\aw2_library::$stack['_return']);
 				$return_value=\aw2_library::$stack['@template']['_return'];
