@@ -208,7 +208,7 @@ class awesome_app{
 		
 		}else{
 			$options = get_option('awesome-app-' . $this->slug);
-			if(!isset($options) || ('1' != $options['enable_rights'])) return true;
+			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
 			
 			if('1' == $options['enable_vsession']){
 				$vsession_key = $options['vsession_key'] ? $options['vsession_key'] : 'email';

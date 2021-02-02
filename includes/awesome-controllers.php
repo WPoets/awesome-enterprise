@@ -874,7 +874,7 @@ class controllers{
 				return aw2_library::module_run(['post_type'=>'awesome_core'],'layout',null,null);
 		}	
 		
-		// well none of the layout optins exists so hand it over to page.php
+		// well none of the layout options exists so hand it over to page.php
 		 
 		unset($query->query_vars['name']);
 		unset($query->query_vars['attachment']);
