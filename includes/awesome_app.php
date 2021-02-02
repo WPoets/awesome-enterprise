@@ -165,7 +165,7 @@ class awesome_app{
 	}
 	
 
-	public function check_rights($query){		//any changes to this function or related to this function should reflect in the if.user_can_access service
+	public function check_rights($request){		//any changes to this function or related to this function should reflect in the if.user_can_access service
 		if(IS_WP && current_user_can('administrator'))return;
 		
 		if(isset($this->configs['rights'])){
@@ -196,7 +196,7 @@ class awesome_app{
 			}
 			
 			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$request);
 			
 			if(isset($rights['access']['title'])){
 				$login_url .= '&title='. urlencode($rights['access']['title']);
@@ -232,7 +232,7 @@ class awesome_app{
 			}
 			
 			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$query->request);
+			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$request);
 			
 			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 			wp_redirect( $login_url );
