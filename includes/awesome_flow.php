@@ -127,7 +127,7 @@ class awesome_flow{
 		//Decide caching or not caching
 		$cache=array();
 		$cache['enable']='no';
-		if($_SERVER['REQUEST_METHOD']==='GET'){
+		if(isset($_SERVER['REQUEST_METHOD'])&& $_SERVER['REQUEST_METHOD']==='GET'){
 			if(!isset($_SERVER['QUERY_STRING']) || empty($_SERVER['QUERY_STRING'])){
 				if(!isset($_SERVER['HTTP_REFERER']) || empty($_SERVER['HTTP_REFERER'])){
 					if(!(array_key_exists('wordpress_logged_in',$_COOKIE) || array_key_exists('aw2_vsession',$_COOKIE) || array_key_exists('wordpress_no_cache',$_COOKIE))){
