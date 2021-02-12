@@ -189,7 +189,15 @@ class aw2_error_log{
 			
 		if($flag===false)return;
 		
-
+		
+		if(is_object($lhs)||is_array($lhs)){
+			$lhs=serialize($lhs);
+		}
+		
+		if(is_object($rhs)||is_array($rhs)){
+			$rhs=serialize($rhs);
+		}
+		
 		if(!defined('AWESOME_LOG_DB'))
 			define('AWESOME_LOG_DB', DB_NAME);
 		
