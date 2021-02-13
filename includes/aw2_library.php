@@ -4431,7 +4431,7 @@ static function resolve_post($o){
 			array_shift($o->pieces);
 			$size=isset($o->atts['size'])?$o->atts['size']:'thumbnail';
 			$img=wp_get_attachment_image_src( get_post_thumbnail_id( $ID ), $size );
-			$o->value= $img[0]; 
+			$o->value= is_array($img)?$img[0]:''; 
 			break;
 		case 'excerpt':
 			array_shift($o->pieces);
