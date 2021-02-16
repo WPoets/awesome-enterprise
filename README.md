@@ -29,10 +29,19 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.0.6
+* Fixed: quote_comma was fixed
+* Fixed: added a check so that if ayout module does not exists it is handled by page.php
+* Fixed: Notice - Trying to access array offset of bool.
+
 ##### 3.0.5
 * Fixed: multiple php notices & warnings
 * Fixed: in certain cases error login was creating it's own errors
 * Improved: added support to capture the position of shortcode while executing content type
+* Fixed: Notice - Trying to access array offset on the value of type bool
+* Fixed: Notice - Undefined index: REQUEST_METHOD
+* Fixed: Trying to get property 'request' of non-object
+* Fixed: If the object is passed for comparison, data type mismatch failed.
 
 ##### 3.0.4
 * Improved: Added support to read Redis stream data.
