@@ -31,7 +31,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ##### 3.0.6
 * Fixed: quote_comma was fixed
-* Fixed: added a check so that if ayout module does not exists it is handled by page.php
+* Fixed: added a check so that if layout module does not exists it is handled by page.php
 * Fixed: Notice - Trying to access array offset of bool.
 
 ##### 3.0.5
