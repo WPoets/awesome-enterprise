@@ -870,9 +870,9 @@ class controllers{
 
 		}
 		
-		if(!isset($app['active']['collection']['post_type']) && aw2_library::post_exists('layout',AWESOME_CORE_POST_TYPE)){
+		/* if(!isset($app['active']['collection']['post_type']) && aw2_library::post_exists('layout',AWESOME_CORE_POST_TYPE)){
 				return aw2_library::module_run(['post_type'=>AWESOME_CORE_POST_TYPE],'layout',null,null);
-		}	
+		}	 */
 		
 		// well none of the layout options exists so hand it over to page.php
 		 
