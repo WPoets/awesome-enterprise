@@ -408,10 +408,16 @@ static function redis_connect($database_number){
 
 static function new_mysqli(){
 	//php8OK
-
+	
 	$mysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
 	$mysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 	return $mysqli;
+}
+
+static function cleanup(){
+	if(!self::$mysqli) return;
+	
+	self::$mysqli->close();
 }
 
 static function convert_name_value_string($arr){

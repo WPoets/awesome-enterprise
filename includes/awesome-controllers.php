@@ -95,6 +95,7 @@ class controllers{
 		self::set_cache_header('yes');
 		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
+		aw2_library::cleanup();
 		exit();	
 	}	
 	
@@ -116,6 +117,7 @@ class controllers{
 		self::set_cache_header('yes');
 		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -155,6 +157,7 @@ class controllers{
 		
 		$result=file_get_contents($path);	
 		echo $result;
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -261,7 +264,8 @@ class controllers{
 		} else {
 			aw2_library::get_post_from_slug(self::$module,$app['active']['collection']['post_type'],$post);
 			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID  . "&action=edit"));
-		}		
+		}	
+		aw2_library::cleanup();		
 		exit();	
 	}
 	static function controller_s($o){
@@ -279,7 +283,8 @@ class controllers{
 		$results = $wpdb->get_results($sql,ARRAY_A);
 		foreach ($results as $result){
 			echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $result['ID']  . "&action=edit") .'">' . $result['post_title'] . '(' . $result['ID'] . ')</a>' . '<br>');
-		}		
+		}
+		aw2_library::cleanup();		
 		exit();	
 	}	
 	
@@ -298,6 +303,7 @@ class controllers{
 		}
 		$collection=aw2_library::get('services.search_service');
 		echo aw2_library::module_run($collection,'search-submit',null,null,["ticket"=>self::$module]);
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -321,7 +327,7 @@ class controllers{
 			exit();		
 		}				
 		echo aw2_library::call_api($json);
-		
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -345,6 +351,7 @@ class controllers{
 			$output=implode('',$result);
 			echo $output;
 		}
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -368,6 +375,7 @@ class controllers{
 			$output=implode('',$result);
 			echo $output;
 		}
+		aw2_library::cleanup();
 		exit();	
 	}
 	
@@ -410,7 +418,7 @@ class controllers{
 			
 						}
 						} while(mysqli_more_results($conn) && mysqli_next_result($conn));
-			}
+			}	
 		exit();	
 	}		
 
@@ -493,7 +501,7 @@ class controllers{
 				if($output !== false){
 					echo $output; 
 					if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'After running Page']);			
-				
+					aw2_library::cleanup();
 					exit();
 				}
 				
@@ -522,7 +530,7 @@ class controllers{
 
 				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 				//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
-					
+					aw2_library::cleanup();
 					exit();
 				}
 				
@@ -567,7 +575,8 @@ class controllers{
 			echo $result;
 			//render debug bar if needs to be rendered	
 			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
-
+			
+			aw2_library::cleanup();
 			exit();	
 		}
 	}
@@ -598,6 +607,7 @@ class controllers{
 			echo $result;
 			//render debug bar if needs to be rendered	
 			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
+			aw2_library::cleanup();
 			exit();	
 		}
 		
@@ -630,7 +640,8 @@ class controllers{
 		echo $result;
 		//render debug bar if needs to be rendered	
 		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
-			
+		
+		aw2_library::cleanup();		
 		exit();	
 	}
 
@@ -663,6 +674,7 @@ class controllers{
 		echo implode('',$result);
 		//render debug bar if needs to be rendered	
 		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
+		aw2_library::cleanup();
 		exit();	
 	}	
 	
@@ -715,6 +727,7 @@ class controllers{
 		
 		if($output !== false){
 			echo $output;
+			aw2_library::cleanup();
 			exit();
 		}
 		
@@ -788,6 +801,7 @@ class controllers{
 			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
 
 			echo $result;
+			aw2_library::cleanup();
 			exit();	
 		}
 		
