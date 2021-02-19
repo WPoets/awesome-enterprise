@@ -41,7 +41,7 @@ function cud($atts,$content=null,$shortcode){
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
 	$return_value = array();
-	
+	$start=microtime(true);
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
 	try{
@@ -58,6 +58,7 @@ function cud($atts,$content=null,$shortcode){
 		$sc_exec['query']=$sql;
 		throw $e;
 	}
+	if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);		
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
@@ -71,7 +72,7 @@ function fetch($atts,$content=null,$shortcode){
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 	
 	$return_value = array();
-	
+	$start=microtime(true);
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
 	try{
@@ -91,7 +92,7 @@ function fetch($atts,$content=null,$shortcode){
 		$sc_exec['query']=$content;
 		throw $e;
 	}
-		
+	if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);			
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
@@ -395,17 +396,18 @@ function transaction_exec($content,$action,$isolation='read_committed'){
 	if($isolation=='read_committed')
 		$isolation_statement='SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;';
 
-
+	$start=microtime(true);
 	//**Prepend "start transaction; " and append $action to the query and parse from content**//
 	$sql=$isolation_statement . PHP_EOL . "start transaction; ". PHP_EOL . \aw2_library::parse_shortcode($content). " ". PHP_EOL . $action.";";
-
+	
 	if(empty($return_value)){
 		$cud = \aw2_library::$mysqli->multi_query($sql);
 		$return_value['status']="success";
 		$return_value['message']="Success";
 		$return_value['matched_rows']=$cud->rowsMatched();
 		$return_value['affected_rows']=$cud->affectedRows();	
-		$return_value['sql']=$sql;	
+		$return_value['sql']=$sql;
+		if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);				
 	}
 	return $return_value;
 }
