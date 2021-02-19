@@ -53,9 +53,9 @@ function save_csv_page($atts,$content=null,$shortcode){
 	$redis->zAdd($key,$pageno,$csv);
 	
 	if(!$ttl)
-		$redis->setTimeout($key, 60*60);
+		$redis->expire($key, 60*60);
 	else
-		$redis->setTimeout($key, $ttl*60);
+		$redis->expire($ticket, $ttl*60);
 	
 }
 
