@@ -224,6 +224,7 @@ class aw2_error_log{
 		";
 				
 		$obj = $nmysqli->multi_query($sql);
+		$nmysqli->close();
 	}
 
 	static function datatype_test($val, $data_type){
@@ -324,9 +325,10 @@ class aw2_error_log{
 		$result = $obj->fetchAll("col");
 		$last_insert_id='';
 
-		if(is_array($result))
+		if(is_array($result) &&!empty($result))
 			$last_insert_id=$result[0];
-			
+		
+		$nmysqli->close();		
 		return $last_insert_id;
 	}
 
