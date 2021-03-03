@@ -38,10 +38,6 @@ https://getawesomestudio.com/
 
 == Changelog ==
 
-
-= 1.3.4 =
-* Added support for logging usage of all post types and modules. This feature is disabled by default and can be enabled by adding AWESOME_LOG_DEBUG = yes in the wp_config of the specific site.
-
 = 1.3.3 =
 * Fixed the issue of % sign getting converted in to hex placeholder string.
 * Ability to update a .docx file template
