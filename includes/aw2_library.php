@@ -4560,7 +4560,11 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 	}
 	
 	$stack_id=self::module_push($arr);
-
+	
+	if(defined('AWESOME_LOG_USAGE') && AWESOME_LOG_USAGE == "yes"){
+		require_once('usage_log.php');
+		$log = aw2_usage_log::log_usage($collection, $module);
+	}
 	
 	if(!$template){
 		if($content){
