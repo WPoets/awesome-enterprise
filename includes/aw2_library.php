@@ -5004,10 +5004,16 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 		
 		return "$module Module not found " . self::convert_name_value_string($collection);
 	}
-	
+
+	if(defined('AWESOME_LOG_USAGE') && AWESOME_LOG_USAGE == "yes"){
+		require_once('usage_log.php');
+		$log = aw2_usage_log::log_usage($collection, $module);
+	}
+
 	//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
 	$stack_id=self::module_push($arr);
-
+	
+	
 	$sc_exec=&self::get_array_ref('@sc_exec');
 	$restore=$sc_exec;	
 	$sc_exec['collection']=$collection;
