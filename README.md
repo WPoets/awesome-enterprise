@@ -29,6 +29,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+
+##### 3.0.7
+* Imporved: Added support for logging usage of all post types and modules. This feature is disabled by default and can be enabled by adding define("AWESOME_LOG_DEBUG", "yes") in the wp_config of the specific site
+
+
 ##### 3.0.6
 * Fixed: quote_comma was fixed
 * Fixed: added a check so that if layout module does not exists it is handled by page.php
