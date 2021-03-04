@@ -415,9 +415,10 @@ static function new_mysqli(){
 }
 
 static function cleanup(){
-	if(!self::$mysqli) return;
+	if(self::$mysqli) {
+		self::$mysqli->close();
+	}
 	
-	self::$mysqli->close();
 }
 
 static function convert_name_value_string($arr){
