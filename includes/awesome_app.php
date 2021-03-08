@@ -207,7 +207,7 @@ class awesome_app{
 			exit();
 		
 		}else{
-			$options = get_option('awesome-app-' . $this->slug);
+			$options = aw2_library::get_option('awesome-app-' . $this->slug);
 			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
 			
 			if('1' == $options['enable_vsession']){

@@ -3054,6 +3054,19 @@ static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
 		return false;
 	}
 
+static function get_option($option){
+	//php8OK	
+		global $table_prefix;
+		
+		$sql="SELECT option_value FROM ".$table_prefix."options WHERE option_name = '" . $option . "' LIMIT 1";
+		$results =self::get_results($sql);				
+
+		if( $results ){
+		  return $results;
+		}
+		else
+			return false;
+}
  
 //------------------------------------------------------------------------------------------------------------------------------
 //Stack implementation

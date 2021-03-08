@@ -321,7 +321,7 @@ class controllers{
 			exit();		
 		}
 
-		$json=get_option($token);
+		$json=\aw2_library::get_option($token);
 		if(empty($json)){
 			echo 'Error E2:The Data Submitted is not valid. Check with Administrator';
 			exit();		
