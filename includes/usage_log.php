@@ -2,38 +2,35 @@
 
 class aw2_usage_log{
 	
-	static function log_usage($collection=null,$module=null){
-		$service = 0;
-		if(isset($collection['service']) && $collection['service'] == "yes")
-			$service = 1;
+	static function log_usage($collection,$module=null){
 
-		$post_type = '';
-		if(isset($collection['post_type']))
-			$post_type = $collection['post_type'];
-
-		$nmysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
-		$nmysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
-
-		$sql = "
-		start TRANSACTION;
-		set @post_type='".$post_type."';
-		set @module='".$module."';
-		set @service='".$service."';
+		$stream_id = null;
 		
-		SELECT @id:=ID FROM ".AWESOME_LOG_DB.".usage_log WHERE post_type=@post_type and module_slug=@module;
+		$service = 0;
+		if(isset($collection['service']) && $collection['service'] == "yes"){
+			$service = 1;
+			$stream_id = 'service_';
+		}
 
-		IF @id is null THEN
+		$post_type=null;
+		if(isset($collection['post_type'])){
+			$post_type = $collection['post_type'];
+			$stream_id .= $post_type;
+		}
 
-			INSERT INTO ".AWESOME_LOG_DB.".`usage_log` (`post_type`,`module_slug`,`service`) VALUES ( '".$post_type."','".$module."','".$service."');
-		ELSE
-			UPDATE ".AWESOME_LOG_DB.".`usage_log` SET count=count+1
-			WHERE ID = @id;
-		END IF;
-			
-		COMMIT;
-		";
-				
-		$obj = $nmysqli->multi_query($sql);
-		$nmysqli->close();
+		if($module != null){
+			$stream_id = $stream_id.'_'.$module;
+		}
+
+		//** Add to stream - usage-logging **//
+		$redis = \aw2_library::redis_connect(REDIS_DATABASE_DB);
+		$redis_ack = $redis->INCR($stream_id);
+
+		if(!empty($redis_ack)){
+			$return_value = array('status'=>'success', 'message'=>'Stream incremented successfully','data'=>$redis_ack);
+		}else{
+			$return_value = array('status'=>'error', 'message'=>'Unable to increase count in stream','data'=>$redis_ack);
+		}
+
 	}
 }
