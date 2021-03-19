@@ -23,13 +23,15 @@ class aw2_usage_log{
 		}
 
 		//** Add to stream - usage-logging **//
-		$redis = \aw2_library::redis_connect(REDIS_LOGGING_DB);
-		$redis_ack = $redis->INCR($stream_id);
+		if(REDIS_LOGGING_DB){
+			$redis = \aw2_library::redis_connect(REDIS_LOGGING_DB);
+			$redis_ack = $redis->INCR($stream_id);
 
-		if(!empty($redis_ack)){
-			$return_value = array('status'=>'success', 'message'=>'Stream incremented successfully','data'=>$redis_ack);
-		}else{
-			$return_value = array('status'=>'error', 'message'=>'Unable to increase count in stream','data'=>$redis_ack);
+			if(!empty($redis_ack)){
+				$return_value = array('status'=>'success', 'message'=>'Stream incremented successfully','data'=>$redis_ack);
+			}else{
+				$return_value = array('status'=>'error', 'message'=>'Unable to increase count in stream','data'=>$redis_ack);
+			}
 		}
 
 	}
