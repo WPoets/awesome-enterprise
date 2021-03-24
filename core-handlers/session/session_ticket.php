@@ -7,13 +7,13 @@ function check($ticket,$otp_value,$validation){
 		if($otp_value!==$validation['otp_value'])
 			return false;
 	}
-	
+/*	
 	// nonce validation
 	if(isset($validation['nonce'])){
 		$nonce=\wp_create_nonce($ticket);
 		if($nonce!== $validation['nonce'])return false;
 	}
-	
+*/	
 	// user validation
 	if(isset($validation['user'])){
 		$current_user = \aw2_library::get('app.user.login');
@@ -68,11 +68,12 @@ function create($atts,$content=null,$shortcode){
 		return $return_value;
 	}
 	
-	
+/*	
 	//do i need a nonce
 	if($nonce==='yes'){
 		$validation['nonce']=\wp_create_nonce($ticket);
 	}
+*/	
 	// if user validation
 	if(!is_null($user)){
 		if($user==='current_user'){
