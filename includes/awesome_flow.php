@@ -233,6 +233,10 @@ class awesome_flow{
 
 		if(\aw2_library::startsWith($request,'/'))
 			$request=substr($request, 1);	
+			
+		if(\aw2_library::endswith($request,'/'))
+			$request=substr($request, 0,-1);
+
 
 		if(empty($request)){
 			self::initialize_root(); // it is front page hence request is not set so setup root.

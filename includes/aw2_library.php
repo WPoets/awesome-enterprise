@@ -64,6 +64,11 @@ static function load_all_extra_handlers(){
 
 private static $hasArray = false;
 
+	
+static function esc_sql(){
+	if(!self::$mysqli)self::$mysqli = self::new_mysqli();
+	return self::$mysqli->real_escape_string($value);
+}
 
 static function sc_exec_setup_pos(){
 	$sc_exec=&self::get_array_ref('@sc_exec');
