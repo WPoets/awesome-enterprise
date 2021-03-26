@@ -23,7 +23,7 @@ class aw2_usage_log{
 		}
 
 		//** Add to stream - usage-logging **//
-		if(REDIS_LOGGING_DB){
+		if(defined('REDIS_LOGGING_DB')){
 			$redis = \aw2_library::redis_connect(REDIS_LOGGING_DB);
 			$redis_ack = $redis->INCR($stream_id);
 
