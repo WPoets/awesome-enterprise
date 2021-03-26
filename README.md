@@ -30,8 +30,17 @@ If you don't find your issue already listed, do [create an issue](https://github
 ### Changelog  
 
 
+##### 3.0.9
+* Fixed: The tracking of modules & apps being used is now kept in Redis streams, to ensure speed does not become an issue. It can be enabled by using defining REDIS_LOGGING_DB in wp-config.php file.
+* Fixed: Removed Service logging separator.
+* Fixed: Added support for WP Function esc_sql() in for non wp usage.
+
+##### 3.0.8
+* Improved: Moved the way less variables are registered to 'less-variables' module in the core.
+* Fixed: get_option function moved to aw2_library so that we can access options from WordPress when using non WordPress flow.
+
 ##### 3.0.7
-* Imporved: Added support for logging usage of all post types and modules. This feature is disabled by default and can be enabled by adding define("AWESOME_LOG_DEBUG", "yes") in the wp_config of the specific site
+* Improved: Added support for logging usage of all post types and modules. This feature is disabled by default and can be enabled by adding define("AWESOME_LOG_DEBUG", "yes") in the wp_config of the specific site
 
 
 ##### 3.0.6
