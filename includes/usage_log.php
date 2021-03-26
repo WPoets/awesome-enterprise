@@ -5,17 +5,11 @@ class aw2_usage_log{
 	static function log_usage($collection,$module=null){
 
 		$stream_id = null;
-		
-		$service = 0;
-		if(isset($collection['service']) && $collection['service'] == "yes"){
-			$service = 1;
-			$stream_id = 'service_';
-		}
-
 		$post_type=null;
+		
 		if(isset($collection['post_type'])){
 			$post_type = $collection['post_type'];
-			$stream_id .= $post_type;
+			$stream_id = $post_type;
 		}
 
 		if($module != null){
