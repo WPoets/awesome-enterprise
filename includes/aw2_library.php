@@ -61,11 +61,9 @@ static function load_all_extra_handlers(){
 	}
 }
 
-
 private static $hasArray = false;
 
-	
-static function esc_sql(){
+static function esc_sql($value){
 	if(!self::$mysqli)self::$mysqli = self::new_mysqli();
 	return self::$mysqli->real_escape_string($value);
 }
