@@ -170,7 +170,7 @@ class aw2_error_log{
 			$rhs='_empty_';
 		}
 		
-		$rhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
+		$rhs_dt=isset($arr['rhs_dt'])?$arr['rhs_dt']:'';
 		$valid = self::datatype_test($rhs,$rhs_dt);
 		if($valid === false ){
 			$flag=true;
