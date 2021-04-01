@@ -30,6 +30,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 ### Changelog  
 
 
+##### 3.0.9.2
+* Imporved: added suport for fetching stream usage data from Redis using __redis_db.stream_fetch_usage__  eg. [redis_db.stream_fetch_usage stream_id="c_apply_layout" o.set=template.stream_data /]
+
 ##### 3.0.9
 * Fixed: The tracking of modules & apps being used is now kept in Redis streams, to ensure speed does not become an issue. It can be enabled by using defining REDIS_LOGGING_DB in wp-config.php file.
 * Fixed: Removed Service logging separator.
