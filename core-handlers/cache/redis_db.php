@@ -97,3 +97,33 @@ function stream_fetch_all($atts,$content=null,$shortcode){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
+
+\aw2_library::add_service('redis_db.stream_fetch_usage','Run the Code Library',['namespace'=>__NAMESPACE__]);
+
+function stream_fetch_usage($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract( \aw2_library::shortcode_atts( array(
+		'main'=>null,
+		'stream_id'=>null,
+	), $atts) );
+
+	if($stream_id == null){
+		return array('status'=>'error', 'message'=>'Bad Request');
+	}
+
+	$redis = \aw2_library::redis_connect(REDIS_LOGGING_DB);
+	$redis_ack = $redis->GET($stream_id);
+
+	if(!empty($redis_ack)){
+
+		$return_value = array('status'=>'success', 'message'=>'Last stream fetched successfully','data'=>$redis_ack);
+	}else{
+		$return_value = array('status'=>'error', 'message'=>'Unable to fetch data from stream','data'=>$redis_ack);
+	}
+
+	
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}
+
