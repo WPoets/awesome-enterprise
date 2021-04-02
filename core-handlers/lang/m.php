@@ -245,8 +245,8 @@ function _money_format($value, $atts){
 	if($format=="yes"){
 		$format = 'en_IN';
 	}
-	setlocale(LC_MONETARY, $format);
-    $value = money_format('%!i', (float)$value);
+	$fmt = new \NumberFormatter( $format, \NumberFormatter::CURRENCY );
+	$value = $fmt->formatCurrency($value, "INR");
 	$value =str_replace('.00','',$value);
 	return $value;
 }
