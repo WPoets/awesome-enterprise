@@ -245,8 +245,14 @@ function _money_format($value, $atts){
 	if($format=="yes"){
 		$format = 'en_IN';
 	}
+	
+	$currency = $atts['currency'];
+	if(empty($currency)){
+		$currency = 'INR';
+	}
+	
 	$fmt = new \NumberFormatter( $format, \NumberFormatter::CURRENCY );
-	$value = $fmt->formatCurrency($value, "INR");
+	$value = $fmt->formatCurrency($value, $currency);
 	$value =str_replace('.00','',$value);
 	return $value;
 }
