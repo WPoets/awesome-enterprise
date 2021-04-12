@@ -31,6 +31,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 
 
+##### 3.0.9.4
+* Fixed: __.exists__ in some situation used to return blank string, instead of boolean false. 
+
 ##### 3.0.9.3
 * Fixed: removed the depracated money_format function and replaced it with NumberFormatter class, intl pecl libaray is now required.
 
