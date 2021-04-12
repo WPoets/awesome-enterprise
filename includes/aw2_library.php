@@ -3333,6 +3333,12 @@ static function get($main,&$atts=null,$content=null){
 	self::get_start($o);
 
 	while(count($o->pieces)>0) {
+		
+		$values=array_values($o->pieces);
+		if($o->value=='_error' && end($values)==='exists'){
+			return false;
+		}
+		
 		if ($o->value=='_error' && $o->pieces['0']!='exists'){
 			//$o->value='';
 			$o->pieces=array();
