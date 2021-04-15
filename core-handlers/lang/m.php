@@ -416,7 +416,7 @@ function entities_decode($value, $atts){
 //esc_sql
 \aw2_library::add_service('m.esc_sql','Use m.esc_sql',['func'=>'_esc_sql','namespace'=>__NAMESPACE__]);
 function _esc_sql($value, $atts){
-	$value = esc_sql((string)$value);
+	$value = \aw2_library::esc_sql((string)$value);
 	return $value;
 }
 
