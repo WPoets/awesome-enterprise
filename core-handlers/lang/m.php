@@ -246,7 +246,11 @@ function _money_format($value, $atts){
 		$format = 'en_IN';
 	}
 	
-	$currency = $atts['currency'];
+	if(isset($atts['currency'])){
+		$currency = $atts['currency'];
+	}else{
+		$currency = 'INR';
+	}
 	if(empty($currency)){
 		$currency = 'INR';
 	}
