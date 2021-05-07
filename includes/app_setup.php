@@ -1145,7 +1145,7 @@ class awesome_app{
 			$module = $path[2];
 		}
 		
-		$open_endpoints = array("css","js","t","file fileviewer","excel","search","callback","csv_download","report_csv","report_raw","mreports_csv");
+		$open_endpoints = array("css","js","t","file","fileviewer","excel","search","callback","csv_download","report_csv","report_raw","mreports_csv");
 		
 		if(in_array($module, $open_endpoints)){
 			return true;
