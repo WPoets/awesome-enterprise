@@ -238,6 +238,9 @@ function _number_format($value, $atts){
 //money_format
 \aw2_library::add_service('m.money_format','Format the value as Money and return. Use m.money_format="<format>"',['func'=>'_money_format','namespace'=>__NAMESPACE__]);
 function _money_format($value, $atts){
+
+	$value = (float) $value;
+
 	$format = $atts['money_format'];
 	if(empty($format)){
 		$format = 'en_IN';
@@ -245,12 +248,16 @@ function _money_format($value, $atts){
 	if($format=="yes"){
 		$format = 'en_IN';
 	}
-	
-	$currency = $atts['currency'];
+
+	if(isset($atts['currency'])){
+		$currency = $atts['currency'];
+	}else{
+		$currency = 'INR';
+	}
 	if(empty($currency)){
 		$currency = 'INR';
 	}
-	
+
 	$fmt = new \NumberFormatter( $format, \NumberFormatter::CURRENCY );
 	$value = $fmt->formatCurrency($value, $currency);
 	$value =str_replace('.00','',$value);
@@ -422,7 +429,7 @@ function entities_decode($value, $atts){
 //esc_sql
 \aw2_library::add_service('m.esc_sql','Use m.esc_sql',['func'=>'_esc_sql','namespace'=>__NAMESPACE__]);
 function _esc_sql($value, $atts){
-	$value = esc_sql((string)$value);
+	$value = \aw2_library::esc_sql((string)$value);
 	return $value;
 }
 
