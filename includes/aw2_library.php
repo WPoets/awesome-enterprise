@@ -4772,6 +4772,13 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
+				$fields = array('last_accessed'=>date('Y-m-d H:i:s'));
+				
+				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
+				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
+				
+			}	
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -4805,6 +4812,13 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
+				$fields = array('last_accessed'=>date('Y-m-d H:i:s'));
+				
+				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
+				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
+				
+			}	
 		}
 		else{
 			$arr=json_decode($return_value,true);
