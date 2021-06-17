@@ -31,6 +31,12 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 
 
+##### 3.0.9.5
+* Improved: added suport for capturing the modules and post_type in use. To enable this you will need to set followin gin wp-config.php, and you will need the latest version for Debug Handler
+
+	`define( 'REDIS_DATABASE_DEBUG_CACHE', '12' );
+	define( 'SET_DEBUG_CACHE', true );`
+
 ##### 3.0.9.4
 * Fixed: __.exists__ in some situation used to return blank string, instead of boolean false. 
 
