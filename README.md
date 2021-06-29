@@ -33,6 +33,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ##### 3.0.9.7
 * Improved: added suport for capturing the apps in use
+* Fixed: added support for returning default value when aw2.get value is null.
 
 ##### 3.0.9.6
 * Improved: added suport for capturing the modules and post_type in use. To enable this you will need to set followin gin wp-config.php, and you will need the latest version for Debug Handler
