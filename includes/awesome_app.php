@@ -208,6 +208,8 @@ class awesome_app{
 		
 		}else{
 			$options = aw2_library::get_option('awesome-app-' . $this->slug);
+			$options = @unserialize($options[0]['option_value']);
+			
 			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
 			
 			if('1' == $options['enable_vsession']){
