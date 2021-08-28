@@ -30,6 +30,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 ### Changelog  
 
 
+##### 3.0.9.8
+* Fixed: "Login Required" setting was not having any impact
+* Fixed: "Trying to access array offset on value of type null" error in certain cases.
 
 ##### 3.0.9.7
 * Improved: added suport for capturing the apps in use
