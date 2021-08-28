@@ -9,6 +9,8 @@ namespace aw2\css;
 \aw2_library::add_service('less','LESS Compiler',['namespace'=>__NAMESPACE__]);
 function less($atts,$content=null,$shortcode){
 	//require_once (AWESOME_PATH . "/libraries/wp-less/wp-less.php");
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
 	$string=\aw2_library::parse_shortcode($content);
 	$less = new \lessc;
 	$less_variables=\aw2_library::get('css.less_variables');
@@ -30,7 +32,7 @@ function minify($atts,$content=null,$shortcode){
 	require_once $path . '/minify2/Exceptions/IOException.php';
 	require_once $path . '/minify2/path-converter/ConverterInterface.php';
 	require_once $path . '/minify2/path-converter/Converter.php'; */
-	
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	$string=\aw2_library::parse_shortcode($content);
 	

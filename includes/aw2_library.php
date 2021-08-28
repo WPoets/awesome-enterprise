@@ -4829,8 +4829,9 @@ static function get_module($collection,$module){
 					$app_slug = self::$stack['apps'][$collection['app']]['slug'];
 					$fields['app_name']= self::$stack['apps'][$collection['app']]['name'];
 					aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
-					unset($fields);
+					
 				}
+				unset($fields);
 			}	
 		}
 		else{
