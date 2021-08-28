@@ -208,6 +208,9 @@ class awesome_app{
 		
 		}else{
 			$options = aw2_library::get_option('awesome-app-' . $this->slug);
+			
+			if(is_bool($options)) return true;
+			
 			$options = @unserialize($options[0]['option_value']);
 			
 			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
