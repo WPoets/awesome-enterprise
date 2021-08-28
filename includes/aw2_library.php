@@ -4778,12 +4778,12 @@ static function get_module($collection,$module){
 				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
 				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
 				
-					
-				$app_slug = self::$stack['app']['slug'];
-				$fields['app_name']= self::$stack['app']['name'];
-				aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
-				unset($fields);
-				
+				if(isset(self::$stack['app'])){	
+					$app_slug = self::$stack['app']['slug'];
+					$fields['app_name']= self::$stack['app']['name'];
+					aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
+					unset($fields);
+				}
 				
 			}	
 		}
@@ -4825,12 +4825,12 @@ static function get_module($collection,$module){
 				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
 				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
 				
-				
-				$app_slug = self::$stack['apps'][$collection['app']]['slug'];
-				$fields['app_name']= self::$stack['apps'][$collection['app']]['name'];
-				aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
-				unset($fields);
-				
+				if(isset(self::$stack['app'][$collection['app']])){	
+					$app_slug = self::$stack['apps'][$collection['app']]['slug'];
+					$fields['app_name']= self::$stack['apps'][$collection['app']]['name'];
+					aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
+					unset($fields);
+				}
 			}	
 		}
 		else{
