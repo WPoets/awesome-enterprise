@@ -756,7 +756,11 @@ class controllers{
 		
 		$slug= $o->pieces[0];
 		$taxonomy	= $app['settings']['default_taxonomy'];
-		$post_type	= $app['collection']['posts']['post_type'];
+		
+		$post_type='';
+		if( isset($app['collection']['posts']))
+			$post_type	= $app['collection']['posts']['post_type'];
+		
 	
 		if(empty($taxonomy) || !term_exists( $slug, $taxonomy )) return;
 			
