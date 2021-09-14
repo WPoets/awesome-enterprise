@@ -3862,7 +3862,7 @@ static function get_url($o) {
 
 	switch ($url) {
 		case 'cdn':
-			$o->value=self::$cdn;
+			$o->value=self::get('env.settings.cdn')
 			break;		
 		case 'uploads':
 			$o->value=wp_upload_dir()['baseurl'] . '/';
