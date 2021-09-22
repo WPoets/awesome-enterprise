@@ -29,6 +29,13 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.1.0
+* Improved: Added support for creating empty array using m.empty_array
+* Fixed: Access to undeclared static property: aw2_library::$cdn
+* Fixed: PHP Notice: Undefined index: posts
+* Fixed: esc_sql was using normal WordPress function, converted into a local function so that it can work in non-WP scenario
+* Fixed: For Vsession if user_id is not available then email is set as ID.
+
 
 ##### 3.0.9.8
 * Fixed: "Login Required" setting was not having any impact
