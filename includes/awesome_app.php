@@ -207,7 +207,12 @@ class awesome_app{
 			exit();
 		
 		}else{
-			$options = get_option('awesome-app-' . $this->slug);
+			$options = aw2_library::get_option('awesome-app-' . $this->slug);
+			
+			if(is_bool($options)) return true;
+			
+			$options = @unserialize($options[0]['option_value']);
+			
 			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
 			
 			if('1' == $options['enable_vsession']){
@@ -253,7 +258,7 @@ class awesome_app{
 			$module = $path[2];
 		}
 		
-		$open_endpoints = array("css","js","t","file fileviewer","excel","search","callback","csv_download","report_csv","report_raw","mreports_csv");
+		$open_endpoints = array("css","js","t","file","fileviewer","excel","search","callback","csv_download","report_csv","report_raw","mreports_csv");
 		
 		if(in_array($module, $open_endpoints)){
 			return true;

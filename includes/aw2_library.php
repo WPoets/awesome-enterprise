@@ -61,9 +61,12 @@ static function load_all_extra_handlers(){
 	}
 }
 
-
 private static $hasArray = false;
 
+static function esc_sql($value){
+	if(!self::$mysqli)self::$mysqli = self::new_mysqli();
+	return self::$mysqli->real_escape_string($value);
+}
 
 static function sc_exec_setup_pos(){
 	$sc_exec=&self::get_array_ref('@sc_exec');
@@ -415,9 +418,10 @@ static function new_mysqli(){
 }
 
 static function cleanup(){
-	if(!self::$mysqli) return;
+	if(self::$mysqli) {
+		self::$mysqli->close();
+	}
 	
-	self::$mysqli->close();
 }
 
 static function convert_name_value_string($arr){
@@ -3053,6 +3057,19 @@ static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
 		return false;
 	}
 
+static function get_option($option){
+	//php8OK	
+		global $table_prefix;
+		
+		$sql="SELECT option_value FROM ".$table_prefix."options WHERE option_name = '" . $option . "' LIMIT 1";
+		$results =self::get_results($sql);				
+
+		if( $results ){
+		  return $results;
+		}
+		else
+			return false;
+}
  
 //------------------------------------------------------------------------------------------------------------------------------
 //Stack implementation
@@ -3316,6 +3333,12 @@ static function get($main,&$atts=null,$content=null){
 	self::get_start($o);
 
 	while(count($o->pieces)>0) {
+		
+		$values=array_values($o->pieces);
+		if($o->value=='_error' && end($values)==='exists'){
+			return false;
+		}
+		
 		if ($o->value=='_error' && $o->pieces['0']!='exists'){
 			//$o->value='';
 			$o->pieces=array();
@@ -3839,7 +3862,7 @@ static function get_url($o) {
 
 	switch ($url) {
 		case 'cdn':
-			$o->value=self::$cdn;
+			$o->value=self::get('env.settings.cdn')
 			break;		
 		case 'uploads':
 			$o->value=wp_upload_dir()['baseurl'] . '/';
@@ -4749,6 +4772,20 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
+				$fields = array('last_accessed'=>date('Y-m-d H:i:s'));
+				
+				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
+				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
+				
+				if(isset(self::$stack['app'])){	
+					$app_slug = self::$stack['app']['slug'];
+					$fields['app_name']= self::$stack['app']['name'];
+					aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
+					unset($fields);
+				}
+				
+			}	
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -4782,6 +4819,20 @@ static function get_module($collection,$module){
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
 			if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
+			if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
+				$fields = array('last_accessed'=>date('Y-m-d H:i:s'));
+				
+				aw2\debug_cache\set_access_post_type(["post_type"=>$arr['post_type'],"fields"=>$fields],'',null);
+				aw2\debug_cache\set_access_module(["post_type"=>$arr['post_type'],"module"=>$arr['module'],"fields"=>$fields],'',null);
+				
+				if(isset(self::$stack['app'][$collection['app']])){	
+					$app_slug = self::$stack['apps'][$collection['app']]['slug'];
+					$fields['app_name']= self::$stack['apps'][$collection['app']]['name'];
+					aw2\debug_cache\set_access_app(["app"=>$app_slug,"fields"=>$fields],'',null);
+					
+				}
+				unset($fields);
+			}	
 		}
 		else{
 			$arr=json_decode($return_value,true);
@@ -5004,10 +5055,16 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 		
 		return "$module Module not found " . self::convert_name_value_string($collection);
 	}
-	
+
+	if(defined('AWESOME_LOG_USAGE') && AWESOME_LOG_USAGE == "yes"){
+		require_once('usage_log.php');
+		$log = aw2_usage_log::log_usage($collection, $module);
+	}
+
 	//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
 	$stack_id=self::module_push($arr);
-
+	
+	
 	$sc_exec=&self::get_array_ref('@sc_exec');
 	$restore=$sc_exec;	
 	$sc_exec['collection']=$collection;

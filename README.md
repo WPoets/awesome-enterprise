@@ -29,6 +29,47 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+
+##### 3.0.9.8
+* Fixed: "Login Required" setting was not having any impact
+* Fixed: "Trying to access array offset on value of type null" error in certain cases.
+
+##### 3.0.9.7
+* Improved: added suport for capturing the apps in use
+* Fixed: added support for returning default value when aw2.get value is null.
+
+##### 3.0.9.6
+* Improved: added suport for capturing the modules and post_type in use. To enable this you will need to set followin gin wp-config.php, and you will need the latest version for Debug Handler
+
+	`define( 'REDIS_DATABASE_DEBUG_CACHE', '12' );
+	define( 'SET_DEBUG_CACHE', true );`
+
+##### 3.0.9.5
+ 
+ 
+##### 3.0.9.4 
+* Fixed: __.exists__ in some situation used to return blank string, instead of boolean false. 
+
+##### 3.0.9.3
+* Fixed: removed the depracated money_format function and replaced it with NumberFormatter class, intl pecl libaray is now required.
+
+##### 3.0.9.2
+* Improved: added suport for fetching stream usage data from Redis using __redis_db.stream_fetch_usage__  eg. [redis_db.stream_fetch_usage stream_id="c_apply_layout" o.set=template.stream_data /]
+* Fixed: rhs data type was wrongly calcuted while logging the data mismatch issue.
+
+##### 3.0.9
+* Fixed: The tracking of modules & apps being used is now kept in Redis streams, to ensure speed does not become an issue. It can be enabled by using defining REDIS_LOGGING_DB in wp-config.php file.
+* Fixed: Removed Service logging separator.
+* Fixed: Added support for WP Function esc_sql() in for non wp usage.
+
+##### 3.0.8
+* Improved: Moved the way less variables are registered to 'less-variables' module in the core.
+* Fixed: get_option function moved to aw2_library so that we can access options from WordPress when using non WordPress flow.
+
+##### 3.0.7
+* Improved: Added support for logging usage of all post types and modules. This feature is disabled by default and can be enabled by adding define("AWESOME_LOG_DEBUG", "yes") in the wp_config of the specific site
+
+
 ##### 3.0.6
 * Fixed: quote_comma was fixed
 * Fixed: added a check so that if layout module does not exists it is handled by page.php

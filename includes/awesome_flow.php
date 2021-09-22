@@ -23,6 +23,7 @@ class awesome_flow{
 			
 			$ref['awesome_core']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"awesome_core"]));
 			$ref['settings']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"settings"]));
+			$ref['css']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"css"]));
 			//These are content type stubs and not actual content types
 			$ref['content_types']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"content_types"]));
 		}
@@ -38,11 +39,13 @@ class awesome_flow{
 			self::load_apps();
 
 			self::run_core('services');
+			self::run_core('less-variables');
 				
 
 				
 			//self::run_core('config');
 			self::load_env_settings();
+			
 			
 			
 			$ref=&aw2_library::get_array_ref();
@@ -57,6 +60,7 @@ class awesome_flow{
 				["main"=>ENV_CACHE,"field"=>"apps","value"=>serialize($ref['apps'])]);				
 				
 				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"settings","value"=>serialize($ref['settings'])]);
+				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"css","value"=>serialize($ref['css'])]);
 
 				$content_types=$ref['content_types'];
 				$ct_arr=array();
@@ -229,6 +233,10 @@ class awesome_flow{
 
 		if(\aw2_library::startsWith($request,'/'))
 			$request=substr($request, 1);	
+			
+		if(\aw2_library::endswith($request,'/'))
+			$request=substr($request, 0,-1);
+
 
 		if(empty($request)){
 			self::initialize_root(); // it is front page hence request is not set so setup root.

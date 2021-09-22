@@ -27,7 +27,7 @@ function check_access($link){
     
     //app is valid, check the rights
 
-    $options = get_option('awesome-app-' . $app_slug);
+    $options = \aw2_library::get_option('awesome-app-' . $app_slug);
     if(!isset($options) || ('1' != $options['enable_rights'])) return true;
     
     if('1' == $options['enable_vsession']){

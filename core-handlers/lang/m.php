@@ -238,6 +238,9 @@ function _number_format($value, $atts){
 //money_format
 \aw2_library::add_service('m.money_format','Format the value as Money and return. Use m.money_format="<format>"',['func'=>'_money_format','namespace'=>__NAMESPACE__]);
 function _money_format($value, $atts){
+
+	$value = (float) $value;
+
 	$format = $atts['money_format'];
 	if(empty($format)){
 		$format = 'en_IN';
@@ -245,8 +248,18 @@ function _money_format($value, $atts){
 	if($format=="yes"){
 		$format = 'en_IN';
 	}
-	setlocale(LC_MONETARY, $format);
-    $value = money_format('%!i', (float)$value);
+
+	if(isset($atts['currency'])){
+		$currency = $atts['currency'];
+	}else{
+		$currency = 'INR';
+	}
+	if(empty($currency)){
+		$currency = 'INR';
+	}
+
+	$fmt = new \NumberFormatter( $format, \NumberFormatter::CURRENCY );
+	$value = $fmt->formatCurrency($value, $currency);
 	$value =str_replace('.00','',$value);
 	return $value;
 }
@@ -483,10 +496,10 @@ function num_round($value, $atts){
 	return $value;
 }
 
+
 //return empty array
 \aw2_library::add_service(‘m.empty_array’,‘given empty array in return. Use m.empty_array’,[‘namespace’=>__NAMESPACE__]);
 function empty_array($value, $atts){
 	$value = array();
 	return $value;
 }
-

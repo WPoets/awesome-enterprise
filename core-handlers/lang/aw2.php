@@ -141,7 +141,7 @@ function get($atts,$content=null,$shortcode){
 
 	$return_value=\aw2_library::get($main,$atts,$content);
 	
-	if($return_value==='')$return_value=$default;
+	if($return_value==='' || is_null($return_value))$return_value=$default;
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	if(is_object($return_value))

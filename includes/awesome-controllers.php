@@ -321,7 +321,7 @@ class controllers{
 			exit();		
 		}
 
-		$json=get_option($token);
+		$json=\aw2_library::get_option($token);
 		if(empty($json)){
 			echo 'Error E2:The Data Submitted is not valid. Check with Administrator';
 			exit();		
@@ -756,7 +756,11 @@ class controllers{
 		
 		$slug= $o->pieces[0];
 		$taxonomy	= $app['settings']['default_taxonomy'];
-		$post_type	= $app['collection']['posts']['post_type'];
+		
+		$post_type='';
+		if( isset($app['collection']['posts']))
+			$post_type	= $app['collection']['posts']['post_type'];
+		
 	
 		if(empty($taxonomy) || !term_exists( $slug, $taxonomy )) return;
 			
