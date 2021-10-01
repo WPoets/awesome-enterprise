@@ -296,6 +296,23 @@ function not_empty($atts,$content=null,$shortcode){
 		return false;
 }
 
+/* used to check value set */
+\aw2_library::add_service('c.not_blank','Check if the param is not blank space allowed. Use c.not_blank',['namespace'=>__NAMESPACE__]);
+function not_blank($atts,$content=null,$shortcode){
+	$not_blank = \aw2_library::resolve_chain($atts['not_blank']);
+	//$not_blank =trim($not_blank);
+	if(empty($not_blank) && !is_numeric($not_blank))return false;
+}
+
+/* used to check no value*/
+\aw2_library::add_service('c.is_blank','Check if the param is blank space allowed. Use c.is_blank',['namespace'=>__NAMESPACE__]);
+function is_blank($atts,$content=null,$shortcode){
+	$is_blank = \aw2_library::resolve_chain($atts['is_blank']);
+	//$is_blank =trim($is_blank);
+	if(empty($is_blank) && !is_numeric($is_blank))return;
+	
+	return false;
+}
 \aw2_library::add_service('c.null','Check if the param is null. Use c.null',['func'=>'_null','namespace'=>__NAMESPACE__]);
 function _null($atts,$content=null,$shortcode){
 	$null = \aw2_library::resolve_chain($atts['null']);
