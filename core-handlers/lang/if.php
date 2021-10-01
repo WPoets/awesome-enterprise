@@ -203,6 +203,12 @@ function unhandled($atts,$content=null,$shortcode){
 		case 'empty':
 			$atts['empty']=\aw2_library::get($main);
 			break;
+		case 'not_blank':
+			$atts['not_blank']=\aw2_library::get($main);
+			break;
+		case 'is_blank':
+			$atts['is_blank']=\aw2_library::get($main);
+			break;
 		case 'odd':
 			$atts['odd']=\aw2_library::get($main);
 			break;			
