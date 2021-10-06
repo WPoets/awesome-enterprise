@@ -3,6 +3,10 @@
 class aw2_error_log{
 	
 	static function awesome_exception($location,$exception=null){
+		if(!WP_DEBUG){
+			$error_msg ='Something is wrong (000), enable debug to see details.';
+			return $error_msg;
+		}
 		
 		$atts=array();
 		if(empty($location)) return 'location is missing.';
@@ -115,7 +119,10 @@ class aw2_error_log{
 	}
 
 	static function log_datatype_mismatch($arr){
-
+		if(!WP_DEBUG){
+			return;
+		}
+		
 		$template=aw2_library::get('template.name');
 		$post_type= aw2_library::get('env.@sc_exec.collection.post_type');
 		$source= aw2_library::get('env.@sc_exec.collection.source');
