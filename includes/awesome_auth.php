@@ -50,7 +50,7 @@ class awesome_auth{
 		$result['login']=$user->user_login;
 		$result['email']=$user->user_email;
 		$result['display_name']=$user->display_name;
-		$result['ID']=$user->ID;
+		$result['ID']=isset($user->ID)? $user->ID : $user->user_email;
 		$app['user']=$result;				
 		
 		
