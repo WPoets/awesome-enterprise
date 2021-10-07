@@ -3,8 +3,11 @@
 class awesome_flow{
 	
 	static function env_setup(){
-		error_reporting(E_ALL);
-		$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
+		if(WP_DEBUG){
+			error_reporting(E_ALL);
+			$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
+		}
+		
 		//if($old_error_handler)restore_error_handler();
 		try {
 		if(AWESOME_DEBUG)\aw2\debug\setup([]);	
