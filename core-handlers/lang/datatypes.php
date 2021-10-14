@@ -409,11 +409,11 @@ function create($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
-\aw2_library::add_service(‘arr.empty’,‘Empty array’,[‘func’=>‘_empty’,‘namespace’=>__NAMESPACE__]);
+\aw2_library::add_service('arr.empty','Empty array',['func'=>'_empty','namespace'=>__NAMESPACE__]);
 function _empty($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions(‘all’,$atts,$content)==false)return;
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$return_value=array();
-	$return_value=\aw2_library::post_actions(‘all’,$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
 
