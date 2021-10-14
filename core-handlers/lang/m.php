@@ -498,7 +498,7 @@ function num_round($value, $atts){
 
 
 //return empty array
-\aw2_library::add_service(‘m.empty_array’,‘given empty array in return. Use m.empty_array’,[‘namespace’=>__NAMESPACE__]);
+\aw2_library::add_service('m.empty_array','given empty array in return. Use m.empty_array',['namespace'=>__NAMESPACE__]);
 function empty_array($value, $atts){
 	$value = array();
 	return $value;
