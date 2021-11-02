@@ -29,6 +29,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.1.1
+* Improved: Now Awesome Exception errors will get logged only when wp_debug is set to true in the wp-config.php file.
+* Fixed: Bunch of syntax errors
+
 ##### 3.1.0
 * Improved: Added support for creating empty array using m.empty_array
 * Fixed: Access to undeclared static property: aw2_library::$cdn
