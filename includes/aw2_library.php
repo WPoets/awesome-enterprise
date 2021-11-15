@@ -4744,12 +4744,192 @@ static function get_collection($collection){
 }
 
 	
+static function module_exists_in_collection($collection,$module){
+	if(!isset($collection['location']))$collection['location']='#default';
+	$location_arr=self::$stack['code_locations'][$collection['location']];
+
+	if(isset($location_arr['db_host'])){
+		//location is database
+		$sql="select ID from wp_posts where post_type='" . $collection['post_type'] . "' and post_name='" . $module ."'";
+
+		$results =self::get_code_db_results($sql,$collection['location']);				
+		if( $results )return true;
+
+		return false;
+	}
+	if(isset($location_arr['path'])){
+		//location is path
+		$code =self::get_code_folder_results($collection,$module);				
+		if($code===false)return false;
+
+		return true;
+		
+	}
+		
+}
+
+
+static function get_module_from_location($collection,$module){
+
+	$location_arr=self::$stack['code_locations'][$collection['location']];
+	
+	if(isset($location_arr['db_host'])){
+		//location is database
+		$sql="select post_content,post_type,ID,post_name,post_title from wp_posts where post_type='" . $collection['post_type'] . "' and post_name='" . $module . "'";
+		$results =self::get_code_db_results($sql,$collection['location']);				
+		if(count($results)!==1)return null;
+		$arr=array();
+		$arr['module']=$results[0]['post_name'];
+		$arr['title']=$results[0]['post_title'];
+		$arr['id']=$results[0]['ID'];
+		$arr['code']=$results[0]['post_content'];
+		return $arr;
+	}
+	if(isset($location_arr['path'])){
+		//location is path
+		$code =self::get_code_folder_results($collection,$module);				
+		
+		$arr=array();
+		$arr['module']=$module;
+		$arr['title']=$module;
+		$arr['id']=$module;
+		$arr['code']=$code;
+		$arr['source']=$location_arr['path'];
+		return $arr;
+	}
+	
+	if(isset($location_arr['cdn_url'])){
+		//location is cdn_url
+		$code =self::get_code_urls($collection,$module);				
+		
+		$arr=array();
+		$arr['module']=$module;
+		$arr['title']=$module;
+		$arr['id']=$module;
+		$arr['code']=$code;
+		$arr['source']=$location_arr['cdn_url'];
+		return $arr;
+	}
+	return null;
+	
+}
+
+static function get_code_urls($collection,$module){
+	$location_arr=self::$stack['code_locations'][$collection['location']];
+
+	$path=$location_arr['cdn_url'] . '/' . $collection['post_type'] . '/' . $module . '.module.html';
+	$code = file_get_contents($path);
+
+	return $code;
+}
+
+static function get_code_folder_results($collection,$module){
+	$location_arr=self::$stack['code_locations'][$collection['location']];
+
+	$path=$location_arr['path'] . '/' . $collection['post_type'] . '/' . $module . '.module.html';
+	$code = file_get_contents($path);
+
+	return $code;
+}
+
+static function get_code_db_results($sql,$location){
+	//php8OK
+	$conn=self::code_conn($location);
+	$obj = $conn->query($sql);
+	$results = $obj->fetchAll("assoc");
+	return $results;
+}
+
+static function code_conn($location){
+	//php8OK
+
+	$location_arr=self::$stack['code_locations'][$location];
+
+	if($location_arr['conn'])return $location_arr['conn'];
+
+	$conn = new SimpleMySQLi($location_arr['db_host'], $location_arr['db_user'], $location_arr['db_password'], $location_arr['db_name'], "utf8mb4", "assoc");
+	self::$stack['code_locations'][$location]['conn']=$conn;
+	$conn->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+	return $conn;
+}
+
+
+/*
+static function get_collection($collection){
+	//php8ok		
+
+	if(!isset($collection['post_type']))return array();
+	
+	if(!isset($collection['location']))$collection['location']='#default';
+
+	$hash_prefix=$collection['location'];
+	$hash=$hash_prefix . '_' . $collection['post_type'];
+	$return_value=null;
+	//check cache
+	if(USE_ENV_CACHE)$return_value=aw2\global_cache\get(["main"=>$hash,"prefix"=>"collection"],null,null);
+	
+	if(!$return_value){
+
+		$location_arr=self::$stack['code_locations']['all'][$collection['location']];
+		$posts=array();
+
+		if(isset($location_arr['db_host'])){
+			//location is database
+			$sql="select post_content,post_type,ID,post_name,post_title from ".$table_prefix."posts where post_status='publish' and post_type='" . $collection['post_type'] . "'";
+			$results =self::get_code_db_results($sql,$collection['location']);				
+			foreach ($results as $result) {
+				$post=array();
+				$post['module']=$result['post_name'];
+				$post['title']=$result['post_title'];
+				$post['id']=$result['ID'];
+				$post['code']=$result['post_content'];
+				$post['collection']=$collection['post_type'];
+				$post['hash']=$hash . '_' . $post['module'];		
+				$posts[$post['module']]=$post;
+			}
+		}
+		if(isset($location_arr['path'])){
+			//location is path
+			$p=$location_arr['path'] . '/' . $collection['post_type'] . '/*.module.html'
+
+		
+			foreach (glob($p) as $filename) {
+				$post=array();
+				$post['module']=$filename;
+				$post['title']=$filename;
+				$post['id']=$filename;
+				$post['code']=file_get_contents($path);
+				$post['collection']=$collection['post_type'];
+				$post['hash']=$hash . '_' . $post['module'];		
+				$posts[$post['module']]=$post;
+				
+			}
+		}
+
+		if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"collection"],json_encode($posts),null);
+	}
+	else{
+		$posts=json_decode($return_value,true);
+	}
+	return $posts;
+}
+
+*/
 static function get_module($collection,$module){
 	//php8ok		
 	global $table_prefix;
 	
+
+	//check the location
+	if(!isset($collection['location']))$collection['location']='#default';
+	$hash_prefix=$collection['location'];
+
+	if(isset($collection['app']))
+		$collection['post_type']=self::$stack['apps'][$collection['app']]['collection']['modules']['post_type'];
+
+
 	if(isset($collection['post_type'])){
-		$hash=$collection['post_type'] . '_' . $module;
+		$hash=$hash_prefix . '_' . $collection['post_type'] . '_' . $module;
 		$return_value=null;
 		//check cache
 		if(USE_ENV_CACHE){
@@ -4757,6 +4937,14 @@ static function get_module($collection,$module){
 		}
 		
 		if(!$return_value){
+
+			$arr=self::get_module_from_location($collection,$module);
+			
+			$arr['post_type']=$collection['post_type'];
+			$arr['collection']=$collection;
+			$arr['hash']=$hash;		
+
+/*
 			$sql="select post_content,post_type,ID,post_name,post_title from  ".$table_prefix."posts where post_type='" . $collection['post_type'] . "' and post_name='" . $module . "'";
 			$results =self::get_results($sql);				
 
@@ -4771,6 +4959,8 @@ static function get_module($collection,$module){
 			
 			$arr['collection']=$collection;
 			$arr['hash']=$hash;		
+
+*/
 			if(SET_ENV_CACHE)aw2\global_cache\set(["key"=>$hash,"prefix"=>"module"],json_encode($arr),null);
 			if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
 				$fields = array('last_accessed'=>date('Y-m-d H:i:s'));
@@ -4794,6 +4984,7 @@ static function get_module($collection,$module){
 		return $arr;
 	}
 
+/*
 	if(isset($collection['app'])){
 		$post_type=self::$stack['apps'][$collection['app']]['collection']['modules']['post_type'];
 		
@@ -4840,7 +5031,7 @@ static function get_module($collection,$module){
 		
 		return $arr;
 	}
-
+*/
 	
 	if(isset($collection['source'])){
 		$hash=$collection['source'] . '_' . $module;

@@ -489,7 +489,7 @@ class controllers{
 			$post_type = $app['collection']['pages']['post_type'];
 			
 			
-			if(aw2_library::post_exists($slug,$post_type)){
+			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
 				array_shift($o->pieces);
 				self::set_qs($o);
 				$app['active']['collection'] = $app['collection']['pages'];
@@ -512,7 +512,9 @@ class controllers{
 	
 		if(isset($app['collection']['modules'])){
 			$post_type = $app['collection']['modules']['post_type'];
-			if(aw2_library::post_exists($slug,$post_type)){
+		
+			if(aw2_library::module_exists_in_collection($app['collection']['modules'],$slug)){
+
 				array_shift($o->pieces);
 				self::set_qs($o);
 				
@@ -556,7 +558,7 @@ class controllers{
 		self::module_parts();
 		
 		$post_type = $app['collection']['modules']['post_type'];
-		if(aw2_library::post_exists(self::$module,$post_type)){
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],self::$module)){
 			array_shift($o->pieces);
 
 			$app['active']['collection'] = $app['collection']['modules'];
@@ -699,7 +701,8 @@ class controllers{
 		$post_type = $app['collection']['posts']['post_type'];
 			
 			
-		if(!aw2_library::post_exists($slug,$post_type)) return;
+		if(!aw2_library::module_exists_in_collection($app['collection']['posts'],$slug) 
+			&& !aw2_library::post_exists($slug,$post_type)) return;
 			
 		array_shift($o->pieces);
 		self::set_qs($o);
@@ -809,7 +812,7 @@ class controllers{
 			exit();	
 		}
 		
-		if(aw2_library::post_exists('404-page',$post_type)){
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],'404-page')){
 			array_shift($o->pieces);
 			$this->action='404';
 			

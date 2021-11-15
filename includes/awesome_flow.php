@@ -15,6 +15,28 @@ class awesome_flow{
 
 		if(DEL_ENV_CACHE)aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
 		
+		//get all the locations for code`
+		$ref=&aw2_library::get_array_ref();
+		$ref['code_locations']=array();
+		
+		if(defined('CODE_LOCATIONS')){
+			//put the locations in the env
+			$ref['code_locations']=CODE_LOCATIONS;
+			
+			if(defined('CODE_DEFAULT_LOCATION')){
+				//put the locations in the env
+				$ref=&aw2_library::get_array_ref();
+				$ref['code_locations']['#default']=$ref['code_locations'][CODE_DEFAULT_LOCATION];
+			}
+		}	
+		if(!isset($ref['code_locations']['#default']))
+			$ref['code_locations']['#default']=array(
+				'db_host'=>DB_HOST,
+				'db_user'=>DB_USER,
+				'db_password'=>DB_PASSWORD,
+				'db_name'=>DB_NAME
+			);
+
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
 				header('awesome_cache: used');
 			$ref=&aw2_library::get_array_ref();
@@ -40,12 +62,12 @@ class awesome_flow{
 
 			//load all the apps
 			self::load_apps();
+			self::run_core('apps');
 
 			self::run_core('services');
 			self::run_core('less-variables');
 				
 
-				
 			//self::run_core('config');
 			self::load_env_settings();
 			
