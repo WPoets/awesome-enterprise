@@ -70,7 +70,7 @@ aw2_library::load_handlers_from_path(HANDLERS_PATH,'database');
 aw2_library::load_handlers_from_path(HANDLERS_PATH,'front-end');
 
 //load controllers
-aw2_library::load_handlers_from_path(HANDLERS_PATH,'controllers');
+aw2_library::load_handlers_from_path(HANDLERS_PATH,'controllers','connectors');
 
 //Load the initial services	
 awesome_flow::env_setup();
