@@ -27,6 +27,35 @@ function run($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('app.register','Register an App',['namespace'=>__NAMESPACE__]);
+
+function register($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	'title'=>'',
+	), $atts) );
+	
+	$ab=new \array_builder();
+	$arr=$ab->parse($content);
+	$registered_apps=&\aw2_library::get_array_ref('apps');
+
+
+	$app=array();
+	//path has to be handled correctly
+	$app['base_path']=AWESOME_APP_BASE_PATH .'/'.$main;
+	$app['path']=AWESOME_APP_BASE_PATH .'/'.$main;
+	$app['name']=$title;
+	$app['slug']=$main;
+	$app['post_id']='';
+	$app['hash']='app:' . $main;
+			
+	$app['collection']=$arr['collection'];
+
+	$registered_apps[$main]=$app;
+	return;
+}
+
 //not sure how to use it
 function aw2_app_return($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;

@@ -17,24 +17,26 @@ class awesome_flow{
 		
 		//get all the locations for code`
 		$ref=&aw2_library::get_array_ref();
-		$ref['code_locations']=array();
+		$ref['code_connections']=array();
 		
-		if(defined('CODE_LOCATIONS')){
+		if(defined('CONNECTIONS')){
 			//put the locations in the env
-			$ref['code_locations']=CODE_LOCATIONS;
+			$ref['code_connections']=CONNECTIONS;
 			
-			if(defined('CODE_DEFAULT_LOCATION')){
+			if(defined('CODE_DEFAULT_CONNECTION')){
 				//put the locations in the env
 				$ref=&aw2_library::get_array_ref();
-				$ref['code_locations']['#default']=$ref['code_locations'][CODE_DEFAULT_LOCATION];
+				$ref['code_connections']['#default']=$ref['code_connections'][CODE_DEFAULT_CONNECTION];
 			}
 		}	
-		if(!isset($ref['code_locations']['#default']))
-			$ref['code_locations']['#default']=array(
+		if(!isset($ref['code_connections']['#default']))
+			$ref['code_connections']['#default']=array(
+				'connection_service'=>'wp_conn',
 				'db_host'=>DB_HOST,
 				'db_user'=>DB_USER,
 				'db_password'=>DB_PASSWORD,
-				'db_name'=>DB_NAME
+				'db_name'=>DB_NAME,
+				'redis_db'=>REDIS_DATABASE_GLOBAL_CACHE
 			);
 
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
