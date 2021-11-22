@@ -485,10 +485,8 @@ class controllers{
 	
 	self::set_index_header();
 	
+			
 		if(isset($app['collection']['pages'])){
-			$post_type = $app['collection']['pages']['post_type'];
-			
-			
 			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
 				array_shift($o->pieces);
 				self::set_qs($o);
@@ -511,7 +509,6 @@ class controllers{
 		}
 	
 		if(isset($app['collection']['modules'])){
-			$post_type = $app['collection']['modules']['post_type'];
 		
 			if(aw2_library::module_exists_in_collection($app['collection']['modules'],$slug)){
 
@@ -557,7 +554,6 @@ class controllers{
 		self::$module= $o->pieces[0];
 		self::module_parts();
 		
-		$post_type = $app['collection']['modules']['post_type'];
 		if(aw2_library::module_exists_in_collection($app['collection']['modules'],self::$module)){
 			array_shift($o->pieces);
 
@@ -701,8 +697,7 @@ class controllers{
 		$post_type = $app['collection']['posts']['post_type'];
 			
 			
-		if(!aw2_library::module_exists_in_collection($app['collection']['posts'],$slug) 
-			&& !aw2_library::post_exists($slug,$post_type)) return;
+		if(!aw2_library::module_exists_in_collection($app['collection']['posts'],$slug)) return;
 			
 		array_shift($o->pieces);
 		self::set_qs($o);
@@ -870,19 +865,18 @@ class controllers{
 	
 	static function run_layout($app, $collection, $slug,$query){
 		
-		if(isset($app['configs'])){
+		if(isset($app['collection']['config'])){
 			$layout='';
-			$app_config = $app['configs'];
+			$app_config=$app['collection']['config'];
 			
-			if(isset($app_config['layout'])){
-				$layout='layout';
-			}
-			if(isset($app_config[$collection.'-layout'])){
-				$layout=$collection.'-layout';
+			$exists=aw2_library::module_exists_in_collection($app_config,'layout');
+			if($exists)$layout='layout';
 
-			}
+			$exists=aw2_library::module_exists_in_collection($app_config,$collection.'-layout');
+			if($exists)$layout=$collection.'-layout';
+
 			if(!empty($layout)){
-				return aw2_library::module_run($app['collection']['config'],$layout,null,null);
+				return aw2_library::module_run($app_config,$layout,null,null);
 			}
 		}
 				

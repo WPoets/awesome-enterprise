@@ -99,6 +99,51 @@ function get($atts,$content=null,$shortcode=null){
 	return $return_value;	
 }
 
+
+\aw2_library::add_service('url_conn.module.meta','Get a Module Meta',['namespace'=>__NAMESPACE__]);
+
+function meta($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'connection'=>'#default',
+	'post_type'=>null,
+	'module'=>null,
+	), $atts) );
+	
+	//check the location
+	$connection_arr=\aw2_library::$stack['code_connections'];
+	if(!isset($connection_arr[$connection])) 
+		throw new Exception($connection.' connection is not defined');
+	
+	$config = $connection_arr[$connection];
+
+	$hash='modules:' . $post_type . ':' . $module;
+	
+	$metas=array();
+	
+	if(USE_ENV_CACHE){
+		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
+		$metas=json_decode($data,true);
+	}
+	
+	if(!$metas){
+		// read the settings.json for the app which is key value folder
+		$url=$config['url'] . '/' . $post_type;
+		$metas =  file_get_contents($url.'/settings.json');
+		$metas= json_decode($results,true);
+				
+		if(SET_ENV_CACHE){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
+		}
+		
+	}
+
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}
+
 \aw2_library::add_service('url_conn.module.exists','Get a Module',['namespace'=>__NAMESPACE__]);
 
 function exists($atts,$content=null,$shortcode=null){

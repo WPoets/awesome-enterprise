@@ -30,6 +30,7 @@ function convert_to_module($raw,$hash){
 	$arr['id']=$raw['ID'];
 	$arr['code']=$raw['post_content'];
 	$arr['hash']=$hash;
+	$arr['wp']='yes';
 	return $arr;
 
 }
@@ -94,6 +95,55 @@ function get($atts,$content=null,$shortcode=null){
 	}
 
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}
+
+
+\aw2_library::add_service('wp_conn.module.meta','Get a Module Meta',['namespace'=>__NAMESPACE__]);
+
+function meta($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'connection'=>'#default',
+	'post_type'=>null,
+	'module'=>null,
+	), $atts) );
+	
+	//check the location
+	$connection_arr=\aw2_library::$stack['code_connections'];
+	if(!isset($connection_arr[$connection])) 
+		throw new Exception($connection.' connection is not defined');
+	
+	$config = $connection_arr[$connection];
+
+	$hash='modules_meta:' . $post_type . ':' . $module;
+	
+	
+	if(USE_ENV_CACHE){
+		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
+		$metas=json_decode($data,true);
+	}
+	
+	if(!$metas){
+		$sql="select post_id,meta_key,meta_value from  wp_postmeta  where post_id='" . $post_id . "'";
+		$results =\aw2\wp_conn\get_results($sql,$connection,$config);				
+
+
+		$metas=array();
+		
+		foreach ($results as $result) {
+			$metas[$result['meta_key']]=$result['meta_value'];
+		}
+		
+		if(SET_ENV_CACHE){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
+		}
+		
+	}
+	
+	$return_value=\aw2_library::post_actions('all',$metas,$atts);
 	return $return_value;	
 }
 

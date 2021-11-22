@@ -4,11 +4,13 @@ namespace aw2\folder_conn;
 function get_results($config,$post_type,$read_file=true){
      $modules = array();
 	
-	if(!is_set($config['path'])) return $modules;
+	if(!isset($config['path'])) return $modules;
 	
 	$path=$config['path'] . '/' . $post_type;
+	
 	if(!is_dir($path)) return $modules;
     $files = glob($path . '/*.module.html');
+	
 	foreach($files as $filename){
 		$module=basename($filename);
 		$module=str_replace('.module.html','',$module);
@@ -98,6 +100,53 @@ function get($atts,$content=null,$shortcode=null){
 	return $return_value;	
 }
 
+
+\aw2_library::add_service('folder_conn.module.meta','Get a Module Meta',['namespace'=>__NAMESPACE__]);
+
+function meta($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'connection'=>'#default',
+	'post_type'=>null,
+	'module'=>null,
+	), $atts) );
+	
+	//check the location
+	$connection_arr=\aw2_library::$stack['code_connections'];
+	if(!isset($connection_arr[$connection])) 
+		throw new Exception($connection.' connection is not defined');
+	
+	$config = $connection_arr[$connection];
+
+	$hash='modules:' . $post_type . ':' . $module;
+	 
+	
+	$metas=array();
+	
+	if(USE_ENV_CACHE){
+		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
+		$metas=json_decode($data,true);
+	}
+	
+	if(!$metas){
+		// read the settings.json for the app which is key value folder
+		$path=$config['path'] . '/' . $post_type;
+		$metas =  file_get_contents($path.'/settings.json');
+		$metas= json_decode($results,true);
+				
+		if(SET_ENV_CACHE){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
+		}
+		
+	}
+	
+	$return_value=\aw2_library::post_actions('all',$metas,$atts);	
+
+	return $return_value;	
+}
+
 \aw2_library::add_service('folder_conn.module.exists','Get a Module',['namespace'=>__NAMESPACE__]);
 
 function exists($atts,$content=null,$shortcode=null){
@@ -113,6 +162,7 @@ function exists($atts,$content=null,$shortcode=null){
 		throw new Exception('connection is not provided');;
 
 	$results=\aw2\folder_conn\collection\_list($atts);
+	
 	$module_names = array_column($results, 'post_title', 'post_name');
 
 	
@@ -197,7 +247,7 @@ function _list($atts,$content=null,$shortcode=null){
 	}
 	
 	if(!$results){
-		$results = \aw2\folder_conn\get_results($config['path'],$post_type, false);			
+		$results = \aw2\folder_conn\get_results($config,$post_type, false);			
 		
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';

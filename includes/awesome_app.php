@@ -30,12 +30,6 @@ class awesome_app{
 			
 		$this->settings = array();
 		
-		if(isset($this->collection['config'])){
-		$config_posts=aw2_library::get_collection(['post_type'=>$this->collection['config']['post_type']]);
-		$this->configs = $config_posts	;
-			
-		}
-		
 		//set up the current user details
 		
 		$this->user=array();
@@ -64,11 +58,12 @@ class awesome_app{
 	public function load_settings(){
 		$app=&aw2_library::get_array_ref('app');
 	
-		if(!isset($app['configs']['settings']))
-			return;
+		if(!isset($app['collection']['config']))return;
+		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'settings');
+		if(!$exists)return;
 		
-		$settings_post_id = $app['configs']['settings']['id'];
-		$all_post_meta = aw2_library::get_post_meta($settings_post_id);
+		//change to module_meta
+		$all_post_meta = aw2_library::get_module_meta($app['collection']['config'],'settings');
 	
 		foreach($all_post_meta as $key=>$meta){
 			
@@ -79,6 +74,8 @@ class awesome_app{
 			$app['settings'][$key] = $meta;
 
 		}
+		\aw2_library::module_run($app['collection']['config'],'settings');
+
 	}	
 	
 	public function setup_collections(){
@@ -89,36 +86,37 @@ class awesome_app{
 		}
 		
 		//setup services
-		if(!isset($this->configs['services']))
-			return;
-		
-		$service_post = $this->configs['services'];
-		
-		aw2_library::parse_shortcode($service_post['code']);
+		$app=&aw2_library::get_array_ref('app');
+		if(!isset($app['collection']['config']))return;
+		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'services');
+		if(!$exists)return;
+		\aw2_library::module_run($app['collection']['config'],'services');
 
+/*
+		//amit this code does not make sense
 		$services=&aw2_library::get_array_ref('app.services');
 		
 		foreach($services as $service_name =>$service){
 			aw2_library::add_service($service_name,$service['desc'], $service['post_type']);
 		}
+*/		
 	}
 	
 	public function run_init(){
-				
-		if(!isset($this->configs['init']))
-			return;
-		
-		$init = $this->configs['init'];
-		
-		aw2_library::parse_shortcode($init['code']);
+		$app=&aw2_library::get_array_ref('app');
+		if(!isset($app['collection']['config']))return;
+		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'init');
+		if(!$exists)return;
+		\aw2_library::module_run($app['collection']['config'],'init');
 	}
 	
 	public function check_rights_old($query){
 		if(current_user_can('administrator'))return;
 		
-		if(!isset($this->configs['rights']))return;
+		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'rights');
+		if(!$exists)return;
 		
-		aw2_library::parse_shortcode($this->configs['rights']['code']);
+		\aw2_library::module_run($app['collection']['config'],'rights');
 		
 		$rights =&aw2_library::get_array_ref('app','rights');
 		
@@ -168,9 +166,12 @@ class awesome_app{
 	public function check_rights($request){		//any changes to this function or related to this function should reflect in the if.user_can_access service
 		if(IS_WP && current_user_can('administrator'))return;
 		
-		if(isset($this->configs['rights'])){
+		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'rights');
+		
+		if($exists){
 			
-			aw2_library::parse_shortcode($this->configs['rights']['code']);
+			//aw2_library::parse_shortcode($this->configs['rights']['code']);
+			\aw2_library::module_run($app['collection']['config'],'rights');
 			
 			$rights =&aw2_library::get_array_ref('app','rights');
 			

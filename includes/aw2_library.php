@@ -4742,6 +4742,22 @@ static function module_exists_in_collection($collection,$module){
 
 }
 
+static function get_module_meta($collection,$module){
+	if(!isset($collection['connection']))$collection['connection']='#default';
+	$connection_arr=self::$stack['code_connections'][$collection['connection']];
+	
+
+		$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\module\\meta';
+	
+		$atts['connection']=$collection['connection'];
+		$atts['post_type']=$collection['post_type'];
+		$atts['module']=$module;
+
+		$arr = call_user_func($connection_service,$atts);
+		return $arr;
+		
+}
+
 static function get_module($collection,$module){
 
 	//check the location
