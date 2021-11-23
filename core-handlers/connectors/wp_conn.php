@@ -126,12 +126,18 @@ function meta($atts,$content=null,$shortcode=null){
 	}
 	
 	if(!$metas){
-		$sql="select post_id,meta_key,meta_value from  wp_postmeta  where post_id='" . $post_id . "'";
+		$sql="
+		with q0 as(
+		   select ID from wp_posts where post_name='".$module."' and post_type='".$post_type."'
+		),
+		q1 as (
+		   select post_id,meta_key,meta_value from wp_postmeta join q0 on post_id=q0.ID
+		)
+		select *from q1;
+		";
 		$results =\aw2\wp_conn\get_results($sql,$connection,$config);				
 
-
-		$metas=array();
-		
+		$metas=array();		
 		foreach ($results as $result) {
 			$metas[$result['meta_key']]=$result['meta_value'];
 		}
