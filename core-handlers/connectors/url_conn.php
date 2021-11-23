@@ -4,7 +4,7 @@ namespace aw2\url_conn;
 function get_results($config,$post_type,$read_file=true){
      $modules = array();
 	
-	if(!is_set($config['url'])) return $modules;
+	if(!isset($config['url'])) return $modules;
 	
 	$url=$config['url'] . '/' . $post_type;
 	
@@ -22,6 +22,7 @@ function get_results($config,$post_type,$read_file=true){
 		if($read_file) $p['post_content'] = file_get_contents($file_url);
 		$modules[]=$p;
 	}
+	
 	return $modules;
 }
 
@@ -161,8 +162,6 @@ function exists($atts,$content=null,$shortcode=null){
 	$results=\aw2\url_conn\collection\_list($atts);
 	$module_names = array_column($results, 'post_title', 'post_name');
 
-	
-	
 	if(isset($module_names[$module]))
 		$return_value= true;
 	else	
@@ -197,10 +196,12 @@ function get($atts,$content=null,$shortcode=null){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
 	}
-	
+	\util::var_dump($hash);
+	\util::var_dump($results);
 	if(!$results){
 		
 		$results = \aw2\folder\get_results($config['path'],$post_type);
+		\util::var_dump($results);
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
@@ -242,7 +243,7 @@ function _list($atts,$content=null,$shortcode=null){
 	}
 	
 	if(!$results){
-		$results = \aw2\url_conn\get_results($config['path'],$post_type, false);			
+		$results = \aw2\url_conn\get_results($config,$post_type, false);			
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
