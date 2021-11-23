@@ -7,12 +7,8 @@ class controllers{
 		$app=&aw2_library::get_array_ref('app');
 		if(!isset($app['collection']['config'])) return false;
 		
-		$arr=aw2_library::get_module($app['collection']['config'],'settings');
-		if(!$arr) return false;
-		
-		aw2_library::module_run($app['collection']['config'],'settings');
-		$no_index = aw2_library::get_post_meta($arr['id'],'no_index');
-		
+		$no_index = aw2_library::get('app.settings.no_index');
+				
 		if($no_index !== 'yes')  return false;
 		
 		header("X-Robots-Tag: noindex", true);
@@ -238,29 +234,50 @@ class controllers{
 		
 		if(empty(self::$module) ){
 			//show list of modules
-			$args=array(
-				'post_type' => $app['collection']['modules']['post_type'],
-				'post_status'=>'publish',
-				'posts_per_page'=>500,
-				'no_found_rows' => true, // counts posts, remove if pagination required
-				'update_post_term_cache' => false, // grabs terms, remove if terms required (category, tag...)
-				'update_post_meta_cache' => false, // grabs post meta, remove if post meta required	
-				'orderby'=>'title',
-				'order'=>'ASC'
-			);
-
+			
+			$connection = '#default';
+			if(isset($app['collection']['modules']['connection'])) 
+				$connection = $app['collection']['modules']['connection'];
+			
 			self::set_cache_header('no');
 			self::set_index_header();
-			
-			$results = new WP_Query( $args );
-			$my_posts=$results->posts;
 
-			foreach ($my_posts as $obj){
-				echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID  . "&action=edit") .'">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
+			$my_posts=array();
+			if($connection === '#default'){
+				$args=array(
+					'post_type' => $app['collection']['modules']['post_type'],
+					'post_status'=>'publish',
+					'posts_per_page'=>500,
+					'no_found_rows' => true, // counts posts, remove if pagination required
+					'update_post_term_cache' => false, // grabs terms, remove if terms required (category, tag...)
+					'update_post_meta_cache' => false, // grabs post meta, remove if post meta required	
+					'orderby'=>'title',
+					'order'=>'ASC'
+				);
+				$results = new WP_Query( $args );
+				$my_posts=$results->posts;
+				foreach ($my_posts as $obj){
+					echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID  . "&action=edit") .'">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
+				}
+					echo('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) .'">Add New</a><br>');
+
+			} else {
+				$connection_arr= \aw2_library::$stack['code_connections'][$connection];
+				$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\get';
+	
+				$atts['connection']=$connection;
+				$atts['post_type']=$app['collection']['modules']['post_type'];
+				
+				$results = call_user_func($connection_service,$atts);
+				echo' <ol>';
+				foreach ($results as $obj){
+					echo( '<li><strong>'.$obj['title'] . '</strong> (<em>' . $obj['id'] . '</em>) </li>' );
+				}
+				echo '</ol>';
 			}
-				echo('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) .'">Add New</a><br>');
-
-		
+			
+			
+			
 		} else {
 			aw2_library::get_post_from_slug(self::$module,$app['active']['collection']['post_type'],$post);
 			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID  . "&action=edit"));

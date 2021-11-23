@@ -204,7 +204,7 @@ function get($atts,$content=null,$shortcode=null){
 	
 	if(!$results){
 		
-		$results = \aw2\folder\get_results($config['path'],$post_type);
+		$results = \aw2\folder_conn\get_results($config,$post_type);
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
