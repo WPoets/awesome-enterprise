@@ -126,10 +126,10 @@ class awesome_flow{
 		$settings=&aw2_library::get_array_ref('settings');
 		$settings=array();
 		
-		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
-		if(!$arr) return;
+		$exists=aw2_library::module_exists_in_collection(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
+		if(!$exists) return;
 			
-		$all_post_meta = aw2_library::get_post_meta( $arr['id']);
+		$all_post_meta = aw2_library::get_module_meta(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
 		
 		foreach($all_post_meta as $key=>$meta){
 			
@@ -219,22 +219,23 @@ class awesome_flow{
 			
 			$app['collection']=array();
 
-			$app_config=aw2_library::get_post_meta($app_post['id'],'config_collection');
+			$app_meta=aw2_library::get_module_meta(["post_type"=>AWESOME_APPS_POST_TYPE],$app['slug']);
+			$app_config=isset($app_meta['config_collection']) ? $app_meta['config_collection'] :'' ;
 			if($app_config){
 				$app['collection']['config']['post_type']=$app_config;
 			}
 			
-			$modules=aw2_library::get_post_meta($app_post['id'],'modules_collection');
+			$modules=isset($app_meta['modules_collection']) ? $app_meta['modules_collection'] :'' ;
 			if($modules){
 				$app['collection']['modules']['post_type']=$modules;
 			}
 			
-			$pages=aw2_library::get_post_meta($app_post['id'],'pages_collection');
+			$pages=isset($app_meta['pages_collection']) ? $app_meta['pages_collection'] :'' ;
 			if($pages){
 				$app['collection']['pages']['post_type']=$pages;
 			}	
 			
-			$posts=aw2_library::get_post_meta($app_post['id'],'posts_collection');
+			$posts=isset($app_meta['posts_collection']) ? $app_meta['posts_collection'] :'' ;
 			if($posts){
 				$app['collection']['posts']['post_type']=$posts;
 			}

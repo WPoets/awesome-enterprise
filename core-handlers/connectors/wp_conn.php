@@ -58,6 +58,7 @@ function get($atts,$content=null,$shortcode=null){
 
 	$hash='modules:' . $post_type . ':' . $module;
 	
+	$return_value='';
 	if(USE_ENV_CACHE){
 		$return_value=\aw2\global_cache\get(["main"=>$hash ,"db"=>$config['redis_db']],null,null);
 		$return_value=json_decode($return_value,true);

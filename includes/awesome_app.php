@@ -208,6 +208,7 @@ class awesome_app{
 			exit();
 		
 		}else{
+			if(!IS_WP)return;
 			$options = aw2_library::get_option('awesome-app-' . $this->slug);
 			
 			if(is_bool($options)) return true;
