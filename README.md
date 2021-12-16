@@ -29,6 +29,19 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.2
+* Improved: Added support to include the services and apps from external db, folder or cdn using external connectors.
+* Improved: Added support to register external Apps by creating a module 'apps' in core and using following syntax 
+`[app.register error-log title="Error Log"]
+	[collection]
+    [config  connection=external_code post_type=c-errlog-app /]
+    [modules connection=external_code post_type=m-errlog-app /]
+  [/collection]  
+[/app.register]	`
+* Imporved: External service can be registerd by specifying the _'connection'_ attibute in in the services tag 
+` [services.add form_control2  **connection=external_code ** service_label='Form Control 2 Service' post_type='form_control2' desc='Form Control 2 Service' /]`
+
+
 ##### 3.1.1
 * Improved: Now Awesome Exception errors will get logged only when wp_debug is set to true in the wp-config.php file.
 * Fixed: Bunch of syntax errors
