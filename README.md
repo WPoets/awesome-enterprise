@@ -39,7 +39,7 @@ If you don't find your issue already listed, do [create an issue](https://github
   [/collection]  
 [/app.register]	`
 * Imporved: External service can be registerd by specifying the _'connection'_ attibute in in the services tag 
-` [services.add form_control2  **connection=external_code ** service_label='Form Control 2 Service' post_type='form_control2' desc='Form Control 2 Service' /]`
+` [services.add form_control2  connection=external_code service_label='Form Control 2 Service' post_type='form_control2' desc='Form Control 2 Service' /]`
 
 
 ##### 3.1.1
