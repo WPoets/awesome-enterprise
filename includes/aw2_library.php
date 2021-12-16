@@ -1512,6 +1512,37 @@ static function process_handler($inputs){
 			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
 			if (!is_callable($fn_name))$fn_name=null;
 			break;
+			
+		case 'module':
+			$sc['collection']=$sc['handler']['collection'];	
+			$pre['primary']['module']=$sc['handler']['module'];
+			
+			if(!isset($pre['primary']['main']))
+				$pre['primary']['main']=implode('.',$sc['tags_left']);
+
+
+			$sc['handler']=$handlers['collection']['run'];
+			$service='run';
+			
+			$handler = $sc['handler'];		
+
+			if(isset($handler['func']))
+				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
+			else{
+					$fn_name=$handler['namespace'] . '\\' . $service;					
+			}
+			
+			
+			if (!is_callable($fn_name) && $next_tag)$fn_name=$handler['namespace'] . '\\'  . $next_tag;
+			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
+			if (!is_callable($fn_name))$fn_name=null;
+			
+			\util::var_dump($pre);
+			\util::var_dump($sc);
+			\util::var_dump($fn_name);
+
+			break;
+			
 		case 'namespace':
 			if(isset($handler['func']))
 				$fn_name=$handler['namespace'] . '\\' . $handler['func'];
@@ -2076,18 +2107,16 @@ static function add_service($service,$desc=null,$atts=array()) {
 	}
 	
 	if(isset($atts['module'])){
-		$handler=&self::get_array_ref('handlers',$service);
 		$atts['type'] = 'module';
 		$atts['@service'] = true;
-		$handler = array_merge($handler,$atts);
+		self::set('handlers.' . $service,$atts);
 		return;
 	}
 	
 	if(isset($atts['post_type']) || isset($atts['source'])){
-		$handler=&self::get_array_ref('handlers',$service);
 		$atts['type'] = 'collection';
 		$atts['@service'] = true;
-		$handler = array_merge($handler,$atts);
+		self::set('handlers.' . $service,$atts);
 		return;
 	}
 
@@ -5285,6 +5314,21 @@ static function setup_env_cache($key){
 		define('SET_ENV_CACHE', true); 	
 
 	
+}
+
+
+static function split_array_on($atts,$on){
+	
+	$arr=array();	
+	foreach ($atts as $key=>$value){
+		$parts=explode('.',$key,2);
+		if(count($parts)===2 and $parts[0]===$on){
+			$arr[$parts[1]]=$value;
+			unset($atts[$key]);
+		}
+	}
+	$atts[$on]=$arr;	
+	return $atts;
 }
 
 }
