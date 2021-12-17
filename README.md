@@ -38,16 +38,16 @@ If you don't find your issue already listed, do [create an issue](https://github
     [modules connection=external_code post_type=m-errlog-app /]
   [/collection]  
 [/app.register]	`
-* Imporved: External service can be registerd by specifying the _'connection'_ attibute in in the services tag 
+* Imporved: External service can be registerd by specifying the _'connection'_ attibute in the services tag 
 ` [services.add form_control2  connection=external_code service_label='Form Control 2 Service' post_type='form_control2' desc='Form Control 2 Service' /]`
-* Improved: Added ability to register collections and modules as services, using sytax shown below
+* Improved: Added ability to register collections and modules as services, using syntax shown below
 `[collection.register partners_services.application  service_label='Samples' post_type='m_samples' desc='Samples Service' /]
 `
 and 
 `
 [module.register partners_services.application.l1  service_label='Samples' collection.post_type='m_samples' module='loops-sample' desc='Samples Service' /]
 `
-* Imporved: Added support to use '.' in service name while registering it, so now you can do something like 
+* Improved: Added support to use '.' in service name while registering it, so now you can do something like 
 `[services.add partner_services.xyz  service_label='Samples' post_type='m_samples' desc='Samples Service' /]` and call this service using `[partners_services.xyz.check-folder-service /]`
 
 ##### 3.1.1
