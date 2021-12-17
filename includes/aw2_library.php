@@ -5067,7 +5067,11 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 		self::push_this($stack_id);
 		self::push_atts($stack_id,$atts);
 	}
-	$return_value=self::parse_shortcode($arr['code']);
+
+	$return_value='';
+	if(isset($arr['code'])){
+	   $return_value=self::parse_shortcode($arr['code']);
+	}
 
 	if(isset(self::$stack['module']['templates']['main']) && !$template){
 		$return_value=self::template_run('main');
@@ -5190,8 +5194,11 @@ static function module_include($collection,$module){
 		}	
 		
 		//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
-	
-	$return_value=self::parse_shortcode($arr['code']);	
+	$return_value='';
+	if(isset($arr['code'])){
+		$return_value=self::parse_shortcode($arr['code']);
+	}
+		
 	return $return_value;	
 }
 
