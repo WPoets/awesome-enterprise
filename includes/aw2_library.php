@@ -4805,7 +4805,9 @@ static function get_module($collection,$module){
 		$atts['module']=$module;
 
 		$arr = call_user_func($connection_service,$atts);
-			$arr['collection']=$collection;
+		if(!isset($arr['module']))return null;
+		
+		$arr['collection']=$collection;
 		return $arr;
 			
 	}
