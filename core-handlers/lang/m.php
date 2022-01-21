@@ -503,3 +503,11 @@ function empty_array($value, $atts){
 	$value = array();
 	return $value;
 }
+
+
+//number to word
+\aw2_library::add_service('m.number_to_word','Return the value as capitalized. Use m.number_to_word',['namespace'=>__NAMESPACE__]);
+function number_to_word($value, $atts){
+	$value = \util::number_to_word($value);
+	return $value;
+}
