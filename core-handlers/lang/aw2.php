@@ -22,10 +22,13 @@ function module($atts,$content=null,$shortcode){
 	if(!$post_type){
 		$handlers=\aw2_library::get_array_ref('handlers');
 		if(!isset($handlers['modules']))return 'No Collection found';
-		$post_type=$handlers['modules']['post_type'];
+		$collection=$handlers['modules'];
+	} else {
+		$collection = ["post_type"=>$post_type];
 	}
+
 	if($slug)$module=$slug;	
-	$return_value=\aw2_library::module_run(["post_type"=>$post_type],$module,$template,$content,$atts);	
+	$return_value=\aw2_library::module_run($collection,$module,$template,$content,$atts);	
 	if(is_string($return_value))$return_value=trim($return_value);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
