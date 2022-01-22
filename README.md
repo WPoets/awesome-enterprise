@@ -29,6 +29,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.2.1
+* Fixed: aw2.module was missing the support for using external connectors.
+* Imporved: Added _m.number_to_word_ modifier to allows us to convert numeral to word representation. 
+
+
 ##### 3.2
 * Improved: Added support to include the services and apps from external db, folder or cdn using external connectors.
 * Improved: Added support to register external Apps by creating a module 'apps' in core and using following syntax 
