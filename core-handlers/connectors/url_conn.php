@@ -141,7 +141,7 @@ function meta($atts,$content=null,$shortcode=null){
 		
 	}
 
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	$return_value=\aw2_library::post_actions('all',$metas,$atts);
 	return $return_value;	
 }
 
@@ -196,12 +196,11 @@ function get($atts,$content=null,$shortcode=null){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
 	}
-	\util::var_dump($hash);
-	\util::var_dump($results);
+	
 	if(!$results){
 		
 		$results = \aw2\folder\get_results($config['path'],$post_type);
-		\util::var_dump($results);
+		
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
