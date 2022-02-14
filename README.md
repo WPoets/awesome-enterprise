@@ -29,6 +29,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.2.2
+* Fixed: when using external connectors default apps settings were not being used
+
 ##### 3.2.1
 * Fixed: aw2.module was missing the support for using external connectors.
 * Imporved: Added _m.number_to_word_ modifier to allows us to convert numeral to word representation. 
