@@ -132,7 +132,7 @@ function meta($atts,$content=null,$shortcode=null){
 		// read the settings.json for the app which is key value folder
 		$url=$config['url'] . '/' . $post_type;
 		$metas =  file_get_contents($url.'/settings.json');
-		$metas= json_decode($results,true);
+		$metas= json_decode($metas,true);
 				
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
