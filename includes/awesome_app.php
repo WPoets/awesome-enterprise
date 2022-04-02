@@ -166,6 +166,8 @@ class awesome_app{
 	public function check_rights($request){		//any changes to this function or related to this function should reflect in the if.user_can_access service
 		if(IS_WP && current_user_can('administrator'))return;
 		
+		$app=aw2_library::get_array_ref('app');
+		
 		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'rights');
 		
 		if($exists){
