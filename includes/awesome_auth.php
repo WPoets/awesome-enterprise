@@ -195,7 +195,7 @@ class awesome_auth{
 					foreach($all_roles as $role){
 						//if any of the role is missing then fail.
 					
-						if(!empty($role) && !in_array($role,$user)){
+						if(!empty($role) && !in_array($role,$user['allcaps'])){
 							$app['auth']['status']= 'error';
 							break;
 						}
@@ -215,9 +215,6 @@ class awesome_auth{
 				}
 			}		
 		}
-		
-		//at this stage with either cookie is not set or user did not authenticate
-		//create a cookie for vsession
 		
 		$reply=aw2\vsession\create(['id'=>'wp_vsession'],'','');
 
@@ -246,5 +243,45 @@ class awesome_auth{
 
 			aw2\vsession\set($args,'','');
 		}
+	}
+}
+
+
+if(!function_exists('current_user_can')){
+	function current_user_can($cap){
+		
+		if(!isset($_COOKIE['wp_vsession'])) return false;
+		
+		$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+		
+		if(!isset($vsession['user'])) return false;
+			
+		//check the status and roles are matching then allow the pass
+		$user= json_decode($vsession['user'],true);		
+				
+		if(!empty($cap) && in_array($cap,$user['allcaps'])) return true;
+		
+		return false;
+	
+	}
+}
+
+
+if(!function_exists('is_user_logged_in')){
+	function is_user_logged_in(){
+		
+		if(!isset($_COOKIE['wp_vsession'])) return false;
+		
+		$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+		
+		if(!isset($vsession['user'])) return false;
+			
+		//check the status and roles are matching then allow the pass
+		$user= json_decode($vsession['user'],true);		
+				
+		if(!empty($user['login'])) return true;
+		
+		return false;
+	
 	}
 }
