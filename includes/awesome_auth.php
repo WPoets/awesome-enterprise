@@ -247,7 +247,7 @@ class awesome_auth{
 }
 
 
-if(!function_exists('current_user_can')){
+if(!function_exists('current_user_can')  && !IS_WP){
 	function current_user_can($cap){
 		
 		if(!isset($_COOKIE['wp_vsession'])) return false;
@@ -267,7 +267,7 @@ if(!function_exists('current_user_can')){
 }
 
 
-if(!function_exists('is_user_logged_in')){
+if(!function_exists('is_user_logged_in')  && !IS_WP ){
 	function is_user_logged_in(){
 		
 		if(!isset($_COOKIE['wp_vsession'])) return false;
