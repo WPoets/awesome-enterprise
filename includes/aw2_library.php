@@ -5340,6 +5340,18 @@ static function split_array_on($atts,$on){
 	return $atts;
 }
 
+static function redirect($location,$status=302){
+
+	if ( ! $location ) return false;
+
+	if(!IS_WP) {
+		header( "Location: $location", true, $status );
+		return true;
+	}
+
+	return wp_redirect($location,$status);;
+}
+
 }
 
 
@@ -5752,5 +5764,53 @@ if(!IS_WP)
 		return is_string( $value ) ? stripslashes( $value ) : $value;
 	}
 	
+	function current_user_can($cap){
+		
+		if(!isset($_COOKIE['wp_vsession'])) return false;
+		
+		$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+		
+		if(!isset($vsession['user'])) return false;
+			
+		//check the status and roles are matching then allow the pass
+		$user= json_decode($vsession['user'],true);		
+				
+		if(!empty($cap) && in_array($cap,$user['allcaps'])) return true;
+		
+		return false;
+	
+	}
+	
+	function is_user_logged_in(){
+		
+		if(!isset($_COOKIE['wp_vsession'])) return false;
+		
+		$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+		
+		if(!isset($vsession['user'])) return false;
+			
+		//check the status and roles are matching then allow the pass
+		$user= json_decode($vsession['user'],true);		
+				
+		if(!empty($user['login'])) return true;
+		
+		return false;
+	
+	}
+
+	function wp_login_url(){
+		if(!defined('WP_LOGIN_URL')){
+			define('WP_LOGIN_URL',site_url('wp-login.php'));
+		}
+		return WP_LOGIN_URL;
+	}
+
+	function site_url( $path = '', $scheme = null ) {
+		$url = SITE_URL;
+		if ( $path && is_string( $path ) ) {
+			$url .= '/' . ltrim( $path, '/' );
+		}
+		return $url;
+	}
 }	
 
