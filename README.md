@@ -29,12 +29,24 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.2.3
+* Improved: added support to use wordpress user login as virtual session using wp_vession. To use it, make sure you have added following line in your __rights__ module in the app
+`
+[arr.create set='app.rights'] 
+  [access mode='logged'  title='Login To APP'/]
+  
+  [auth a1 method=wp_vsession all_roles=''  /]
+[/arr.create]
+`
+all_roles means, all the roles must be assigned to the user, it takes comma seprated list of roles and capabilites.
+* Fixed: rights module usage was broken. 
+
 ##### 3.2.2
 * Fixed: when using external connectors default apps settings were not being used
 
 ##### 3.2.1
 * Fixed: aw2.module was missing the support for using external connectors.
-* Imporved: Added _m.number_to_word_ modifier to allows us to convert numeral to word representation. 
+* Improved: Added _m.number_to_word_ modifier to allows us to convert numeral to word representation. 
 
 
 ##### 3.2
