@@ -5349,7 +5349,7 @@ static function redirect($location,$status=302){
 		return true;
 	}
 
-	return wp_redirect($location,$status);;
+	return wp_redirect($location,$status);
 }
 
 }

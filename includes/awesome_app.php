@@ -206,7 +206,7 @@ class awesome_app{
 			}
 			
 			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-			wp_redirect( $login_url );
+			aw2_library::redirect($login_url);
 			exit();
 		
 		}else{
@@ -244,7 +244,7 @@ class awesome_app{
 			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$request);
 			
 			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
-			wp_redirect( $login_url );
+			aw2_library::redirect($login_url);
 			exit();
 		}
 	}
