@@ -1537,9 +1537,9 @@ static function process_handler($inputs){
 			if (!is_callable($fn_name))$fn_name=$handler['namespace'] . '\\'  . 'unhandled';
 			if (!is_callable($fn_name))$fn_name=null;
 			
-			\util::var_dump($pre);
-			\util::var_dump($sc);
-			\util::var_dump($fn_name);
+			//\util::var_dump($pre);
+			//\util::var_dump($sc);
+			//\util::var_dump($fn_name);
 
 			break;
 			
