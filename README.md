@@ -29,6 +29,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog  
 
+##### 3.2.3.1
+* Fixed: In certain situations, error logging was resulting in multiple DB connections sometimes resulting in error 504.
+
+
 ##### 3.2.3
 * Improved: added support to use wordpress user login as virtual session using wp_vession. To use it, make sure you have added following line in your __rights__ module in the app
 `
