@@ -12,7 +12,6 @@ function get_results($sql,$connection,$config){
 
 function code_conn($connection,$config){
 	//php8OK
-
 	$conn=\aw2_library::get('#'.$connection.'.conn');
 	if(is_object($conn))return $conn; 
 

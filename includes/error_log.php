@@ -208,8 +208,9 @@ class aw2_error_log{
 		if(!defined('AWESOME_LOG_DB'))
 			define('AWESOME_LOG_DB', DB_NAME);
 		
-		$nmysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
-		$nmysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+		//**Instantiate the DB Connection**//
+		if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 		
 		$sql = "
 		start TRANSACTION;
@@ -230,8 +231,8 @@ class aw2_error_log{
 		COMMIT;
 		";
 				
-		$obj = $nmysqli->multi_query($sql);
-		$nmysqli->close();
+		$obj = \aw2_library::$mysqli->multi_query($sql);
+
 	}
 
 	static function datatype_test($val, $data_type){
@@ -268,8 +269,9 @@ class aw2_error_log{
 	}
 
 	static function save($atts){
-		$nmysqli = new SimpleMySQLi(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, "utf8mb4", "assoc");
-		$nmysqli->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+		//**Instantiate the DB Connection**//
+		if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
+		
 		
 		//NULL, current_timestamp(), current_timestamp(),
 		if(!is_array($atts)) return;
@@ -326,7 +328,7 @@ class aw2_error_log{
 
 		//echo $sql;
 		
-		$obj = $nmysqli->multi_query($sql);
+		$obj = \aw2_library::$mysqli->multi_query($sql);
 		
 	
 		$result = $obj->fetchAll("col");
@@ -334,8 +336,7 @@ class aw2_error_log{
 
 		if(is_array($result) &&!empty($result))
 			$last_insert_id=$result[0];
-		
-		$nmysqli->close();		
+				
 		return $last_insert_id;
 	}
 
