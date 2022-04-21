@@ -605,6 +605,7 @@ class controllers{
 		$ticket=array_shift($o->pieces);
 		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
 		if(!$hash || !$hash['ticket_activity']){
+			header("HTTP/1.1 404 Not Found");
 			echo 'Ticket is invalid: ' . $ticket;
 			exit();			
 		}
