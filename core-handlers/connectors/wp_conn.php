@@ -197,9 +197,9 @@ function get($atts,$content=null,$shortcode=null){
 	
 	$config = $connection_arr[$connection];
 	
-	
 	$hash='collection:' . $post_type;
 	
+	$results='';
 	if(USE_ENV_CACHE){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
