@@ -467,7 +467,7 @@ static function checkshortcode($string ) {
 
 static function clean_specialchars($content){
 	//php8OK
-	
+	if(isnull($content)) return $content;
 	$content=str_replace ( "&#8216;" , "'" ,$content );
 	$content=str_replace ( "&#8217;" , "'" ,$content );
 	$content=str_replace ( "&#8220;" , '"' ,$content );
@@ -479,7 +479,7 @@ static function clean_specialchars($content){
 
 static function clean_html($content){
 	//php8OK
-	
+	if(is_null($content)) return $content;
 	$content=preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\r\n", $content);
 	return $content;
 }
@@ -536,7 +536,7 @@ static function unescape_invalid_shortcodes( $content ) {
 }
 static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore='no') {
 	//php8OK	
-	
+	if(is_null($content)) return $content;
 	$content = preg_replace("/\/\/\*.*\*\/\//sU", "", $content);
 	if ( false === strpos( $content, '[' ) )return $content;
 
@@ -4067,11 +4067,13 @@ static function get_client($o){
 		return;
 	}	
 	$content=self::clean_html(self::clean_specialchars($o->content));
-	$content=str_replace ( "&#038;" , "&" ,$content );
-	$content=str_replace("<script>", "", $content);
-	$content=str_replace("</script>", "", $content);
-	$content=str_replace("<style>", "", $content);
-	$content=str_replace("</style>", "", $content);
+	if(!is_null($content)){
+		$content=str_replace ( "&#038;" , "&" ,$content );
+		$content=str_replace("<script>", "", $content);
+		$content=str_replace("</script>", "", $content);
+		$content=str_replace("<style>", "", $content);
+		$content=str_replace("</style>", "", $content);
+	}
 	$key=$o->pieces[0];
 	$content=$o->content;
 	$count=count($o->pieces);
@@ -4662,7 +4664,8 @@ static function in_array_r($needle, $haystack, $strict = false) {
 
 
 static function removesmartquotes($content) {
-	//php8ok		
+	//php8ok	
+	if(is_null($content)) return $content;	
      $content = str_replace('&#8220;', ",", $content);
      $content = str_replace('&#8221;', "'", $content);
      $content = str_replace('&#8216;', '"', $content);
