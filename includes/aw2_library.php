@@ -467,7 +467,7 @@ static function checkshortcode($string ) {
 
 static function clean_specialchars($content){
 	//php8OK
-	if(isnull($content)) return $content;
+	if(is_null($content)) return $content;
 	$content=str_replace ( "&#8216;" , "'" ,$content );
 	$content=str_replace ( "&#8217;" , "'" ,$content );
 	$content=str_replace ( "&#8220;" , '"' ,$content );
