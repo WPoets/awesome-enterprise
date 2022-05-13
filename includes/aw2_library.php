@@ -572,7 +572,7 @@ static function service_helper_old($tag,$attr,$content){
 	
 		$tag=str_replace('service:','',$tag);
 	
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($tag)) ? explode('.',$tag) : '';
 	$service=null;
 	
 	if(count($pieces)>=2){
@@ -610,7 +610,7 @@ static function service_helper_old($tag,$attr,$content){
 	if(!empty($attr)){
 		foreach ($attr as $key => $value) {
 			
-			$pre_key = explode('.',$key);
+			$pre_key = (!is_null($key)) ?  explode('.',$key) : '';
 			
 			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 				$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -902,7 +902,7 @@ static function service_run($tag,$attr,$content,$default='service'){
 			return (int) $tag;
 			break;		
 		case 'comma':
-			return explode(',',(string)$tag);
+			return (!is_null($tag)) ? explode(',',(string)$tag) : '';
 			break;
 			
 		case 'bool':
@@ -955,7 +955,7 @@ static function shortcode_tag_old_jan_9( $m ) {
 	else
 		$content=null;
 
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($tag)) ? explode('.',$tag) : '';
 	$service=null;
 
 	
@@ -1011,7 +1011,7 @@ static function shortcode_tag_old_jan_9( $m ) {
 		if(!empty($attr)){
 			foreach ($attr as $key => $value) {
 				
-				$pre_key = explode('.',$key);
+				$pre_key = (!is_null($key))  ? explode('.',$key) : '' ;
 				
 				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 					$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -1323,7 +1323,7 @@ static function shortcode_tag( $m ) {
 static function process_handler($inputs){
 
 	if(isset($inputs['tags']))
-		$pieces=explode('.',$inputs['tags']);
+		$pieces=(!is_null($inputs['tags'])) ? explode('.',$inputs['tags']) : '';
 	else
 		$pieces=$inputs['pieces'];
 	
@@ -1389,7 +1389,7 @@ static function process_handler($inputs){
 	if(!empty($atts)){
 		foreach ($atts as $key => $value) {
 			
-			$pre_key = explode('.',$key);
+			$pre_key = (!is_null($key)) ?  explode('.',$key) : '';
 			
 			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 				$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -1630,7 +1630,7 @@ static function shortcode_tag_old( $m ) {
 	else
 		$content=null;
 
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($key)) ?  explode('.',$tag) : '';
 	$service=null;
 
 	
@@ -1669,7 +1669,7 @@ static function shortcode_tag_old( $m ) {
 		if(!empty($attr)){
 			foreach ($attr as $key => $value) {
 				
-				$pre_key = explode('.',$key);
+				$pre_key = (!is_null($key)) ? explode('.',$key) ? '';
 				
 				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 					$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -2016,7 +2016,7 @@ static function remove_service($keys) {
 	//php8OK	
 	$current=&self::get_array_ref('handlers');
 	
-	if(!is_array($keys))$keys=explode('.',$keys);	
+	if(!is_array($keys))$keys= (!is_null($keys)) ? explode('.',$keys) : '';	
 	
 	while(!empty($keys)){
 		$key=array_shift($keys);
@@ -3327,7 +3327,7 @@ static function get($main,&$atts=null,$content=null){
 	if(is_object($main))return 'object was passed to get';
 	
 	
-	$o->pieces=explode('.',$main);
+	$o->pieces=(!is_null($main)) ? explode('.',$main) : '';
 	$o->value='';
 	
 	self::get_start($o);
