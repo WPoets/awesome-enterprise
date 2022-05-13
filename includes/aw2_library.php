@@ -3327,7 +3327,7 @@ static function get($main,&$atts=null,$content=null){
 	if(is_object($main))return 'object was passed to get';
 	
 	
-	$o->pieces=explode('.',$main);
+	$o->pieces=(is_array($mail)) ? explode('.',$main) : 0;
 	$o->value='';
 	
 	self::get_start($o);
@@ -5712,4 +5712,3 @@ if(!IS_WP)
 	}
 	
 }	
-
