@@ -563,7 +563,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 	// Always restore square braces so we don't break things like <!--[if IE ]>
 	$content = self::unescape_invalid_shortcodes( $content );
 
-	return trim($content);
+	return (!is_null($content)) ? trim($content) :'';
 }
 
 
@@ -1988,7 +1988,7 @@ static function shortcode_parse_atts($text) {
 			}
 		}
 	} else {
-		$atts = ltrim($text);
+		$atts = (!is_null($text)) ? trim($text) :'' ;
 	}
 	return $atts;
 }
@@ -2786,7 +2786,7 @@ static function modify_output($value,&$atts){
 		
 		//trim
 		if(array_key_exists('trim',$atts) ){
-			$value = trim($value);
+			$value = (!is_null($)) ? trim($value) : '';
 		}
 		
 		//length
