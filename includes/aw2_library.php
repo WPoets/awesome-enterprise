@@ -2786,7 +2786,7 @@ static function modify_output($value,&$atts){
 		
 		//trim
 		if(array_key_exists('trim',$atts) ){
-			$value = (!is_null($)) ? trim($value) : '';
+			$value = (!is_null($value)) ? trim($value) : '';
 		}
 		
 		//length
@@ -2964,10 +2964,10 @@ static function sentenceCase($value) {
     $return_value = ''; 
     foreach ($sentences as $key => $sentence) { 
         $return_value .= ($key & 1) == 0? 
-            ucfirst(strtolower(trim($sentence))) : 
+            ucfirst(strtolower( (!is_null($sentence)) ? trim($sentence) : '' )) : 
             $sentence.' '; 
     } 
-    return trim($return_value); 
+    return (!is_null($return_value)) ? trim($return_value) : ''; 
 }
 
 static function redirect_output($value,&$atts){
@@ -3183,7 +3183,7 @@ static function set($key,$value,$content=null,$atts=null){
 	), $atts) );
 	if($key==null || $key=='')return;
 	$return_value=null;
-	if($value===null)$value=trim(self::parse_shortcode($content));
+	if($value===null)$value=(!is_null($content)) ? trim(self::parse_shortcode($content)) : '';
 	
 	$pieces=explode('.',$key);
 	switch ($pieces[0]) {
@@ -4298,12 +4298,12 @@ static function resolve_string($o){
 			break;
 		case 'comma':
 			array_shift($o->pieces);
-			$o->value=explode(',', trim($string));
+			$o->value=explode(',', (!(is_null($string))) ? trim($string)) : '';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'dot':
 			array_shift($o->pieces);
-			$o->value=explode('.', trim($string));
+			$o->value=explode('.', (!is_null($string)) ? trim($string)) : '';
 			$o->value=array_map('trim',$o->value);
 			break;			
 		case 'run':
@@ -4330,12 +4330,12 @@ static function resolve_string($o){
 			break;
 		case 'space':
 			array_shift($o->pieces);
-			$o->value=explode(' ', trim($string));
+			$o->value=explode(' ', (!is_null($string)) ? trim($string)) : '';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'trim':
 			array_shift($o->pieces);
-			$o->value=trim($string);
+			$o->value=(!is_null($string)) ? trim($string)) : '';
 			break;
 		case 'strip_tags':
 			array_shift($o->pieces);
