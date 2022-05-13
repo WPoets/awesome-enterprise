@@ -2311,7 +2311,8 @@ static function pre_action_parse(&$atts) {
 	}
 	
 	foreach ($atts as $key =>$value) {
-		if (is_string($value) && strpos($value, '{') !== false) {
+		$pattern = '/{\s*\"/';
+		if (is_string($value) && preg_match($pattern, $value)!==1 && strpos($value, '{') !== false && strpos($value, '}') !== false) {
 
 			$startpos = strrpos($value, "{");
 			$stoppos = strpos($value, "}");
