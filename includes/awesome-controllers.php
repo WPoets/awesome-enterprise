@@ -7,12 +7,8 @@ class controllers{
 		$app=&aw2_library::get_array_ref('app');
 		if(!isset($app['collection']['config'])) return false;
 		
-		$arr=aw2_library::get_module($app['collection']['config'],'settings');
-		if(!$arr) return false;
-		
-		aw2_library::module_run($app['collection']['config'],'settings');
-		$no_index = aw2_library::get_post_meta($arr['id'],'no_index');
-		
+		$no_index = aw2_library::get('app.settings.no_index');
+				
 		if($no_index !== 'yes')  return false;
 		
 		header("X-Robots-Tag: noindex", true);
@@ -238,29 +234,50 @@ class controllers{
 		
 		if(empty(self::$module) ){
 			//show list of modules
-			$args=array(
-				'post_type' => $app['collection']['modules']['post_type'],
-				'post_status'=>'publish',
-				'posts_per_page'=>500,
-				'no_found_rows' => true, // counts posts, remove if pagination required
-				'update_post_term_cache' => false, // grabs terms, remove if terms required (category, tag...)
-				'update_post_meta_cache' => false, // grabs post meta, remove if post meta required	
-				'orderby'=>'title',
-				'order'=>'ASC'
-			);
-
+			
+			$connection = '#default';
+			if(isset($app['collection']['modules']['connection'])) 
+				$connection = $app['collection']['modules']['connection'];
+			
 			self::set_cache_header('no');
 			self::set_index_header();
-			
-			$results = new WP_Query( $args );
-			$my_posts=$results->posts;
 
-			foreach ($my_posts as $obj){
-				echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID  . "&action=edit") .'">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
+			$my_posts=array();
+			if($connection === '#default'){
+				$args=array(
+					'post_type' => $app['collection']['modules']['post_type'],
+					'post_status'=>'publish',
+					'posts_per_page'=>500,
+					'no_found_rows' => true, // counts posts, remove if pagination required
+					'update_post_term_cache' => false, // grabs terms, remove if terms required (category, tag...)
+					'update_post_meta_cache' => false, // grabs post meta, remove if post meta required	
+					'orderby'=>'title',
+					'order'=>'ASC'
+				);
+				$results = new WP_Query( $args );
+				$my_posts=$results->posts;
+				foreach ($my_posts as $obj){
+					echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID  . "&action=edit") .'">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
+				}
+					echo('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) .'">Add New</a><br>');
+
+			} else {
+				$connection_arr= \aw2_library::$stack['code_connections'][$connection];
+				$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\get';
+	
+				$atts['connection']=$connection;
+				$atts['post_type']=$app['collection']['modules']['post_type'];
+				
+				$results = call_user_func($connection_service,$atts);
+				echo' <ol>';
+				foreach ($results as $obj){
+					echo( '<li><strong>'.$obj['title'] . '</strong> (<em>' . $obj['id'] . '</em>) </li>' );
+				}
+				echo '</ol>';
 			}
-				echo('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) .'">Add New</a><br>');
-
-		
+			
+			
+			
 		} else {
 			aw2_library::get_post_from_slug(self::$module,$app['active']['collection']['post_type'],$post);
 			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID  . "&action=edit"));
@@ -485,11 +502,9 @@ class controllers{
 	
 	self::set_index_header();
 	
+			
 		if(isset($app['collection']['pages'])){
-			$post_type = $app['collection']['pages']['post_type'];
-			
-			
-			if(aw2_library::post_exists($slug,$post_type)){
+			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
 				array_shift($o->pieces);
 				self::set_qs($o);
 				$app['active']['collection'] = $app['collection']['pages'];
@@ -511,8 +526,9 @@ class controllers{
 		}
 	
 		if(isset($app['collection']['modules'])){
-			$post_type = $app['collection']['modules']['post_type'];
-			if(aw2_library::post_exists($slug,$post_type)){
+		
+			if(aw2_library::module_exists_in_collection($app['collection']['modules'],$slug)){
+
 				array_shift($o->pieces);
 				self::set_qs($o);
 				
@@ -555,8 +571,7 @@ class controllers{
 		self::$module= $o->pieces[0];
 		self::module_parts();
 		
-		$post_type = $app['collection']['modules']['post_type'];
-		if(aw2_library::post_exists(self::$module,$post_type)){
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],self::$module)){
 			array_shift($o->pieces);
 
 			$app['active']['collection'] = $app['collection']['modules'];
@@ -590,6 +605,7 @@ class controllers{
 		$ticket=array_shift($o->pieces);
 		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
 		if(!$hash || !$hash['ticket_activity']){
+			header("HTTP/1.1 404 Not Found");
 			echo 'Ticket is invalid: ' . $ticket;
 			exit();			
 		}
@@ -699,7 +715,7 @@ class controllers{
 		$post_type = $app['collection']['posts']['post_type'];
 			
 			
-		if(!aw2_library::post_exists($slug,$post_type)) return;
+		if(!aw2_library::module_exists_in_collection($app['collection']['posts'],$slug)) return;
 			
 		array_shift($o->pieces);
 		self::set_qs($o);
@@ -756,7 +772,11 @@ class controllers{
 		
 		$slug= $o->pieces[0];
 		$taxonomy	= $app['settings']['default_taxonomy'];
-		$post_type	= $app['collection']['posts']['post_type'];
+		
+		$post_type='';
+		if( isset($app['collection']['posts']))
+			$post_type	= $app['collection']['posts']['post_type'];
+		
 	
 		if(empty($taxonomy) || !term_exists( $slug, $taxonomy )) return;
 			
@@ -805,7 +825,7 @@ class controllers{
 			exit();	
 		}
 		
-		if(aw2_library::post_exists('404-page',$post_type)){
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],'404-page')){
 			array_shift($o->pieces);
 			$this->action='404';
 			
@@ -863,19 +883,18 @@ class controllers{
 	
 	static function run_layout($app, $collection, $slug,$query){
 		
-		if(isset($app['configs'])){
+		if(isset($app['collection']['config'])){
 			$layout='';
-			$app_config = $app['configs'];
+			$app_config=$app['collection']['config'];
 			
-			if(isset($app_config['layout'])){
-				$layout='layout';
-			}
-			if(isset($app_config[$collection.'-layout'])){
-				$layout=$collection.'-layout';
+			$exists=aw2_library::module_exists_in_collection($app_config,'layout');
+			if($exists)$layout='layout';
 
-			}
+			$exists=aw2_library::module_exists_in_collection($app_config,$collection.'-layout');
+			if($exists)$layout=$collection.'-layout';
+
 			if(!empty($layout)){
-				return aw2_library::module_run($app['collection']['config'],$layout,null,null);
+				return aw2_library::module_run($app_config,$layout,null,null);
 			}
 		}
 				

@@ -18,6 +18,7 @@ function tkt($atts,$content=null,$shortcode=null){
 
 	$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
 	if(!$hash || !$hash['payload']){
+		header("HTTP/1.1 404 Not Found");
 		echo 'Ticket is invalid: ' . $ticket;
 		exit();			
 	}

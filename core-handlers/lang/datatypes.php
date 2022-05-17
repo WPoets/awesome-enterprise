@@ -409,6 +409,14 @@ function create($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('arr.empty','Empty array',['func'=>'_empty','namespace'=>__NAMESPACE__]);
+function _empty($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	$return_value=array();
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
+
 \aw2_library::add_service('arr.search_deep','Allows you to search for a value in an array of arrays or an array of objects, and return the key of the value that matches the search criteria.',['namespace'=>__NAMESPACE__]);
 function search_deep($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;

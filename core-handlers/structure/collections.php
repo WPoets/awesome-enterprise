@@ -2,33 +2,6 @@
 
 namespace aw2\collection;
 
-/*
-function aw2_collections_add($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'desc'=>null,
-	'post_type'=>null,
-	
-	), $atts) );
-	\aw2_library::add_collection($main,$atts,$desc);
-}
-*/
-
-\aw2_library::add_service('collection.module_exists','Used to check a module of a collection. Cannot be called directly',['namespace'=>__NAMESPACE__]);
-
-function module_exists($atts,$content,$shortcode){
-        if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-        extract(\aw2_library::shortcode_atts( array(
-        'module'=>null
-        ), $atts) );
-        $return_value=\aw2_library::get_module($shortcode['collection'],$module);
-
-        if($return_value==null) return false;
-        return true;
-}
-
-
 \aw2_library::add_service('collection','Handles Collections',['namespace'=>__NAMESPACE__]);
 
 function unhandled($atts,$content,$shortcode){
@@ -54,16 +27,52 @@ function unhandled($atts,$content,$shortcode){
 }
 
 
+\aw2_library::add_service('collection.module_exists','Used to check a module of a collection. Cannot be called directly',['namespace'=>__NAMESPACE__]);
+
+function module_exists($atts,$content,$shortcode){
+        if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+        extract(\aw2_library::shortcode_atts( array(
+        'module'=>null
+        ), $atts) );
+        $return_value=\aw2_library::get_module($shortcode['collection'],$module);
+
+        if($return_value==null) return false;
+        return true;
+}
+
+
+
+
+\aw2_library::add_service('collection.register','Register a Collection.',['namespace'=>__NAMESPACE__]);
+
+function register($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	'desc'=>null
+	), $atts) );
+	
+	unset($atts['main']);
+	unset($atts['desc']);
+	
+
+	\aw2_library::add_service($main,$desc,$atts);
+	
+}
+
+
 \aw2_library::add_service('collection.run','Used to call a module of a collection. Cannot be called directly',['namespace'=>__NAMESPACE__]);
 
 function run($atts,$content,$shortcode){
+	
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract(\aw2_library::shortcode_atts( array(
 		'main'=>null,
 		'template'=>null,
 		'module'=>null
 	), $atts) );
-	if($main==null)return 'Module/Template must be provided';	
+	
+	if($main===null)return 'Module/Template must be provided';	
 
 	if(!$module && $template)$return_value=\aw2_library::module_forced_run($shortcode['collection'],$main,$template,$content,$atts);	
 	if(!$module && !$template)$return_value=\aw2_library::module_run($shortcode['collection'],$main,null,$content,$atts);

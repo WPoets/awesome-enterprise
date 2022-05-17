@@ -3,8 +3,11 @@
 class awesome_flow{
 	
 	static function env_setup(){
-		error_reporting(E_ALL);
-		$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
+		if(WP_DEBUG){
+			error_reporting(E_ALL);
+			$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
+		}
+		
 		//if($old_error_handler)restore_error_handler();
 		try {
 		if(AWESOME_DEBUG)\aw2\debug\setup([]);	
@@ -12,6 +15,30 @@ class awesome_flow{
 
 		if(DEL_ENV_CACHE)aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
 		
+		//get all the locations for code`
+		$ref=&aw2_library::get_array_ref();
+		$ref['code_connections']=array();
+		
+		if(defined('CONNECTIONS')){
+			//put the locations in the env
+			$ref['code_connections']=CONNECTIONS;
+			
+			if(defined('CODE_DEFAULT_CONNECTION')){
+				//put the locations in the env
+				$ref=&aw2_library::get_array_ref();
+				$ref['code_connections']['#default']=$ref['code_connections'][CODE_DEFAULT_CONNECTION];
+			}
+		}	
+		if(!isset($ref['code_connections']['#default']))
+			$ref['code_connections']['#default']=array(
+				'connection_service'=>'wp_conn',
+				'db_host'=>DB_HOST,
+				'db_user'=>DB_USER,
+				'db_password'=>DB_PASSWORD,
+				'db_name'=>DB_NAME,
+				'redis_db'=>REDIS_DATABASE_GLOBAL_CACHE
+			);
+
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
 				header('awesome_cache: used');
 			$ref=&aw2_library::get_array_ref();
@@ -23,6 +50,7 @@ class awesome_flow{
 			
 			$ref['awesome_core']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"awesome_core"]));
 			$ref['settings']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"settings"]));
+			$ref['css']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"css"]));
 			//These are content type stubs and not actual content types
 			$ref['content_types']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"content_types"]));
 		}
@@ -36,13 +64,15 @@ class awesome_flow{
 
 			//load all the apps
 			self::load_apps();
+			self::run_core('apps');
 
 			self::run_core('services');
+			self::run_core('less-variables');
 				
 
-				
 			//self::run_core('config');
 			self::load_env_settings();
+			
 			
 			
 			$ref=&aw2_library::get_array_ref();
@@ -57,6 +87,7 @@ class awesome_flow{
 				["main"=>ENV_CACHE,"field"=>"apps","value"=>serialize($ref['apps'])]);				
 				
 				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"settings","value"=>serialize($ref['settings'])]);
+				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"css","value"=>serialize($ref['css'])]);
 
 				$content_types=$ref['content_types'];
 				$ct_arr=array();
@@ -95,10 +126,10 @@ class awesome_flow{
 		$settings=&aw2_library::get_array_ref('settings');
 		$settings=array();
 		
-		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
-		if(!$arr) return;
+		$exists=aw2_library::module_exists_in_collection(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
+		if(!$exists) return;
 			
-		$all_post_meta = aw2_library::get_post_meta( $arr['id']);
+		$all_post_meta = aw2_library::get_module_meta(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
 		
 		foreach($all_post_meta as $key=>$meta){
 			
@@ -188,22 +219,23 @@ class awesome_flow{
 			
 			$app['collection']=array();
 
-			$app_config=aw2_library::get_post_meta($app_post['id'],'config_collection');
+			$app_meta=aw2_library::get_module_meta(["post_type"=>AWESOME_APPS_POST_TYPE],$app['slug']);
+			$app_config=isset($app_meta['config_collection']) ? $app_meta['config_collection'] :'' ;
 			if($app_config){
 				$app['collection']['config']['post_type']=$app_config;
 			}
 			
-			$modules=aw2_library::get_post_meta($app_post['id'],'modules_collection');
+			$modules=isset($app_meta['modules_collection']) ? $app_meta['modules_collection'] :'' ;
 			if($modules){
 				$app['collection']['modules']['post_type']=$modules;
 			}
 			
-			$pages=aw2_library::get_post_meta($app_post['id'],'pages_collection');
+			$pages=isset($app_meta['pages_collection']) ? $app_meta['pages_collection'] :'' ;
 			if($pages){
 				$app['collection']['pages']['post_type']=$pages;
 			}	
 			
-			$posts=aw2_library::get_post_meta($app_post['id'],'posts_collection');
+			$posts=isset($app_meta['posts_collection']) ? $app_meta['posts_collection'] :'' ;
 			if($posts){
 				$app['collection']['posts']['post_type']=$posts;
 			}
@@ -229,6 +261,10 @@ class awesome_flow{
 
 		if(\aw2_library::startsWith($request,'/'))
 			$request=substr($request, 1);	
+			
+		if(\aw2_library::endswith($request,'/'))
+			$request=substr($request, 0,-1);
+
 
 		if(empty($request)){
 			self::initialize_root(); // it is front page hence request is not set so setup root.

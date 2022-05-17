@@ -50,7 +50,7 @@ class awesome_auth{
 		$result['login']=$user->user_login;
 		$result['email']=$user->user_email;
 		$result['display_name']=$user->display_name;
-		$result['ID']=$user->ID;
+		$result['ID']=isset($user->ID)? $user->ID : $user->user_email;
 		$app['user']=$result;				
 		
 		
@@ -168,4 +168,81 @@ class awesome_auth{
 		$reply=aw2\vsession\create('','','');
 		return false;
 	}
+
+	
+	static function wp_vsession($auth){
+
+		$app = &aw2_library::get_array_ref('app'); 
+		$name=$app['slug'].'_valid';
+
+		if(isset($_COOKIE['wp_vsession'])){
+			
+			$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+			if(isset($vsession[$name]) && $vsession[$name] === 'yes'){
+				$app['session']=$vsession;
+				$app['user']=json_decode($vsession['user'],true);	
+				return true;
+			}
+			
+			if(isset($vsession['user'])){
+
+				//check the status and roles are matching then allow the pass
+				$user= json_decode($vsession['user'],true);		
+				$app['auth']['status']= 'success';
+				
+				if(isset($auth['all_roles'])){
+					$all_roles = explode(',',$auth['all_roles']);
+					foreach($all_roles as $role){
+						//if any of the role is missing then fail.
+					
+						if(!empty($role) && !in_array($role,$user['allcaps'])){
+							$app['auth']['status']= 'error';
+							break;
+						}
+					}
+				}
+
+				//if auth_data.status == success
+				if(isset($app['auth']['status']) && $app['auth']['status'] == 'success'){
+					//set app_valid=yes and return true
+					$app['user']=$user;
+
+					$atts['key']=$app['slug'].'_valid';
+					$atts['value']='yes';
+					$atts['ticket']=$vsession['ticket_id'];
+					\aw2\vsession\set($atts,null,'');
+					return true;
+				}
+			}		
+		}
+		
+		$reply=aw2\vsession\create(['id'=>'wp_vsession'],'','');
+
+		aw2\vsession\set(['id'=>'wp_vsession','key'=>$name, 'value'=>'no','ticket'=>$reply],'','');
+		aw2\vsession\set(['id'=>'wp_vsession','key'=>'app_name', 'value'=>$app['slug'],'ticket'=>$reply],'','');
+		return false;
+	}
+
+	static function wp_vession_login($user_login, $user){
+		if(isset($_COOKIE['wp_vsession'])){
+			$vsession=\aw2\vsession\get(['id'=>'wp_vsession'],null,'');
+		
+			$result=array();
+			$result['login']=$user->user_login;
+			$result['email']=$user->user_email;
+			$result['display_name']=$user->display_name;
+			$result['ID']=isset($user->ID)? $user->ID : $user->user_email;
+			$result['roles']=$user->roles;
+			$result['allcaps']=$user->allcaps;
+
+			$args= [
+				"ticket" =>$vsession['ticket_id'],
+				"key" =>"user",
+				"value" =>json_encode($result)
+			];
+
+			aw2\vsession\set($args,'','');
+		}
+	}
 }
+

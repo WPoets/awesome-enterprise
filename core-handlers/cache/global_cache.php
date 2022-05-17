@@ -11,13 +11,14 @@ function set($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array(
 	'key'=>null,
 	'prefix'=>'',
-	'ttl' => 300
+	'ttl' => 300,
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 	
 	if(!isset($atts['value']))$value=$content;
 	else
 	$value=$atts['value'];	
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 	
 	if(!$key)return 'Invalid Key';		
 	if($prefix)$key=$prefix . $key;
@@ -35,13 +36,14 @@ function hset($atts,$content=null,$shortcode=null){
 	'main'=>null,
 	'field'=>null,
 	'prefix'=>'',
-	'ttl' => 300
+	'ttl' => 300,
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 	
 	if(!isset($atts['value']))$value=$content;
 	else
 	$value=$atts['value'];	
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 	
 	$key=$main;
 	if(!$key)return 'Invalid key';		
@@ -62,12 +64,13 @@ function get($atts,$content=null,$shortcode=null){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'prefix'=>'',
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 	
 	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 		
 	$return_value='';
 	if($redis->exists($main))$return_value = $redis->get($main);
@@ -83,13 +86,14 @@ function hget($atts,$content=null,$shortcode=null){
 	'main'=>null,
 	'field'=>null,
 	'prefix'=>'',
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 	
 	if(!$main)return 'Main must be set';		
 	if(!$field)return 'Invalid field';
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 		
 	$return_value='';
 	if($redis->exists($main))$return_value = $redis->hget($main,$field);
@@ -105,12 +109,13 @@ function exists($atts,$content=null,$shortcode=null){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'prefix'=>'',
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 	
 	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 		
 	$return_value=false;
 	if($redis->exists($main))$return_value = true;
@@ -123,8 +128,11 @@ function exists($atts,$content=null,$shortcode=null){
 
 function flush($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-	//Connect to Redis and store the data
-		$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+
+	extract(\aw2_library::shortcode_atts( array(
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
+	), $atts) );	
+		$redis = \aw2_library::redis_connect($db);
 	$redis->flushdb() ;
 }
 
@@ -136,11 +144,12 @@ function del($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'prefix'=>'',
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );	
 	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 	if($redis->exists($main))$redis->del($main);
 	return;	
 }
@@ -153,11 +162,12 @@ function run($atts,$content=null,$shortcode){
 	
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
-	'ttl' => 30
+	'ttl' => 30,
+	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );
 
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_GLOBAL_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 		
 	if($main && $redis->exists($main)){
 		$return_value = $redis->get($main);
