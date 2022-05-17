@@ -15,6 +15,20 @@ function aw2_collections_add($atts,$content=null,$shortcode){
 }
 */
 
+\aw2_library::add_service('collection.module_exists','Used to check a module of a collection. Cannot be called directly',['namespace'=>__NAMESPACE__]);
+
+function module_exists($atts,$content,$shortcode){
+        if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+        extract(\aw2_library::shortcode_atts( array(
+        'module'=>null
+        ), $atts) );
+        $return_value=\aw2_library::get_module($shortcode['collection'],$module);
+
+        if($return_value==null) return false;
+        return true;
+}
+
+
 \aw2_library::add_service('collection','Handles Collections',['namespace'=>__NAMESPACE__]);
 
 function unhandled($atts,$content,$shortcode){
