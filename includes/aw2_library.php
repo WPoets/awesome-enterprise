@@ -3065,7 +3065,7 @@ static function post_exists($slug,$posttype){
 static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
 	//php8Amit	
 		//should be only called from WP 
-		if(!IS_WP)die('Not in WP');
+		if(!IS_WP) die('Not in WP');
 		if(!is_null($site_id))
 			switch_to_blog($site_id); 
 		
