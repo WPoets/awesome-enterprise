@@ -563,7 +563,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 	// Always restore square braces so we don't break things like <!--[if IE ]>
 	$content = self::unescape_invalid_shortcodes( $content );
 
-	return trim($content);
+	return (!is_null($content)) ? trim($content) :'';
 }
 
 
@@ -572,7 +572,7 @@ static function service_helper_old($tag,$attr,$content){
 	
 		$tag=str_replace('service:','',$tag);
 	
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($tag)) ? explode('.',$tag) : '';
 	$service=null;
 	
 	if(count($pieces)>=2){
@@ -610,7 +610,7 @@ static function service_helper_old($tag,$attr,$content){
 	if(!empty($attr)){
 		foreach ($attr as $key => $value) {
 			
-			$pre_key = explode('.',$key);
+			$pre_key = (!is_null($key)) ?  explode('.',$key) : '';
 			
 			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 				$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -902,7 +902,7 @@ static function service_run($tag,$attr,$content,$default='service'){
 			return (int) $tag;
 			break;		
 		case 'comma':
-			return explode(',',(string)$tag);
+			return (!is_null($tag)) ? explode(',',(string)$tag) : '';
 			break;
 			
 		case 'bool':
@@ -955,7 +955,7 @@ static function shortcode_tag_old_jan_9( $m ) {
 	else
 		$content=null;
 
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($tag)) ? explode('.',$tag) : '';
 	$service=null;
 
 	
@@ -1011,7 +1011,7 @@ static function shortcode_tag_old_jan_9( $m ) {
 		if(!empty($attr)){
 			foreach ($attr as $key => $value) {
 				
-				$pre_key = explode('.',$key);
+				$pre_key = (!is_null($key))  ? explode('.',$key) : '' ;
 				
 				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 					$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -1323,7 +1323,7 @@ static function shortcode_tag( $m ) {
 static function process_handler($inputs){
 
 	if(isset($inputs['tags']))
-		$pieces=explode('.',$inputs['tags']);
+		$pieces=(!is_null($inputs['tags'])) ? explode('.',$inputs['tags']) : '';
 	else
 		$pieces=$inputs['pieces'];
 	
@@ -1389,7 +1389,7 @@ static function process_handler($inputs){
 	if(!empty($atts)){
 		foreach ($atts as $key => $value) {
 			
-			$pre_key = explode('.',$key);
+			$pre_key = (!is_null($key)) ?  explode('.',$key) : '';
 			
 			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 				$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -1661,7 +1661,7 @@ static function shortcode_tag_old( $m ) {
 	else
 		$content=null;
 
-	$pieces=explode('.',$tag);
+	$pieces=(!is_null($key)) ?  explode('.',$tag) : '';
 	$service=null;
 
 	
@@ -1700,7 +1700,7 @@ static function shortcode_tag_old( $m ) {
 		if(!empty($attr)){
 			foreach ($attr as $key => $value) {
 				
-				$pre_key = explode('.',$key);
+				$pre_key = (!is_null($key)) ? explode('.',$key) : '';
 				
 				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 					$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -2019,7 +2019,7 @@ static function shortcode_parse_atts($text) {
 			}
 		}
 	} else {
-		$atts = ltrim($text);
+		$atts = (!is_null($text)) ? trim($text) :'' ;
 	}
 	return $atts;
 }
@@ -2047,7 +2047,7 @@ static function remove_service($keys) {
 	//php8OK	
 	$current=&self::get_array_ref('handlers');
 	
-	if(!is_array($keys))$keys=explode('.',$keys);	
+	if(!is_array($keys))$keys= (!is_null($keys)) ? explode('.',$keys) : '';	
 	
 	while(!empty($keys)){
 		$key=array_shift($keys);
@@ -2311,9 +2311,9 @@ static function pre_action_parse(&$atts) {
 	}
 	
 	foreach ($atts as $key =>$value) {
-		//if (is_string($value) && strpos($value, '{') !== false) {
-               $pattern = '/{\s*\"/';
-               if (is_string($value) && preg_match($pattern, $value)!==1 && strpos($value, '{') !== false && strpos($value, '}') !== false) {
+		$pattern = '/{\s*\"/';
+		if (is_string($value) && preg_match($pattern, $value)!==1 && strpos($value, '{') !== false && strpos($value, '}') !== false) {
+
 			$startpos = strrpos($value, "{");
 			$stoppos = strpos($value, "}");
 			if ($startpos === 0 && $stoppos===strlen($value)-1 and strpos($value, " ")===false) {
@@ -2816,7 +2816,7 @@ static function modify_output($value,&$atts){
 		
 		//trim
 		if(array_key_exists('trim',$atts) ){
-			$value = trim($value);
+			$value = (!is_null($value)) ? trim($value) : '';
 		}
 		
 		//length
@@ -2994,10 +2994,10 @@ static function sentenceCase($value) {
     $return_value = ''; 
     foreach ($sentences as $key => $sentence) { 
         $return_value .= ($key & 1) == 0? 
-            ucfirst(strtolower(trim($sentence))) : 
+            ucfirst(strtolower( (!is_null($sentence)) ? trim($sentence) : '' )) : 
             $sentence.' '; 
     } 
-    return trim($return_value); 
+    return (!is_null($return_value)) ? trim($return_value) : ''; 
 }
 
 static function redirect_output($value,&$atts){
@@ -3065,7 +3065,7 @@ static function post_exists($slug,$posttype){
 static function get_post_from_slug($slug,$posttype,&$post,$site_id=null){
 	//php8Amit	
 		//should be only called from WP 
-		if(!IS_WP) die('Not in WP');
+		if(!IS_WP)die('Not in WP');
 		if(!is_null($site_id))
 			switch_to_blog($site_id); 
 		
@@ -3213,7 +3213,7 @@ static function set($key,$value,$content=null,$atts=null){
 	), $atts) );
 	if($key==null || $key=='')return;
 	$return_value=null;
-	if($value===null)$value=(isset($content)&& $content!='') ? trim(self::parse_shortcode($content)):'';
+	if($value===null)$value=(!is_null($content)) ? trim(self::parse_shortcode($content)) : '';
 	
 	$pieces=explode('.',$key);
 	switch ($pieces[0]) {
@@ -3357,7 +3357,7 @@ static function get($main,&$atts=null,$content=null){
 	if(is_object($main))return 'object was passed to get';
 	
 	
-	$o->pieces=explode('.',$main);
+	$o->pieces=(!is_null($main)) ? explode('.',$main) : '';
 	$o->value='';
 	
 	self::get_start($o);
@@ -4330,12 +4330,12 @@ static function resolve_string($o){
 			break;
 		case 'comma':
 			array_shift($o->pieces);
-			$o->value=explode(',', trim($string));
+			$o->value=(!is_null($string)) ? explode('.', trim($string)) :'';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'dot':
 			array_shift($o->pieces);
-			$o->value=explode('.', trim($string));
+			$o->value=(!is_null($string)) ? explode('.', trim($string)):'';
 			$o->value=array_map('trim',$o->value);
 			break;			
 		case 'run':
@@ -4362,12 +4362,12 @@ static function resolve_string($o){
 			break;
 		case 'space':
 			array_shift($o->pieces);
-			$o->value=explode(' ', trim($string));
+			$o->value=explode(' ', (!is_null($string)) ? trim($string)) : '';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'trim':
 			array_shift($o->pieces);
-			$o->value=trim($string);
+			$o->value=(!is_null($string)) ? trim($string)) : '';
 			break;
 		case 'strip_tags':
 			array_shift($o->pieces);
@@ -5817,4 +5817,3 @@ if(!IS_WP)
 		return $url;
 	}
 }	
-
