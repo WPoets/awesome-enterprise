@@ -1700,7 +1700,7 @@ static function shortcode_tag_old( $m ) {
 		if(!empty($attr)){
 			foreach ($attr as $key => $value) {
 				
-				$pre_key = (!is_null($key)) ? explode('.',$key) ? '';
+				$pre_key = (!is_null($key)) ? explode('.',$key) : '';
 				
 				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
 					$pre[$pre_key[0]][$pre_key[1]] = $value;
@@ -4330,12 +4330,12 @@ static function resolve_string($o){
 			break;
 		case 'comma':
 			array_shift($o->pieces);
-			$o->value=explode(',', (!(is_null($string))) ? trim($string)) : '';
+			$o->value=(!is_null($string)) ? explode('.', trim($string)) :'';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'dot':
 			array_shift($o->pieces);
-			$o->value=explode('.', (!is_null($string)) ? trim($string)) : '';
+			$o->value=(!is_null($string)) ? explode('.', trim($string)):'';
 			$o->value=array_map('trim',$o->value);
 			break;			
 		case 'run':
