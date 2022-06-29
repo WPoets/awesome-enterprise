@@ -2280,7 +2280,7 @@ static function set_error($msg){
 
 
 //pre actions	
-static function pre_actions($actions,&$atts=null,$content,$shortcode=null){
+static function pre_actions($actions,&$atts=null,$content=null,$shortcode=null){
 	//php8OK	
 	$return_value=true;
 	if(!$atts) return $return_value;
@@ -3361,7 +3361,7 @@ static function get($main,&$atts=null,$content=null){
 	$o->value='';
 	
 	self::get_start($o);
-
+	if(is_array($o->pieces) && (!empty($o->pieces)) ){
 	while(count($o->pieces)>0) {
 		
 		$values=array_values($o->pieces);
@@ -3389,6 +3389,7 @@ static function get($main,&$atts=null,$content=null){
 		}
 		
 	}
+} 
 	if($o->value==='_error') 
 		$o->value='';
 
@@ -4362,12 +4363,12 @@ static function resolve_string($o){
 			break;
 		case 'space':
 			array_shift($o->pieces);
-			$o->value=explode(' ', (!is_null($string)) ? trim($string)) : '';
+			$o->value=(!is_null($string)) ? explode(' ',trim($string)) : '';
 			$o->value=array_map('trim',$o->value);
 			break;
 		case 'trim':
 			array_shift($o->pieces);
-			$o->value=(!is_null($string)) ? trim($string)) : '';
+			$o->value=(!is_null($string)) ? trim($string) : '';
 			break;
 		case 'strip_tags':
 			array_shift($o->pieces);
