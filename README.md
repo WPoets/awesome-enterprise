@@ -30,10 +30,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 ### Changelog 
 
 ##### 3.3
-* Improved: Added zupport of checking for empty and Zero using not_blank and is_blank conditionals.
+* Improved: Added support of checking for empty and Zero using not_blank and is_blank conditionals.
 * Fixed: Showing http 404 headers for missing ticket urls from earlier 200.
 * Imporved: Added ability to check if a module exists within a collection using module_exists.
-* Fixed: made changes to reduce the notices when using PHP 8. 
+* Fixed: made changes to reduce the notices when using PHP 8.1. 
 
 ##### 3.2.3.1
 * Fixed: In certain situations, error logging was resulting in multiple DB connections sometimes resulting in error 504.
