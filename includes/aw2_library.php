@@ -2019,7 +2019,7 @@ static function shortcode_parse_atts($text) {
 			}
 		}
 	} else {
-		$atts =  self::safe_trim($text);
+		$atts =  self::safe_ltrim($text);
 	}
 	return $atts;
 }
@@ -3204,7 +3204,7 @@ static function set($key,$value,$content=null,$atts=null){
 	), $atts) );
 	if($key==null || $key=='')return;
 	$return_value=null;
-	if($value===null)$value=(!is_null($content)) ? trim(self::parse_shortcode($content)) : '';
+	if($value===null)$value=self::safe_trim(self::parse_shortcode($content));
 	
 	$pieces=explode('.',$key);
 	switch ($pieces[0]) {
