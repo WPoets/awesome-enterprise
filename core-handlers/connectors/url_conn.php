@@ -8,7 +8,7 @@ function get_results($config,$post_type,$read_file=true){
 	
 	$url=$config['url'] . '/' . $post_type;
 	
-	$modules_list =  file_get_contents($url.'/modules.json');
+	$modules_list =  @file_get_contents($url.'/modules.json');
 	$modules_list= json_decode($modules_list,true);
 	
 	foreach($modules_list['modules'] as $module){
@@ -19,7 +19,7 @@ function get_results($config,$post_type,$read_file=true){
 		$p['post_title']=$module;
 		$p['path'] = $file_url;
 		$p['post_type'] = $post_type;
-		if($read_file) $p['post_content'] = file_get_contents($file_url);
+		if($read_file) $p['post_content'] = @file_get_contents($file_url);
 		$modules[]=$p;
 	}
 	
@@ -68,7 +68,7 @@ function get($atts,$content=null,$shortcode=null){
 
 	if(!$return_value){
 		$url=$config['url'] . '/' . $post_type . '/' . $module . '.module.html';
-		$code = file_get_contents($url);
+		$code = @file_get_contents($url);
 
 		if($code===false)
 			$return_value=array();
@@ -131,7 +131,7 @@ function meta($atts,$content=null,$shortcode=null){
 	if(!$metas){
 		// read the settings.json for the app which is key value folder
 		$url=$config['url'] . '/' . $post_type;
-		$metas =  file_get_contents($url.'/settings.json');
+		$metas =  @file_get_contents($url.'/settings.json');
 		$metas= json_decode($metas,true);
 				
 		if(SET_ENV_CACHE){
@@ -199,7 +199,7 @@ function get($atts,$content=null,$shortcode=null){
 	
 	if(!$results){
 		
-		$results = \aw2\folder\get_results($config['path'],$post_type);
+		$results = \aw2\url_conn\get_results($config['path'],$post_type);
 		
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
@@ -218,7 +218,7 @@ function get($atts,$content=null,$shortcode=null){
 }
 
 
-\aw2_library::add_service('folder_conn.collection.list','Get List of ',['func'=>'_list' ,'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('url_conn.collection.list','Get List of ',['func'=>'_list' ,'namespace'=>__NAMESPACE__]);
 
 function _list($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
