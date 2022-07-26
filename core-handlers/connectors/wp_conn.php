@@ -166,7 +166,9 @@ function exists($atts,$content=null,$shortcode=null){
 
 	if(empty($connection)) 
 		throw new Exception('connection is not provided');;
-
+	//make module slug in lower case
+	$module=strtolower($module);
+	
 	$results=\aw2\wp_conn\collection\_list($atts);
 	$module_names = array_column($results, 'post_title', 'post_name');
 		
