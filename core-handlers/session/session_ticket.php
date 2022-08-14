@@ -213,7 +213,8 @@ function set_timeout($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.get','Get values of a ticket',['namespace'=>__NAMESPACE__]);
 
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode=null){
+	
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

@@ -36,14 +36,36 @@ namespace aw2\mysqli;
 \aw2_library::add_service('mysqli.cud','Create/Update/Delete Query',['namespace'=>__NAMESPACE__]);
 function cud($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='mysqli';
+		$live_debug_event['action']='query.called';
+		$live_debug_event['mysqli_service']='mysqli.cud';
+		$live_debug_event['raw_query']=$content;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+	}
+
     
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
 	$return_value = array();
 	$start=microtime(true);
+
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
+
+
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+	}
+
+
 	try{
 	if(empty($return_value)){
 		$cud = \aw2_library::$mysqli->query($sql);
@@ -51,11 +73,35 @@ function cud($atts,$content=null,$shortcode){
 		$return_value['message']="Success";
 		$return_value['matched_rows']=$cud->rowsMatched();
 		$return_value['affected_rows']=$cud->affectedRows();	
+		
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.executed';
+			
+			$debug_stop_time=microtime(true);
+			$live_debug_event['stop_time']=$debug_stop_time;
+			$live_debug_event['execution_time']=round($debug_stop_time - $start,3)*1000;
+			$live_debug_event['result_array']=$return_value;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F0EBE3']);
+		}
+		
 	}
+	
 	}
 	catch(\Throwable $e){
 		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['query']=$sql;
+		
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.error';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']=print_r($e,true);
+			$temp_debug['error_type']='query_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#FFC3C3']);
+		}
+
+		
 		throw $e;
 	}
 	if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);		
@@ -68,6 +114,16 @@ function fetch($atts,$content=null,$shortcode){
 	
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='mysqli';
+		$live_debug_event['action']='query.called';
+		$live_debug_event['mysqli_service']='mysqli.fetch';
+		$live_debug_event['raw_query']=$content;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+	}
+	
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 	
@@ -75,6 +131,15 @@ function fetch($atts,$content=null,$shortcode){
 	$start=microtime(true);
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
+	
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+	}
+
+	
 	try{
 	if(empty($return_value)){
 		if(isset($shortcode['tags_left'][0])){
@@ -82,6 +147,19 @@ function fetch($atts,$content=null,$shortcode){
 			$obj = \aw2_library::$mysqli->query($sql);
 			$return_value=common_fetch($obj,$action);
 			$return_value['sql']=$sql;				
+			
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.executed';
+			$live_debug_event['fetch_type']=$action;
+			$debug_stop_time=microtime(true);
+			$live_debug_event['stop_time']=$debug_stop_time;
+			$live_debug_event['execution_time']=round($debug_stop_time - $start,3)*1000;
+			$live_debug_event['result_array']=$return_value;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+		}
+		
+		
+			
 		}else{
 			throw new \SimpleMySQLiException("Query should have exactly 3 parts");
 		}
@@ -90,6 +168,16 @@ function fetch($atts,$content=null,$shortcode){
 	catch(\Throwable $e){
 		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['query']=$content;
+		
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.error';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']=print_r($e,true);
+			$temp_debug['error_type']='query_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug, 'bgcolor'=>'#FFC3C3']);
+		}
+		
 		throw $e;
 	}
 	if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);			
@@ -172,7 +260,16 @@ function common_fetch($obj,$action){
 function multi($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
-
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='mysqli';
+		$live_debug_event['action']='query.called';
+		$live_debug_event['mysqli_service']='mysqli.multi';
+		$live_debug_event['raw_query']=$content;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+	}
+	
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
 
@@ -180,6 +277,12 @@ function multi($atts,$content=null,$shortcode){
 	try{
 	if(isset($shortcode['tags_left'][0])){
 		$action=array_shift($shortcode['tags_left']);
+
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event['fetch_type']=$action;
+		$live_debug_event['tags_left']=$shortcode['tags_left'];
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}
 		
 		if($action==='fetch')$return_value=multi_fetch($atts,$content,$shortcode['tags_left']);
 		if($action==='cud')$return_value=multi_cud($atts,$content,$shortcode['tags_left']);
@@ -187,6 +290,17 @@ function multi($atts,$content=null,$shortcode){
 		if($action==='self')$return_value=multi_self($atts,$content,$shortcode['tags_left']);
 		
 		//if($action==='read_committed')$return_value=multi_read_committed($atts,$content,$shortcode['tags_left']);
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+			$live_debug_event['action']='query.executed';
+			$debug_stop_time=microtime(true);
+			$live_debug_event['stop_time']=$debug_stop_time;
+			$live_debug_event['execution_time']=round($debug_stop_time - $live_debug_event['start_time'],3)*1000;
+			$live_debug_event['result_array']=$return_value;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+			\aw2_library::set('@live_debug.multi_query','');			
+		}
+
 		
 	}else{
 		throw new \SimpleMySQLiException("Tags missing in Multi");
@@ -195,6 +309,17 @@ function multi($atts,$content=null,$shortcode){
 	catch(Exception $e){
 		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['query']=$content;
+		
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.error';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']=print_r($e,true);
+			$temp_debug['error_type']='query_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug, 'bgcolor'=>'#FFC3C3']);
+			\aw2_library::set('@live_debug.multi_query','');			
+		}
+		
 		throw $e;
 	}	
 	
@@ -228,14 +353,23 @@ function multi_self($atts,$content,$tags_left){
 
 
 function multi_search($atts,$content,$tags_left){
-	if(isset($_COOKIE['aws_update'])){
-		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-		echo '/*' .  '::start search query:' . $timeConsumed . '*/';
-	}
+
+
 	$return_value = array();
 	
 	//**Prepare the query**//
 	$sql="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; ". PHP_EOL . $atts['dataset']['query'];
+
+
+	$start=microtime(true);
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}
 	
 	$obj = \aw2_library::$mysqli->multi_query($sql);
 	
@@ -246,10 +380,6 @@ function multi_search($atts,$content,$tags_left){
 	}
 	
 	$return_value = array_merge($atts['dataset'],$return_value);
-	if(isset($_COOKIE['aws_update'])){
-		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-		echo '/*' .  '::end search query:' . $timeConsumed . '*/';
-	}
 	
 	return $return_value;
 }
@@ -266,6 +396,16 @@ function multi_read_committed($atts,$content,$tags_left){
 	//**Parse the query from content**//
 	$sql="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; ". PHP_EOL . 	\aw2_library::parse_shortcode($content);
 
+	$start=microtime(true);
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}
+	
 	if(empty($return_value)){
 		if(isset($tags_left[0])){
 			$action=$tags_left[0];
@@ -286,16 +426,21 @@ function multi_read_committed($atts,$content,$tags_left){
 }
 
 function multi_fetch($atts,$content,$tags_left){
-	if(isset($_COOKIE['aws_update'])){
-		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-		echo '/*' .  '::start fetch query:' . $timeConsumed . '*/';
-	}
 	
 	$return_value = array();
 	
 	//**Prepare the query**//
 	$sql="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;". PHP_EOL . \aw2_library::parse_shortcode($content);
-	
+
+	$start=microtime(true);
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}	
 	//echo $sql;
 	if(empty($return_value)){
 		if(isset($tags_left[0])){
@@ -306,11 +451,6 @@ function multi_fetch($atts,$content,$tags_left){
 		}else{
 			throw new \SimpleMySQLiException("Query should have exactly 3 parts");
 		}
-	}
-
-	if(isset($_COOKIE['aws_update'])){
-		$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-		echo '/*' .  '::end search query:' . $timeConsumed . '*/';
 	}
 	
 	return $return_value;
@@ -324,7 +464,17 @@ function multi_cud($atts,$content,$tags_left){
     
     //**Parse the query from content**//
     $sql=\aw2_library::parse_shortcode($content);
-		
+
+	$start=microtime(true);
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}
+	
 		$isolation='read_committed';
 		if(isset($shortcode['tags_left'][0]))$isolation=$shortcode['tags_left'];
 		
@@ -356,6 +506,19 @@ function transaction($atts,$content=null,$shortcode){
 	'isolation'=>'read_committed'
 	), $atts) );
 
+
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='mysqli';
+		$live_debug_event['action']='query.called';
+		$live_debug_event['mysqli_service']='mysqli.transaction';
+		$live_debug_event['raw_query']=$content;
+		$live_debug_event['isolation']=$isolation;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+	}
+
+
 	
 	//**Instantiate the DB Connection**//
 	if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
@@ -365,7 +528,26 @@ function transaction($atts,$content=null,$shortcode){
 	
 	if(isset($shortcode['tags_left'][0])){
 		$action=array_shift($shortcode['tags_left']);		
+
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['tags_left']=$shortcode['tags_left'];
+			\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+		}
+	
 		$return_value=transaction_exec($content,$action,$isolation);		
+		
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+			$live_debug_event['action']='query.executed';
+			$debug_stop_time=microtime(true);
+			$live_debug_event['stop_time']=$debug_stop_time;
+			$live_debug_event['execution_time']=round($debug_stop_time - $live_debug_event['start_time'],3)*1000;
+			$live_debug_event['result_array']=$return_value;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F0EBE3']);
+			\aw2_library::set('@live_debug.multi_query','');			
+		}
+		
 	}else{
 		throw new \SimpleMySQLiException("Tags missing in Multi");
 	}
@@ -374,6 +556,17 @@ function transaction($atts,$content=null,$shortcode){
 	catch(\Throwable $e){
 		$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['query']=$content;
+		
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='query.error';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']=print_r($e,true);
+			$temp_debug['error_type']='query_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug, 'bgcolor'=>'#FFC3C3']);
+			\aw2_library::set('@live_debug.multi_query','');			
+		}
+		
 		throw $e;
 	}	
 	
@@ -399,6 +592,15 @@ function transaction_exec($content,$action,$isolation='read_committed'){
 	$start=microtime(true);
 	//**Prepend "start transaction; " and append $action to the query and parse from content**//
 	$sql=$isolation_statement . PHP_EOL . "start transaction; ". PHP_EOL . \aw2_library::parse_shortcode($content). " ". PHP_EOL . $action.";";
+
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
+		$live_debug_event['action']='query.executing';
+		$live_debug_event['start_time']=$start;
+		$live_debug_event['built_query']=$sql;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F0EBE3']);
+		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
+	}
 	
 	if(empty($return_value)){
 		$cud = \aw2_library::$mysqli->multi_query($sql);
@@ -407,7 +609,6 @@ function transaction_exec($content,$action,$isolation='read_committed'){
 		$return_value['matched_rows']=$cud->rowsMatched();
 		$return_value['affected_rows']=$cud->affectedRows();	
 		$return_value['sql']=$sql;
-		if(\aw2_library::get('debug_config.mysqli')==='yes')\aw2\debug\query(['start'=>$start,'main'=>$sql]);				
 	}
 	return $return_value;
 }

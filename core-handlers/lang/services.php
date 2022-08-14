@@ -12,7 +12,19 @@ function add($atts,$content=null,$shortcode){
 	
 	unset($atts['main']);
 	unset($atts['desc']);
-	
+
+	$atts['service_id']=$main;
+
+
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='services';
+		$live_debug_event['action']='services.add';
+		$live_debug_event['service_id']=$service_id;
+		$live_debug_event['atts']=$atts;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+	}	
 
 	\aw2_library::add_service($main,$desc,$atts);
 	
