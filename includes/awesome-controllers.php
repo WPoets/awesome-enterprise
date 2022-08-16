@@ -47,6 +47,22 @@ class controllers{
 			$o->pieces=array('home');
 		
 		$controller = $o->pieces[0];	
+
+		if(\aw2_library::is_live_debug()){
+			$debug_format=array();
+			$debug_format['bgcolor']='#E7E0C9';
+			
+			$live_debug_event=array();
+			$live_debug_event['flow']='app';
+			$live_debug_event['stream']='app_routing';
+			$live_debug_event['action']='app.routing.start';
+			$live_debug_event['app']=$app;
+			$live_debug_event['pieces']=implode('.',$o->pieces);
+			$live_debug_event['route']=$controller;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+
+		
 		if($controller == "ajax"){
 			array_shift($o->pieces);
 			$controller = $o->pieces[0]; 
@@ -58,9 +74,30 @@ class controllers{
 			
 			$app['active']['controller'] = $controller;
 			$app['active']['collection'] = $app['collection']['modules'];
+
+
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.route.found';
+				$live_debug_event['route']=$controller;
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+
+				\aw2_library::set('@live_debug.app_debug_event',$live_debug_event);
+				\aw2_library::set('@live_debug.app_debug_format',$debug_format);
+				
+			}	
 			
 			call_user_func(array('controllers', 'controller_'.$controller),$o, $query);
 		}
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.guess';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			\aw2_library::set('@live_debug.app_debug_event',$live_debug_event);
+			\aw2_library::set('@live_debug.app_debug_format',$debug_format);
+			
+		}	
 		
 		if($ajax != true){
 			self::controller_pages($o, $query);
@@ -68,7 +105,15 @@ class controllers{
 			self::controller_taxonomy($o, $query);
 		}
 
+
 		self::controller_modules($o);
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.not_found';
+			$live_debug_event['reason']='Going for 404';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
 		
 		self:: controller_404($o);
 		
@@ -487,7 +532,18 @@ class controllers{
 	static function controller_pages($o, $query){
 		if(empty($o->pieces))return;
 
-		if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'Before running Page/Module']);			
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$debug_format=\aw2_library::get('@live_debug.app_debug_format');
+			
+			$debug_format['bgcolor']='#E7E0C9';
+			
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='page';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+
  
 	
 		$slug= $o->pieces[0];
@@ -510,12 +566,28 @@ class controllers{
 				$app['active']['collection'] = $app['collection']['pages'];
 				$app['active']['module'] = $slug;
 				$app['active']['controller'] = 'page';
+
+				if(\aw2_library::is_live_debug()){
+					$live_debug_event['action']='app.route.found';
+					$live_debug_event['stream']='page';
+					$live_debug_event['app']=\aw2_library::get('app');
+					$live_debug_event['qs']=\aw2_library::get('qs');
+					$debug_format['bgcolor']='#E7E0C9';
+					
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+				}	
 				
 				$output = self::run_layout($app, 'pages', $slug,$query);
 			
 				if($output !== false){
 					echo $output; 
-					if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'After running Page']);			
+
+					if(\aw2_library::is_live_debug()){
+						$live_debug_event['action']='app.done';
+						$debug_format['bgcolor']='#E7E0C9';
+						\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+					}	
+					
 					aw2_library::cleanup();
 					exit();
 				}
@@ -524,6 +596,13 @@ class controllers{
 				return;
 			}
 		}
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='module';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
 	
 		if(isset($app['collection']['modules'])){
 		
@@ -538,11 +617,25 @@ class controllers{
 				
 				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 				//echo '/*' .  '::before layout:' .$timeConsumed . '*/';
+
+				if(\aw2_library::is_live_debug()){
+					$live_debug_event['action']='app.route.found';
+					$live_debug_event['stream']='module';
+					$live_debug_event['app']=\aw2_library::get('app');
+					$live_debug_event['module']=$slug;
+					$live_debug_event['qs']=\aw2_library::get('qs');
+					$debug_format['bgcolor']='#E7E0C9';
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+				}	
 				
 				$output = self::run_layout($app, 'modules', $slug,$query);
 				if($output !== false){
 					echo $output;
-					if(AWESOME_DEBUG) \aw2\debug\flow(['main'=>'After running Module']);		
+
+					if(\aw2_library::is_live_debug()){
+						$live_debug_event['action']='app.done';
+						\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+					}	
 
 				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 				//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
@@ -560,6 +653,16 @@ class controllers{
 	}
 	
 	static function controller_modules($o){ 
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$debug_format=\aw2_library::get('@live_debug.app_debug_format');
+
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='module';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+
 
 		if(empty($o->pieces))return;
 
@@ -581,6 +684,18 @@ class controllers{
 			$app['active']['module'] = self::$module;
 			$app['active']['template'] = self::$template;
 
+
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.route.found';
+				$live_debug_event['stream']='module';
+				$live_debug_event['app']=\aw2_library::get('app');
+				$live_debug_event['module']=self::$module;
+				$live_debug_event['template']=self::$template;
+				
+				$live_debug_event['qs']=\aw2_library::get('qs');
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			}	
+
 			//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 			//echo '/*' .  '::before module:' .$timeConsumed . '*/';			
 			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
@@ -588,8 +703,12 @@ class controllers{
 			//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 			//echo '/*' .  '::after module:' .$timeConsumed . '*/';				
 			echo $result;
-			//render debug bar if needs to be rendered	
-			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
+
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.done';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+			}	
+
 			
 			aw2_library::cleanup();
 			exit();	
@@ -615,6 +734,17 @@ class controllers{
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$live_debug_format=\aw2_library::get('@live_debug.app_debug_format');
+
+			$live_debug_event['action']='app.route.found';
+			$live_debug_event['stream']='ticket';
+			$live_debug_event['ticket']=$ticket;
+			$live_debug_event['qs']=\aw2_library::get('qs');
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+		}	
 		
 		if(isset($ticket_activity['service'])){
 			//$hash['main']=$ticket_activity['service'];
@@ -622,7 +752,10 @@ class controllers{
 			$result=\aw2\service\run($hash,null,[]);
 			echo $result;
 			//render debug bar if needs to be rendered	
-			if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.done';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+			}	
 			aw2_library::cleanup();
 			exit();	
 		}
@@ -654,8 +787,10 @@ class controllers{
 		//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
 
 		echo $result;
-		//render debug bar if needs to be rendered	
-		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.done';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+		}	
 		
 		aw2_library::cleanup();		
 		exit();	

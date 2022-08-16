@@ -707,9 +707,10 @@ static function shortcode_tag( $m ) {
 
 	if(is_array($reply) || is_object($reply)){
 		//trigger error and continue		
-		//self::user_notice("[A Shortcode ($tag) has replied with an array/object and there is no set command]");
+		self::user_notice("[A Shortcode ($tag) has replied with an array/object and there is no set command]");
+		$reply=print_r($reply, true);
 		//return;
-	}	
+	}		
 	return $m[1][0] . $reply . $m[6][0];
 }
 
@@ -740,7 +741,7 @@ static function process_handler($inputs){
 		$live_debug_event['flow']='sc';
 		$live_debug_event['action']='sc.called';
 		$live_debug_event['command']=implode('.',$pieces);
-		$live_debug_event['content']=$content;
+		$live_debug_event['content']=substr(print_r($content, true),0,500);
 		$live_debug_event['atts']=$atts;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
 	}
@@ -1059,7 +1060,7 @@ static function process_handler($inputs){
 		$live_debug_event['call']=array();
 		$live_debug_event['call']['fn_name']=$fn_name;
 		$live_debug_event['call']['atts']=$pre['primary'];
-		$live_debug_event['call']['content']=substr($content,0,100);
+		$live_debug_event['call']['content']=substr($content,0,500);
 		$live_debug_event['call']['sc']=$sc;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#CDDEFF']);
 	}
@@ -1068,7 +1069,7 @@ static function process_handler($inputs){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='sc.command.executed';
-		$live_debug_event['command_result']=substr(print_r($reply, true),0,100);
+		$live_debug_event['command_result']=substr(print_r($reply, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#EEF2FF']);
 	}	
 
@@ -1098,7 +1099,7 @@ static function process_handler($inputs){
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='sc.m.executed';
-		$live_debug_event['m_result']=substr(print_r($reply, true),0,100);
+		$live_debug_event['m_result']=substr(print_r($reply, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#71DFE7']);
 	}	
 	
@@ -1129,7 +1130,7 @@ static function process_handler($inputs){
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='sc.o.executed';
-		$live_debug_event['o_result']=substr(print_r($reply, true),0,100);
+		$live_debug_event['o_result']=substr(print_r($reply, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5E8C7']);
 	}
 	
@@ -4110,7 +4111,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 		$live_debug_event=array();
 		$live_debug_event['flow']='module';
 		$live_debug_event['action']='module.called';
-		$live_debug_event['job_type']='module_forced_run';
+		$live_debug_event['stream']='module_forced_run';
 		$live_debug_event['hash']=(isset($collection['post_type'])?$collection['post_type']:'none') . ':' . $module;
 		$live_debug_event['module']=$module;
 		$live_debug_event['content']=$content;
@@ -4135,7 +4136,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.found';
-		$live_debug_event['code']=substr(print_r($arr['code'], true),0,100);
+		$live_debug_event['code']=substr(print_r($arr['code'], true),0,500);
 
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E4DCCF']);
 	}
@@ -4169,7 +4170,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.code.executed';
-		$live_debug_event['code_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['code_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7ECDE']);
 	}
 	
@@ -4183,7 +4184,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.template.executed';
-		$live_debug_event['template_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['template_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#FBF8F1']);
 	}
 
@@ -4195,7 +4196,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.done';
-		$live_debug_event['module_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['module_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#ECE5C7']);
 	}
 
@@ -4221,7 +4222,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 		$live_debug_event=array();
 		$live_debug_event['flow']='module';
 		$live_debug_event['action']='module.called';
-		$live_debug_event['job_type']='module_run';
+		$live_debug_event['stream']='module_run';
 		$live_debug_event['hash']=(isset($collection['post_type'])?$collection['post_type']:'none') . ':' . $module;
 		$live_debug_event['module']=$module;
 		$live_debug_event['content']=$content;
@@ -4258,7 +4259,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.found';
-		$live_debug_event['code']=substr(print_r($arr['code'], true),0,100);
+		$live_debug_event['code']=substr(print_r($arr['code'], true),0,500);
 
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E4DCCF']);
 	}
@@ -4302,7 +4303,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.code.executed';
-		$live_debug_event['code_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['code_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7ECDE']);
 	}
 
@@ -4321,7 +4322,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.template.executed';
-		$live_debug_event['template_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['template_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#FBF8F1']);
 	}
 
@@ -4334,7 +4335,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.done';
-		$live_debug_event['module_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['module_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#ECE5C7']);
 	}
 
@@ -4422,7 +4423,7 @@ static function module_include($collection,$module){
 		$live_debug_event=array();
 		$live_debug_event['flow']='module';
 		$live_debug_event['action']='module.called';
-		$live_debug_event['job_type']='module_include';
+		$live_debug_event['stream']='module_include';
 		$live_debug_event['hash']=(isset($collection['post_type'])?$collection['post_type']:'none') . ':' . $module;
 		$live_debug_event['module']=$module;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DEB6AB']);
@@ -4454,7 +4455,7 @@ static function module_include($collection,$module){
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.done';
-		$live_debug_event['module_result']=substr(print_r($return_value, true),0,100);
+		$live_debug_event['module_result']=substr(print_r($return_value, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#ECE5C7']);
 	}
 	
@@ -4467,7 +4468,7 @@ static function module_include_raw($collection,$module){
 		$live_debug_event=array();
 		$live_debug_event['flow']='module';
 		$live_debug_event['action']='module.called';
-		$live_debug_event['job_type']='module_include_raw';
+		$live_debug_event['stream']='module_include_raw';
 		$live_debug_event['hash']=(isset($collection['post_type'])?$collection['post_type']:'none') . ':' . $module;
 		$live_debug_event['module']=$module;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
@@ -4534,9 +4535,7 @@ static function setup_env_cache($key){
 	}
 	else{
 		if(isset($_COOKIE['use_env_cache']) && $_COOKIE['use_env_cache']==='no')
-			define('USE_ENV_CACHE', false);	
-		else
-			define('USE_ENV_CACHE', true);	
+			define('USE_ENV_CACHE', false);
 	}
 
 	if(isset($_REQUEST['use_env_cache']) && $_REQUEST['use_env_cache']==='delete_cookie'){
@@ -4551,17 +4550,6 @@ static function setup_env_cache($key){
 		define('DEL_ENV_CACHE', false);	
 
 		
-	//should we set cache or not 
-	/*
-	DEVELOP_FOR_AWESOMEUI cannot Set the Env Cache because he may have corrupted the environment 
-	If you are not Using the Cache then you cannot setup the cache either
-	*/
-	if(DEVELOP_FOR_AWESOMEUI || !USE_ENV_CACHE)
-		define('SET_ENV_CACHE', false);
-	else
-		define('SET_ENV_CACHE', true); 	
-
-	
 }
 
 

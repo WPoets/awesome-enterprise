@@ -7,12 +7,51 @@ class awesome_flow{
 			error_reporting(E_ALL);
 			$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
 		}
+
+		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
+
+		if(\aw2_library::is_live_debug()){
+			
+			define('SET_ENV_CACHE', false);
+			$debug_env_cache=\aw2_library::get('@live_debug.use_env_cache');
+			if(!defined('USE_ENV_CACHE') && $debug_env_cache==='no')define('USE_ENV_CACHE',false);
+		}
+
+		if(!defined('USE_ENV_CACHE'))define('USE_ENV_CACHE',true);	
+
+		//should we set cache or not 
+		/*
+		DEVELOP_FOR_AWESOMEUI cannot Set the Env Cache because he may have corrupted the environment 
+		If you are not Using the Cache then you cannot setup the cache either
+		*/
+		if(!defined('SET_ENV_CACHE')){
+			if(DEVELOP_FOR_AWESOMEUI || !USE_ENV_CACHE)
+				define('SET_ENV_CACHE', false);
+			else
+				define('SET_ENV_CACHE', true); 	
+		}
+		
+		
+		if(\aw2_library::is_live_debug()){
+			
+			$debug_format=array();
+			$debug_format['bgcolor']='#C1CFC0';
+			
+			$live_debug_event=array();
+			$live_debug_event['flow']='live_debug';
+			$live_debug_event['action']='debug.started';
+			$live_debug_event['live_debug']=\aw2_library::get('@live_debug');
+			$live_debug_event['del_env_cache']=DEL_ENV_CACHE;
+			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
+			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
+			$live_debug_event['error_level']=error_reporting();
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
+
+
 		
 		//if($old_error_handler)restore_error_handler();
 		try {
-		
-		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
-		
 		//if(AWESOME_DEBUG)\aw2\debug\setup([]);	
 		//if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'start initialize']);
 
@@ -44,26 +83,34 @@ class awesome_flow{
 
 		if(\aw2_library::is_live_debug()){
 			
+			$debug_format=array();
+			$debug_format['bgcolor']='#C1CFC0';
+			
 			$live_debug_event=array();
 			$live_debug_event['flow']='awesome_setup';
+			$live_debug_event['stream']='env_setup';
 			$live_debug_event['action']='setup.env';
 			$live_debug_event['reason']='reached till code connections';
-			$live_debug_event['live_debug']=\aw2_library::get('@live_debug.active');
+			$live_debug_event['live_debug_active']=\aw2_library::get('@live_debug.active');
 			$live_debug_event['code_connections']=$ref['code_connections'];
 			$live_debug_event['del_env_cache']=DEL_ENV_CACHE;
 			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
 			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
-			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#C1CFC0']);
+			$live_debug_event['error_level']=error_reporting();
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
 	
 	
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
-				header('awesome_cache: used');
+			header('awesome_cache: used');
 
 			if(\aw2_library::is_live_debug()){
 				$live_debug_event['action']='setup.cache.used';
+				$live_debug_event['stream']='cache';
 				$live_debug_event['cache_used']='yes';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F3F1F5']);
+
+				$debug_format['bgcolor']='#F3F1F5';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}	
 
 			$ref=&aw2_library::get_array_ref();
@@ -80,11 +127,12 @@ class awesome_flow{
 			$ref['content_types']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"content_types"]));
 		}
 		else{
-				header('awesome_cache: not used');
-
+			header('awesome_cache: not used');
 			if(\aw2_library::is_live_debug()){
 				$live_debug_event['action']='setup.cache.not_used';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+				$live_debug_event['stream']='cache';
+				$debug_format['bgcolor']='#F3F1F5';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}	
 			
 		// load core
@@ -93,8 +141,11 @@ class awesome_flow{
 				
 				if(\aw2_library::is_live_debug()){
 					$live_debug_event['action']='setup.core';
+					$live_debug_event['stream']='env_setup';
+					
 					$live_debug_event['awesome_core_post_type']=AWESOME_CORE_POST_TYPE;
-					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+					$debug_format['bgcolor']='#E7E0C9';
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 				}					
 			}		
 
@@ -104,15 +155,20 @@ class awesome_flow{
 
 			if(\aw2_library::is_live_debug()){
 				$live_debug_event['action']='setup.apps';
+				$live_debug_event['stream']='env_setup';
 				$live_debug_event['apps']=\aw2_library::get('apps');
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}	
 
 			self::run_core('services');
 
 			if(\aw2_library::is_live_debug()){
 				$live_debug_event['action']='setup.services';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				$live_debug_event['stream']='env_setup';
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}	
 
 			self::run_core('less-variables');
@@ -126,6 +182,12 @@ class awesome_flow{
 			$ref=&aw2_library::get_array_ref();
 			if(!isset($ref['content_types']))$ref['content_types']=array();
 			self::run_core('content-types');
+
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='setup.content-types';
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			}	
 			
 			if(SET_ENV_CACHE){
 				$ref=aw2_library::get_array_ref();
@@ -146,6 +208,15 @@ class awesome_flow{
 					}
 					aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"content_types","value"=>serialize($ct_arr)]);					
 				}
+
+				if(\aw2_library::is_live_debug()){
+					$live_debug_event['action']='setup.cache.set';
+					$live_debug_event['stream']='cache';
+					$live_debug_event['cache_set']='yes';
+					$debug_format['bgcolor']='#F3F1F5';
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+				}	
+				
 			}	
 		}	
 		//time_zone
@@ -327,12 +398,15 @@ class awesome_flow{
 
 
 		if(\aw2_library::is_live_debug()){
+			$debug_format=array();
+			$debug_format['bgcolor']='#E7E0C9';
 			
 			$live_debug_event=array();
-			$live_debug_event['flow']='app';
-			$live_debug_event['action']='app.called';
+			$live_debug_event['flow']='controller';
+			$live_debug_event['stream']='controller_setup';
+			$live_debug_event['action']='controller.called';
 			$live_debug_event['slug']=$app_slug;
-			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
 
 		$app = new awesome_app();
@@ -344,9 +418,10 @@ class awesome_flow{
 			array_unshift($pieces,$app_slug);
 
 			if(\aw2_library::is_live_debug()){
-				$live_debug_event['action']='app.found';
-				$live_debug_event['app_type']='ticket';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				$live_debug_event['action']='controller.found';
+				$live_debug_event['controller_type']='ticket';
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}
 		
 		}
@@ -356,9 +431,10 @@ class awesome_flow{
 			array_unshift($pieces,$app_slug);
 
 			if(\aw2_library::is_live_debug()){
-				$live_debug_event['action']='app.found';
-				$live_debug_event['app_type']='ticket';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				$live_debug_event['action']='controller.found';
+				$live_debug_event['controller_type']='ticket';
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}
 			
 		}
@@ -371,23 +447,50 @@ class awesome_flow{
 			$name=array_shift($o->pieces);
 
 			if(\aw2_library::is_live_debug()){
-				$live_debug_event['action']='app.found';
-				$live_debug_event['app_type']=$name;
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				$live_debug_event['action']='controller.found';
+				$live_debug_event['controller_type']='controller';
+				$live_debug_event['name']=$name;
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}
 			
 			\aw2_library::service_run('controllers.' . $name,['o'=>$o],null,'service'); // run the controller service, it is responsible for handling echo and exit.
 		}
 		
 		if($app->exists($app_slug)){
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='controller.found';
+				$live_debug_event['controller_type']='app';
+				$live_debug_event['name']=$app_slug;
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			}
+
+			if(\aw2_library::is_live_debug()){
+				$debug_format=array();
+				$debug_format['bgcolor']='#E7E0C9';
+				
+				$app_debug_event=array();
+				$app_debug_event['flow']='app';
+				$app_debug_event['stream']='app_setup';
+				$app_debug_event['action']='app.found';
+				$app_debug_event['slug']=$app_slug;
+				\aw2\live_debug\publish_event(['event'=>$app_debug_event,'format'=>$debug_format]);
+			}	
+
 			//yes - setup app
 			$app->setup($app_slug);
 			array_shift($pieces); 
 
 			if(\aw2_library::is_live_debug()){
-				$live_debug_event['action']='app.found';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
-			}
+				$debug_format=array();
+				$debug_format['bgcolor']='#E7E0C9';
+				
+				$app_debug_event['action']='app.loaded';
+				$app_debug_event['app']=\aw2_library::get('app');
+				\aw2\live_debug\publish_event(['event'=>$app_debug_event,'format'=>$debug_format]);
+			}	
+
 			
 		}
 		else if($app->exists('root')){
@@ -397,17 +500,37 @@ class awesome_flow{
 		else{
 			//No - possible issue
 			if(\aw2_library::is_live_debug()){
-				$live_debug_event['action']='app.not_found';
-				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+				$debug_format=array();
+				$debug_format['bgcolor']='#E7E0C9';
+				
+				$live_debug_event['action']='controller.not_found';
+				$live_debug_event['controller_type']='wp';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}
 			return;
 		}
 
 		$app->load_settings();
 		$app->setup_collections();
+
+		if(\aw2_library::is_live_debug()){
+			$app_debug_event['action']='app.setup';
+			$app_debug_event['app']=\aw2_library::get('app');
+			\aw2\live_debug\publish_event(['event'=>$app_debug_event,'format'=>$debug_format]);
+		}	
+
 		$arr=array();
 		$arr['status']='';
 		$arr=$app->check_rights($request);
+
+		if(\aw2_library::is_live_debug()){
+			$debug_format=array();
+			$debug_format['bgcolor']='#E7E0C9';
+				
+			$app_debug_event['action']='app.valid';
+			$app_debug_event['app']=\aw2_library::get('app');
+			\aw2\live_debug\publish_event(['event'=>$app_debug_event,'format'=>$debug_format]);
+		}	
 
 		// run init
 		$app->run_init();
@@ -415,10 +538,22 @@ class awesome_flow{
 		//now resolve the route.
 		
 		if($app->slug!='root'){
+			if(\aw2_library::is_live_debug()){
+				$debug_format=array();
+				$debug_format['bgcolor']='#E7E0C9';
+				
+				$app_debug_event['action']='app.routing';
+				$app_debug_event['reason']='App is being Routed. Will not come back';
+				$app_debug_event['app']=\aw2_library::get('app');
+				\aw2\live_debug\publish_event(['event'=>$app_debug_event,'format'=>$debug_format]);
+			}	
 			$app->resolve_route($pieces,$query);
 		}
 
 		if(\aw2_library::is_live_debug()){
+			$debug_format=array();
+			$debug_format['bgcolor']='#C1CFC0';
+				
 			$live_debug_event['action']='app.wp';
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#C1CFC0']);
 		}

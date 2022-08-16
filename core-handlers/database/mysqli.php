@@ -42,6 +42,7 @@ function cud($atts,$content=null,$shortcode){
 		$live_debug_event=array();
 		$live_debug_event['flow']='mysqli';
 		$live_debug_event['action']='query.called';
+		$live_debug_event['stream']='mysqli.cud';
 		$live_debug_event['mysqli_service']='mysqli.cud';
 		$live_debug_event['raw_query']=$content;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
@@ -119,6 +120,7 @@ function fetch($atts,$content=null,$shortcode){
 		$live_debug_event=array();
 		$live_debug_event['flow']='mysqli';
 		$live_debug_event['action']='query.called';
+		$live_debug_event['stream']='mysqli.fetch';
 		$live_debug_event['mysqli_service']='mysqli.fetch';
 		$live_debug_event['raw_query']=$content;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
@@ -265,6 +267,7 @@ function multi($atts,$content=null,$shortcode){
 		$live_debug_event=array();
 		$live_debug_event['flow']='mysqli';
 		$live_debug_event['action']='query.called';
+		$live_debug_event['stream']='mysqli.multi';
 		$live_debug_event['mysqli_service']='mysqli.multi';
 		$live_debug_event['raw_query']=$content;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
@@ -512,6 +515,7 @@ function transaction($atts,$content=null,$shortcode){
 		$live_debug_event=array();
 		$live_debug_event['flow']='mysqli';
 		$live_debug_event['action']='query.called';
+		$live_debug_event['stream']='mysqli.transaction';
 		$live_debug_event['mysqli_service']='mysqli.transaction';
 		$live_debug_event['raw_query']=$content;
 		$live_debug_event['isolation']=$isolation;
