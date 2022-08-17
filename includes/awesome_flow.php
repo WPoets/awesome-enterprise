@@ -41,10 +41,16 @@ class awesome_flow{
 			$live_debug_event['flow']='live_debug';
 			$live_debug_event['action']='debug.started';
 			$live_debug_event['live_debug']=\aw2_library::get('@live_debug');
+			$live_debug_event['wp_debug']=WP_DEBUG;
 			$live_debug_event['del_env_cache']=DEL_ENV_CACHE;
 			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
 			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
+			$live_debug_event['develop_for_awesomeui']=DEVELOP_FOR_AWESOMEUI;
 			$live_debug_event['error_level']=error_reporting();
+			$live_debug_event['e_all']=E_ALL;
+			
+			$live_debug_event['php_version']=phpversion();
+			
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}
 
@@ -52,11 +58,7 @@ class awesome_flow{
 		
 		//if($old_error_handler)restore_error_handler();
 		try {
-		//if(AWESOME_DEBUG)\aw2\debug\setup([]);	
-		//if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'start initialize']);
 
-		if(DEL_ENV_CACHE)aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
-		
 		//get all the locations for code`
 		$ref=&aw2_library::get_array_ref();
 		$ref['code_connections']=array();
@@ -100,7 +102,18 @@ class awesome_flow{
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
 	
-	
+		if(DEL_ENV_CACHE){
+			aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
+
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='setup.cache.deleted';
+				$live_debug_event['cache_deleted']='yes';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			}	
+			
+		}
+
+		
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
 			header('awesome_cache: used');
 
@@ -237,7 +250,6 @@ class awesome_flow{
 		
 		$arr=\aw2_library::get_module(['post_type'=>AWESOME_CORE_POST_TYPE],$module);
 		if($arr)\aw2_library::module_run(['post_type'=>AWESOME_CORE_POST_TYPE],$module);
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>$module . ' Setup']);
 	}
 		
 
@@ -258,14 +270,12 @@ class awesome_flow{
 			
 			$settings[$key] = $meta;
 		}
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Env Setup']);
 
 	}
 
 	static function init(){
 		try{	
 		self::run_core('init');
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Init fired']);			
 
 		//custom init for debugging purpose		
 		if(DEVELOP_FOR_AWESOMEUI && isset($_COOKIE['debug_init_module']) && !empty($_COOKIE['debug_init_module'])){
@@ -360,7 +370,6 @@ class awesome_flow{
 			}
 			
 			$registered_apps[$app_post['module']]=$app;
-			if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'Apps Loaded']);
 
 		}
 		
@@ -369,7 +378,6 @@ class awesome_flow{
 		
 	static function app_takeover($query){
 		try {
-		if(AWESOME_DEBUG)\aw2\debug\flow(['main'=>'App Takeover']);
 		
 		$request=$query->request;
 

@@ -21,7 +21,7 @@ function add($atts,$content=null,$shortcode){
 		$live_debug_event=array();
 		$live_debug_event['flow']='services';
 		$live_debug_event['action']='services.add';
-		$live_debug_event['service_id']=$service_id;
+		$live_debug_event['service_id']=$atts['service_id'];
 		$live_debug_event['atts']=$atts;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
 	}	

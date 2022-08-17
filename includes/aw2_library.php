@@ -4011,6 +4011,7 @@ static function get_module($collection,$module){
 			
 	}
 
+/*
 	if(isset($collection['source'])){
 		$hash=$collection['source'] . '_' . $module;
 		$return_value=null;
@@ -4040,7 +4041,7 @@ static function get_module($collection,$module){
 		
 		return $arr;
 	}
-	
+*/	
 }
 
 
@@ -4225,6 +4226,9 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 		$live_debug_event['stream']='module_run';
 		$live_debug_event['hash']=(isset($collection['post_type'])?$collection['post_type']:'none') . ':' . $module;
 		$live_debug_event['module']=$module;
+		$live_debug_event['collection']=$collection;
+		$live_debug_event['connection']=(isset($collection['connection'])?$collection['connection']:'none');
+		$live_debug_event['post_type']=(isset($collection['post_type'])?$collection['post_type']:'none');
 		$live_debug_event['content']=$content;
 		$live_debug_event['atts']=$atts;
 		$live_debug_event['template']=$template;
@@ -4259,7 +4263,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.found';
-		$live_debug_event['code']=substr(print_r($arr['code'], true),0,500);
+		$live_debug_event['code']=substr(print_r($arr['code'], true),0,5000);
 
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E4DCCF']);
 	}
@@ -4443,6 +4447,13 @@ static function module_include($collection,$module){
 		
 		//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
 	$return_value='';
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='module.found';
+		$live_debug_event['code']=substr(print_r($arr['code'], true),0,5000);
+
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E4DCCF']);
+	}
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='module.code.executing';

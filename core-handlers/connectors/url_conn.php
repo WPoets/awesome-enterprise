@@ -51,6 +51,23 @@ function get($atts,$content=null,$shortcode=null){
 	'post_type'=>null,
 	'module'=>null,
 	), $atts) );
+
+	if(\aw2_library::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='connection';
+		$live_debug_event['action']='connection.called';
+		$live_debug_event['stream']='module_get';
+		$live_debug_event['hash']=$post_type . ':' . $module;
+		$live_debug_event['module']=$module;
+		$live_debug_event['connection']=$connection;
+		$live_debug_event['post_type']=$post_type;
+
+		$debug_format=array();
+		$debug_format['bgcolor']='#DEB6AB';
+
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+	}
 	
 	//check the location
 	$connection_arr=\aw2_library::$stack['code_connections'];
@@ -60,20 +77,54 @@ function get($atts,$content=null,$shortcode=null){
 	$config = $connection_arr[$connection];
 
 	$hash='modules:' . $post_type . ':' . $module;
+
+	if(\aw2_library::is_live_debug()){
+		$live_debug_event['action']='connection.getting';
+		$live_debug_event['cache_key']=$hash;
+		$live_debug_event['use_env_cache']=USE_ENV_CACHE;
+		$live_debug_event['config']=$config;
+		$debug_format['bgcolor']='#DEB6AB';
+
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+	}
 	
+	$return_value=null;
 	if(USE_ENV_CACHE){
 		$return_value=\aw2\global_cache\get(["main"=>$hash ,"db"=>$config['redis_db']],null,null);
 		$return_value=json_decode($return_value,true);
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='connection.cache.used';
+			$live_debug_event['cache_used']='yes';
+			$live_debug_event['result']=$return_value;
+			$debug_format['bgcolor']='#DEB6AB';
+
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
+		
+		
 	}
 
 	if(!$return_value){
-		$url=$config['url'] . '/' . $post_type . '/' . $module . '.module.html';
+		$url=$config['url'] . '/' . $post_type . '/' . $module . '.module.html?rnd='.rand();
 		$code = @file_get_contents($url);
 
 		if($code===false)
 			$return_value=array();
 		else	
 			$return_value=\aw2\url_conn\convert_to_module($post_type,$module,$code,$url,$hash);
+
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='connection.cache.not_used';
+			$live_debug_event['url']=$url;
+			$live_debug_event['cache_used']='no';
+			$live_debug_event['result']=$return_value;
+			$debug_format['bgcolor']='#DEB6AB';
+
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
+
 			
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
@@ -97,6 +148,15 @@ function get($atts,$content=null,$shortcode=null){
 	}
 
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='connection.done';
+			$debug_format['bgcolor']='#DEB6AB';
+
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
+	
+	
 	return $return_value;	
 }
 
@@ -236,6 +296,7 @@ function _list($atts,$content=null,$shortcode=null){
 	
 	$hash='collection_list:' . $post_type;
 
+	$results=null; 
 	if(USE_ENV_CACHE){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);

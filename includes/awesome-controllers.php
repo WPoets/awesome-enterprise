@@ -824,7 +824,6 @@ class controllers{
 		}
 		echo implode('',$result);
 		//render debug bar if needs to be rendered	
-		if(AWESOME_DEBUG) echo \aw2\debugbar\ajax_render([]);		
 		aw2_library::cleanup();
 		exit();	
 	}	
