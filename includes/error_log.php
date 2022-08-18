@@ -3,9 +3,11 @@
 class aw2_error_log{
 	
 	static function awesome_exception($location,$exception=null){
-		if(!WP_DEBUG){
+		if(!DEVELOP_FOR_AWESOMEUI){
 			$error_msg ='Something is wrong (000), enable debug to see details.';
-			return $error_msg;
+			
+			if(!LOG_EXCEPTIONS)
+				return $error_msg;
 		}
 		
 		$atts=array();
@@ -83,8 +85,11 @@ class aw2_error_log{
 			
 		}
 		
-		$error_id = self::save($atts);
-		$error_msg ='Something is wrong ('.$error_id.')';	
+		$error_id='Not Logged';
+
+		if(LOG_EXCEPTIONS)$error_id = self::save($atts);
+		
+		if(!isset($error_msg))$error_msg ='Developer:Something is wrong ('.$error_id.')';	
 		
 		$atts['error_db_id'] =$error_id;
 		self::log_error($atts);
@@ -119,6 +124,7 @@ class aw2_error_log{
 	}
 
 	static function log_datatype_mismatch($arr){
+		return;
 		if(!WP_DEBUG){
 			return;
 		}

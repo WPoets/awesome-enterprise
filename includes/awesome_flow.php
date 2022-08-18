@@ -3,35 +3,16 @@
 class awesome_flow{
 	
 	static function env_setup(){
+		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
+		self::setup_constants();
+		
+		
 		if(WP_DEBUG){
 			error_reporting(E_ALL);
 			$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");
 		}
 
-		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
 
-		if(\aw2_library::is_live_debug()){
-			
-			define('SET_ENV_CACHE', false);
-			$debug_env_cache=\aw2_library::get('@live_debug.use_env_cache');
-			if(!defined('USE_ENV_CACHE') && $debug_env_cache==='no')define('USE_ENV_CACHE',false);
-		}
-
-		if(!defined('USE_ENV_CACHE'))define('USE_ENV_CACHE',true);	
-
-		//should we set cache or not 
-		/*
-		DEVELOP_FOR_AWESOMEUI cannot Set the Env Cache because he may have corrupted the environment 
-		If you are not Using the Cache then you cannot setup the cache either
-		*/
-		if(!defined('SET_ENV_CACHE')){
-			if(DEVELOP_FOR_AWESOMEUI || !USE_ENV_CACHE)
-				define('SET_ENV_CACHE', false);
-			else
-				define('SET_ENV_CACHE', true); 	
-		}
-		
-		
 		if(\aw2_library::is_live_debug()){
 			
 			$debug_format=array();
@@ -41,14 +22,13 @@ class awesome_flow{
 			$live_debug_event['flow']='live_debug';
 			$live_debug_event['action']='debug.started';
 			$live_debug_event['live_debug']=\aw2_library::get('@live_debug');
-			$live_debug_event['wp_debug']=WP_DEBUG;
-			$live_debug_event['del_env_cache']=DEL_ENV_CACHE;
-			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
-			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
 			$live_debug_event['develop_for_awesomeui']=DEVELOP_FOR_AWESOMEUI;
+			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
+			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
+			$live_debug_event['log_exceptions']=LOG_EXCEPTIONS;
+			$live_debug_event['env_cache']=ENV_CACHE;
 			$live_debug_event['error_level']=error_reporting();
 			$live_debug_event['e_all']=E_ALL;
-			
 			$live_debug_event['php_version']=phpversion();
 			
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
@@ -95,14 +75,11 @@ class awesome_flow{
 			$live_debug_event['reason']='reached till code connections';
 			$live_debug_event['live_debug_active']=\aw2_library::get('@live_debug.active');
 			$live_debug_event['code_connections']=$ref['code_connections'];
-			$live_debug_event['del_env_cache']=DEL_ENV_CACHE;
-			$live_debug_event['use_env_cache']=USE_ENV_CACHE;
-			$live_debug_event['set_env_cache']=SET_ENV_CACHE;
 			$live_debug_event['error_level']=error_reporting();
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
 	
-		if(DEL_ENV_CACHE){
+		if(\aw2_library::get('@live_debug.config.del_env_cache')==='yes'){
 			aw2\global_cache\del(['main'=>ENV_CACHE],null,null);
 
 			if(\aw2_library::is_live_debug()){
@@ -112,6 +89,7 @@ class awesome_flow{
 			}	
 			
 		}
+		//clear_redis_cache= global,redis_db,connections as required
 
 		
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
@@ -244,6 +222,53 @@ class awesome_flow{
 		}	
 	}
 	
+
+	static function setup_constants(){
+		//develop_for_awesomeui
+		if(!defined('DEVELOP_FOR_AWESOMEUI')){
+			$val=\aw2_library::get('@live_debug.config.develop_for_awesomeui');
+			if($val==='yes')
+				define('DEVELOP_FOR_AWESOMEUI', true);
+			else	
+				define('DEVELOP_FOR_AWESOMEUI', false);
+		}
+		if(!defined('USE_ENV_CACHE')){
+			$val=\aw2_library::get('@live_debug.config.use_env_cache');
+			if($val==='no')
+				define('USE_ENV_CACHE', false);
+			else	
+				define('USE_ENV_CACHE', true);
+		}
+
+		if(!defined('SET_ENV_CACHE')){
+			
+			if(DEVELOP_FOR_AWESOMEUI)
+				define('SET_ENV_CACHE', false);
+			else{
+				$val=\aw2_library::get('@live_debug.config.set_env_cache');
+				if($val==='no')
+					define('SET_ENV_CACHE', false);
+				else	
+					define('SET_ENV_CACHE', true);
+			}
+		}
+
+		if(!defined('LOG_EXCEPTIONS')){
+			define('LOG_EXCEPTIONS', true);
+		}
+
+
+		if(DEVELOP_FOR_AWESOMEUI){
+			error_reporting(E_ALL);
+		}
+
+		if(LOG_EXCEPTIONS){
+			$old_error_handler = set_error_handler("aw2_error_log::awesome_error_handler");		
+		}
+
+		
+	}
+	
 		
 	static function run_core($module){
 		if(!defined('AWESOME_CORE_POST_TYPE'))return;
@@ -276,13 +301,6 @@ class awesome_flow{
 	static function init(){
 		try{	
 		self::run_core('init');
-
-		//custom init for debugging purpose		
-		if(DEVELOP_FOR_AWESOMEUI && isset($_COOKIE['debug_init_module']) && !empty($_COOKIE['debug_init_module'])){
-			$user_init_module = $_COOKIE['debug_init_module'];
-			self::run_core($user_init_module);
-		} 	
-
 
 		//Decide caching or not caching
 		$cache=array();

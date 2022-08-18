@@ -174,10 +174,6 @@ function run($atts,$content=null,$shortcode){
 	}
 	else{
 		$return_value=\aw2_library::parse_shortcode($content) ;
-		if($main && !(current_user_can('develop_for_awesomeui') && isset($_COOKIE['dev_no_cache']))){
-			$redis->set($main, $return_value);
-			$redis->expire($main, $ttl*60);
-		}
 	}
 		
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);

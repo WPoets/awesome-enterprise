@@ -536,6 +536,17 @@ static function unescape_invalid_shortcodes( $content ) {
 }
 static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore='no') {
 	//php8OK	
+
+	if(self::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='parser';
+		$live_debug_event['action']='parser.called';
+		$live_debug_event['content']=substr(print_r($content, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
+	}
+
+	
 	if(is_null($content)) return $content;
 	$content = preg_replace("/\/\/\*.*\*\/\//sU", "", $content);
 	if ( false === strpos( $content, '[' ) )return $content;
@@ -562,6 +573,13 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 	
 	// Always restore square braces so we don't break things like <!--[if IE ]>
 	$content = self::unescape_invalid_shortcodes( $content );
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='parser.done';
+		$live_debug_event['result']=substr(print_r($content, true),0,5000);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
+	}
+
 
 	return  self::safe_trim($content);
 }
@@ -744,6 +762,20 @@ static function process_handler($inputs){
 		$live_debug_event['content']=substr(print_r($content, true),0,500);
 		$live_debug_event['atts']=$atts;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
+	}
+
+	if(self::is_live_debug()){
+		$cc=str_replace('.','\.',$live_debug_event['command']);
+
+		$re = '/\[' . $cc .'((\s+.*\])|(\]))/m';
+		$match=preg_match($re, $content);
+		if($match===1){
+			$live_debug_event['action']='sc.same_tag_error';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_type']='same_tag_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#CFD2CF']);
+		}
 	}
 	
 		
@@ -4387,10 +4419,41 @@ static function service_template_run($template,$atts=array()){
 
 static function template_run($template,$content=null,$atts=array()){
 	//php8ok		
+	if(self::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='template';
+		$live_debug_event['action']='template.called';
+		$live_debug_event['stream']='template_run';
+		
+		$tmodule=self::get('module');
+		$live_debug_event['post_type']=(isset($tmodule['collection']['post_type'])?$tmodule['collection']['post_type']:'');
+		$live_debug_event['module']=$tmodule;
+		$live_debug_event['template']=$template;
+		$live_debug_event['atts']=$atts;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DEB6AB']);
+	}
+	
 	$content=self::removesmartquotes($content);		
-	if(!isset(self::$stack['module']['templates'][$template]))return 'Template not found - '.$template ;
+	if(!isset(self::$stack['module']['templates'][$template])){
+		if(self::is_live_debug()){
+			$live_debug_event['action']='template.not_found';
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_type']='missing_asset';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
+		}
+		return 'Template not found - '.$template ;
+		
+	}
 	$template_ptr=self::$stack['module']['templates'][$template];
 	$stack_id=self::push_child('template',$template_ptr['name']);
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.loaded';
+		$live_debug_event['code']=substr(print_r($template_ptr['code'], true),0,5000);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#C4DFAA']);
+	}
 	
 	if($content)self::parse_shortcode($content);
 	self::push_this($stack_id);
@@ -4405,6 +4468,13 @@ static function template_run($template,$content=null,$atts=array()){
 	
 	
 	$return_value=self::parse_shortcode($template_ptr['code']);
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.code.executed';
+		$live_debug_event['code_result']=substr(print_r($return_value, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7ECDE']);
+	}
+
 	
 	if(isset($template_ptr['content_pos'])){
 		$sc_exec=&self::get_array_ref('@sc_exec');
@@ -4416,7 +4486,21 @@ static function template_run($template,$content=null,$atts=array()){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
 	}
+	
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.done';
+		$live_debug_event['template_result']=substr(print_r($return_value, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#ECE5C7']);
+	}
+
+	
 	aw2_library::pop_child($stack_id);
+	
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.unloaded';
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#CDC2AE']);
+	}
+	
 	return $return_value;	
 }
 
@@ -4510,6 +4594,8 @@ static function load_content_type($field){
 
 
 static function setup_develop_for_awesomeui(){
+	//deprecated
+	return;
 	//php8ok
 	//Are you a developer. A developer has certain priveleges
 	//setup DEVELOP_FOR_AWESOMEUI
@@ -4534,7 +4620,8 @@ static function setup_env_cache($key){
 	// SET_ENV_CACHE - Whether to Set the Env Cache or not
 
 	define('ENV_CACHE', $key);
-
+	return;
+	//rest of the code is deprecated
 	/*
 	DEVELOP_FOR_AWESOMEUI can use the env cache. This allows him to not have to load cache unnecessarily and also test with cache on
 	*/
