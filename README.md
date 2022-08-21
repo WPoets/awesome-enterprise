@@ -35,7 +35,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Improved: Added `code.dump` to allow the ability to output the code shortcodes when needed.
 * Improved: Added `js.run_on_activity` to wrap javascript code to execute on user interaction with the browser.
 * Improved: Changed the way we can enable/disable or delete the code cache.   
-* Fixed: In wp_conn module name is converted to lowercase before finding it in post table. 
+* Fixed: In the wp_conn the module name is converted to lowercase before finding it in post table. 
 * Fixed: Fixes in url connector.
 
 ##### 3.3
