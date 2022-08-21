@@ -32,8 +32,8 @@ If you don't find your issue already listed, do [create an issue](https://github
 ##### 3.4
 * Improved: Added support for live debugging using "debugger app" all major activities now support the debugging data.
 * Improved: Compatibility with php 7.4 and 8.1.
-* Improved: Added `code.dump` to allow ability to output the coode shortcodes when needed.
-* Improved: Added `js.run_on_activity` to wrap javascript code to execute on user interaction with browser.
+* Improved: Added `code.dump` to allow the ability to output the code shortcodes when needed.
+* Improved: Added `js.run_on_activity` to wrap javascript code to execute on user interaction with the browser.
 * Improved: Changed the way we can enable/disable or delete the code cache.   
 * Fixed: In wp_conn module name is converted to lowercase before finding it in post table. 
 * Fixed: Fixes in url connector.
