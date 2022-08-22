@@ -29,10 +29,19 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.4
+* Improved: Added support for live debugging using "debugger app" all major activities now support the debugging data.
+* Improved: Compatibility with php 7.4 and 8.1.
+* Improved: Added `code.dump` to allow the ability to output the code shortcodes when needed.
+* Improved: Added `js.run_on_activity` to wrap javascript code to execute on user interaction with the browser.
+* Improved: Changed the way we can enable/disable or delete the code cache.   
+* Fixed: In the wp_conn the module name is converted to lowercase before finding it in post table. 
+* Fixed: Fixes in url connector.
+
 ##### 3.3
 * Improved: Added support of checking for empty and Zero using not_blank and is_blank conditionals.
 * Fixed: Showing http 404 headers for missing ticket urls from earlier 200.
-* Imporved: Added ability to check if a module exists within a collection using module_exists.
+* Improved: Added ability to check if a module exists within a collection using module_exists.
 * Fixed: made changes to reduce the notices when using PHP 8.1. 
 
 ##### 3.2.3.1
