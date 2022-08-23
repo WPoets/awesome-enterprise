@@ -29,6 +29,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.4.1
+* Improved: Added support for `code.highlight` shortcode.
+
 ##### 3.4
 * Improved: Added support for live debugging using "debugger app" all major activities now support the debugging data.
 * Improved: Compatibility with php 7.4 and 8.1.
