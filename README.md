@@ -29,6 +29,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.4.2
+* Improved: Errors can now be viewed directly after switching on debugging mode
+* Improved: SQL queries now carry more info for debugging when view in sql process list
+* Improved: Removed commented code.
+ 
 ##### 3.4.1
 * Improved: Added support for `code.highlight` shortcode.
 
