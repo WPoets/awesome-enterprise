@@ -90,6 +90,23 @@ class aw2_error_log{
 		if(LOG_EXCEPTIONS)$error_id = self::save($atts);
 		
 		if(!isset($error_msg))$error_msg ='Developer:Something is wrong ('.$error_id.')';	
+
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=array();
+			$live_debug_event['flow']='exception';
+
+			$live_debug_event['action']='exception.error';
+			$live_debug_event['error']='yes';
+			$live_debug_event['error_type']='exception_error';
+			$live_debug_event['atts']=$atts;
+			$live_debug_event['exception_type']=$atts['exception_type'];
+			
+			
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+
+		}
+		
+		
 		
 		$atts['error_db_id'] =$error_id;
 		self::log_error($atts);

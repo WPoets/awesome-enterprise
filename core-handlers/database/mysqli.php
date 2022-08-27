@@ -33,6 +33,22 @@ mysqli.transaction.rollback
 
 namespace aw2\mysqli;
 
+
+function add_comment_to_sql($sql){
+	$comment='/* ' 
+	. 	' app:' .\aw2_library::get('app.slug')
+	. 	' module:' .\aw2_library::get('module.slug')
+	. 	' post_type:' .\aw2_library::get('module.collection.post_type')
+	. 	' template:' .\aw2_library::get('template.name')
+	. 	' service_id:' .\aw2_library::get('module.collection.service_id')
+	. 	' connection:' .\aw2_library::get('module.collection.connection')
+	. 	' user:' .\aw2_library::get('app.user.email')
+	. '*/' ;
+	
+	return 	$comment . $sql . $comment;
+	
+}
+
 \aw2_library::add_service('mysqli.cud','Create/Update/Delete Query',['namespace'=>__NAMESPACE__]);
 function cud($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
@@ -58,7 +74,7 @@ function cud($atts,$content=null,$shortcode){
 	//**Parse the query from content**//
 	$sql=\aw2_library::parse_shortcode($content);
 
-
+	
 	if(\aw2_library::is_live_debug()){
 		$live_debug_event['action']='query.executing';
 		$live_debug_event['start_time']=$start;
@@ -66,10 +82,9 @@ function cud($atts,$content=null,$shortcode){
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#DFDFDE']);
 	}
 
-
 	try{
 	if(empty($return_value)){
-		$cud = \aw2_library::$mysqli->query($sql);
+		$cud = \aw2_library::$mysqli->query(add_comment_to_sql($sql));
 		$return_value['status']="success";
 		$return_value['message']="Success";
 		$return_value['matched_rows']=$cud->rowsMatched();
@@ -146,7 +161,7 @@ function fetch($atts,$content=null,$shortcode){
 	if(empty($return_value)){
 		if(isset($shortcode['tags_left'][0])){
 			$action=$shortcode['tags_left'][0];
-			$obj = \aw2_library::$mysqli->query($sql);
+			$obj = \aw2_library::$mysqli->query(add_comment_to_sql($sql));
 			$return_value=common_fetch($obj,$action);
 			$return_value['sql']=$sql;				
 			
@@ -320,8 +335,7 @@ function multi($atts,$content=null,$shortcode){
 			$temp_debug['error_message']=print_r($e,true);
 			$temp_debug['error_type']='query_error';
 			\aw2\live_debug\publish_event(['event'=>$temp_debug, 'bgcolor'=>'#FFC3C3']);
-			\aw2_library::set('@live_debug.multi_query','');			
-		}
+	}
 		
 		throw $e;
 	}	
@@ -342,7 +356,7 @@ function multi_self($atts,$content,$tags_left){
     $sql=\aw2_library::parse_shortcode($content);
 	
 	if(empty($return_value)){
-		$obj = \aw2_library::$mysqli->multi_query($sql);
+		$obj = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 		$result = $obj->fetchAll("assoc");
 		$result = is_null($result) ? [] : $result;
         $return_value['status']="success";
@@ -374,7 +388,7 @@ function multi_search($atts,$content,$tags_left){
 		\aw2_library::set('@live_debug.multi_query',$live_debug_event);
 	}
 	
-	$obj = \aw2_library::$mysqli->multi_query($sql);
+	$obj = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 	
 	if((isset($atts['dataset']['transpose']) && $atts['dataset']['transpose'] == "yes") || (isset($atts['dataset']['transform']) && $atts['dataset']['transform'] == "yes") ){
 		$return_value=$obj->fetchTranspose(true);	
@@ -412,11 +426,11 @@ function multi_read_committed($atts,$content,$tags_left){
 	if(empty($return_value)){
 		if(isset($tags_left[0])){
 			$action=$tags_left[0];
-			$obj = \aw2_library::$mysqli->multi_query($sql);
+			$obj = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 			$return_value=common_fetch($obj,$action);	
 			$return_value['sql']=$sql;				
 		}else{
-			$cud = \aw2_library::$mysqli->multi_query($sql);
+			$cud = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 			$return_value['status']="success";
 			$return_value['message']="Success";
 			$return_value['matched_rows']=$cud->rowsMatched();
@@ -448,7 +462,7 @@ function multi_fetch($atts,$content,$tags_left){
 	if(empty($return_value)){
 		if(isset($tags_left[0])){
 			$action=$tags_left[0];
-			$obj = \aw2_library::$mysqli->multi_query($sql);
+			$obj = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 			$return_value=common_fetch($obj,$action);	
 			$return_value['sql']=$sql;				
 		}else{
@@ -490,7 +504,7 @@ function multi_cud($atts,$content,$tags_left){
 			
 		
     if(empty($return_value)){
-        $cud = \aw2_library::$mysqli->multi_query($sql);
+        $cud = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
         $return_value['status']="success";
         $return_value['message']="Success";
         $return_value['matched_rows']=$cud->rowsMatched();
@@ -607,7 +621,7 @@ function transaction_exec($content,$action,$isolation='read_committed'){
 	}
 	
 	if(empty($return_value)){
-		$cud = \aw2_library::$mysqli->multi_query($sql);
+		$cud = \aw2_library::$mysqli->multi_query(add_comment_to_sql($sql));
 		$return_value['status']="success";
 		$return_value['message']="Success";
 		$return_value['matched_rows']=$cud->rowsMatched();
