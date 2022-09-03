@@ -141,7 +141,7 @@ function validate($atts,$content=null,$shortcode){
 */
 \aw2_library::add_service('session_ticket.set_activity','Set activity of a  ticket',['namespace'=>__NAMESPACE__]);
 
-function set_activity($atts,$content=null,$shortcode){
+function set_activity($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -174,7 +174,7 @@ function set_activity($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.set','Set values of a ticket',['namespace'=>__NAMESPACE__]);
 
-function set($atts,$content=null,$shortcode){
+function set($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -193,7 +193,7 @@ function set($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.set_timeout','Set values of a ticket',['namespace'=>__NAMESPACE__]);
 
-function set_timeout($atts,$content=null,$shortcode){
+function set_timeout($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
