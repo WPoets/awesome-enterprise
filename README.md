@@ -29,6 +29,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.4.3
+* Improved: Added support for redis hash keys in session cache using _'session_cache.hset'_ and _'session_cache.hget'_
+* Improved: Added t2 contorller that allows to run services and better handling of expired tickets. 
+* Improved: removed few warning from session_tickets of PHP 8.1.
+
 ##### 3.4.2
 * Improved: Errors can now be viewed directly after switching on debugging mode
 * Improved: SQL queries now carry more info for debugging when view in sql process list
