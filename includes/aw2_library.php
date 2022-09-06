@@ -4504,6 +4504,70 @@ static function template_run($template,$content=null,$atts=array()){
 	return $return_value;	
 }
 
+static function template_anon_run($template_content,$content=null,$atts=array()){
+	//php8ok
+	
+	if(self::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='template';
+		$live_debug_event['action']='template.called';
+		$live_debug_event['stream']='template_anon_run';
+		
+		$live_debug_event['template']=$template;
+		$live_debug_event['atts']=$atts;
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
+	}
+	
+	$content=self::removesmartquotes($content);		
+	
+	$template_ptr=array();
+	$template_ptr['name']='anon';
+	$template_ptr['code']=$template_content;
+	
+	$stack_id=self::push_child('template',$template_ptr['name']);
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.loaded';
+		$live_debug_event['code']=substr(print_r($template_ptr['code'], true),0,5000);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#C4DFAA']);
+	}
+	
+	if($content)self::parse_shortcode($content);
+	self::push_this($stack_id);
+	self::push_atts($stack_id,$atts);
+
+	$return_value=self::parse_shortcode($template_ptr['code']);
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.code.executed';
+		$live_debug_event['code_result']=substr(print_r($return_value, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7ECDE']);
+	}
+
+
+	
+	if(isset(self::$stack['template']['_return'])){
+		unset(self::$stack['_return']);
+		$return_value=self::$stack['template']['_return'];
+	}
+	
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.done';
+		$live_debug_event['template_result']=substr(print_r($return_value, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#ECE5C7']);
+	}
+
+	aw2_library::pop_child($stack_id);
+	
+	if(self::is_live_debug()){
+		$live_debug_event['action']='template.unloaded';
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#CDC2AE']);
+	}
+	
+	return $return_value;	
+}
+
 static function module_include($collection,$module){
 	//php8ok		
 	if(self::is_live_debug()){
