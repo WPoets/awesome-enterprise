@@ -533,6 +533,21 @@ function sanitize_title( $value, $atts){
     return $title;
 }
 
+
+\aw2_library::add_service('m.sort','Returns array sorted based on paramters specifed. Use m.sort',['namespace'=>__NAMESPACE__]);
+function sort( $value, $atts){
+	
+    $func = $atts['sort'];
+    $supported_arr = array('asort','arsort','krsort','ksort','rsort','sort','array_multisort');
+    
+    if(!in_array($func,$supported_arr))
+        return $value;
+
+    $func($value);
+    
+    return $value;
+}
+
 function custom_sanitize_title_with_dashes( $title, $raw_title = '', $context = 'display' ) {
     $title = strip_tags( $title );
     // Preserve escaped octets.

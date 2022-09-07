@@ -18,7 +18,7 @@ function t2($atts,$content=null,$shortcode=null){
 
 	$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
 	if(!$hash){
-		header("HTTP/1.1 404 Not Found");
+		//header("HTTP/1.1 404 Not Found");
 		echo 'Ticket is invalid: ' . $ticket;
 		echo "<script type=spa/axn axn='core.run_script' alert='This form has expired, please refresh and start again.'> </script>";
 		exit();			
