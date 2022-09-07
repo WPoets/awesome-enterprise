@@ -32,6 +32,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 ##### 3.4.4
 * Improved: Added support for redis hash keys in session cache using _'session_cache.del'_ and _'session_cache.hlen'_
 * Improved: Added support for m.sort for sorting arrays, it supports 'asort','arsort','krsort','ksort','rsort','sort','array_multisort'.
+* Improved: Added support for _template.anon.run_ so that we can have anonymous code behave like template.  
 * Fixed: Removed 404 header status in case ticket is not found.
 
 ##### 3.4.3
