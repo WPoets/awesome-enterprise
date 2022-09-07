@@ -29,6 +29,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.4.4
+* Improved: Added support for redis hash keys in session cache using _'session_cache.del'_ and _'session_cache.hlen'_
+* Improved: Added support for m.sort for sorting arrays, it supports 'asort','arsort','krsort','ksort','rsort','sort','array_multisort'.
+* Fixed: Removed 404 header status in case ticket is not found.
+
 ##### 3.4.3
 * Improved: Added support for redis hash keys in session cache using _'session_cache.hset'_ and _'session_cache.hget'_
 * Improved: Added t2 controller that allows to run services and better handling of expired tickets. 
