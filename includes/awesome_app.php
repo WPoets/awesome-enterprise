@@ -219,13 +219,13 @@ class awesome_app{
 			
 			if(!is_array($options) || ('1' != $options['enable_rights'])) return true;
 			
-			if('1' == $options['enable_vsession']){
+			if(isset($options['enable_vsession']) && '1' == $options['enable_vsession']){
 				$vsession_key = $options['vsession_key'] ? $options['vsession_key'] : 'email';
 				$vsession = awesome_auth::vsession2($vsession_key);
 				if($vsession) return;
 			}
 			
-			if('1' == $options['enable_single_access']){
+			if(isset($options['enable_single_access']) && '1' == $options['enable_single_access']){
 				$auth_for_single = array();
 				$auth_for_single['all_roles'] = $options['single_access_roles'];
 				$has_single_access = awesome_auth::single_access($auth_for_single);

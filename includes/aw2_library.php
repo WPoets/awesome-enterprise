@@ -417,6 +417,21 @@ static function new_mysqli(){
 	return $mysqli;
 }
 
+static function get_default_db_conn(){
+	 //check for mysqli handler
+	 $mysqli_handler = self::get('handlers.mysqli');
+	 if(empty($mysqli_handler))throw new Exception('db connection mysqli is not registered');
+	 if(!isset($mysqli_handler['conn_path'])) throw new Exception('db connection mysqli does not have conn_path');
+
+	//get the mysql connection
+	$mysqli = self::get($mysqli_handler['conn_path']);
+	//set the db
+	$mysqli->select_db($mysqli_handler['db_name']);
+	//return the obj
+	return $mysqli;
+	
+}
+
 static function cleanup(){
 	if(self::$mysqli) {
 		self::$mysqli->close();

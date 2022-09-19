@@ -403,6 +403,15 @@ function set($atts,$content=null,$shortcode){
 function create($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
+	extract(\aw2_library::shortcode_atts( array(
+	'path'=>null,
+	'raw_content'=>null
+	), $atts) );
+	
+	if(!is_null($path))$content=\aw2_library::get($path);
+
+	if(!is_null($raw_content))$content=$raw_content;
+	
 	$ab=new \array_builder();
 	$return_value=$ab->parse($content);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
