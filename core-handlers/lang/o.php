@@ -78,6 +78,20 @@ function merge_with($value, $atts){
 	return $value;
 }
 
+
+//merge_with
+\aw2_library::add_service('o.arr_push','Merge the value with specified variable. Use o.arr.push',['namespace'=>__NAMESPACE__]);
+function arr_push($value, $atts){
+		$arr=\aw2_library::get($atts['arr_push']);
+		if(!is_array($arr))$arr=array();
+		array_push($arr,$value);
+		\aw2_library::set($atts['arr_push'],$arr,null,$atts);
+		$value='';	
+	return $value;
+}
+
+
+
 //merge_r_with
 \aw2_library::add_service('o.merge_r_with','Merge the value with specified variable. Use o.merge_with',['namespace'=>__NAMESPACE__]);
 function merge_r_with($value, $atts){
