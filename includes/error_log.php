@@ -46,10 +46,12 @@ class aw2_error_log{
 					$post_type=$entry['collection']['source'];
 				
 				$slug= isset($entry['slug'])?$entry['slug']:'';
+				$obj_id= isset($entry['obj_id'])?$entry['obj_id']:'';
+				$obj_type= isset($entry['obj_type'])?$entry['obj_type']:'';
 				
 				$call_stack[]=array(
-					'obj_id'=>$entry['obj_id'],
-					'obj_type'=>$entry['obj_type'],
+					'obj_id'=>$obj_id,
+					'obj_type'=>$obj_type,
 					'slug'=>$slug,
 					'post_type'=>$post_type
 				);
