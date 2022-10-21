@@ -1364,9 +1364,11 @@ static function add_service($service,$desc=null,$atts=array()) {
 	}
 	
 	if(isset($atts['post_type']) || isset($atts['source'])){
+		$handler=&self::get_array_ref('handlers',$service);
 		$atts['type'] = 'collection';
 		$atts['@service'] = true;
-		self::set('handlers.' . $service,$atts);
+		$handler = array_merge($handler,$atts);
+
 		return;
 	}
 
