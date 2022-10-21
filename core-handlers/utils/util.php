@@ -130,6 +130,20 @@ function qs_parse($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('util.constant','Returns an associative array with the names of all the constants and their values',['namespace'=>__NAMESPACE__]);
+function constant($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+	extract(\aw2_library::shortcode_atts( array('constant_key'=>'all'), $atts) );
+	
+	if($constant_key=='all'){
+		$return_value=get_defined_constants();  
+	}else{
+		$return_value=constant($constant_key);  
+	}
+
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;
+}
 
 /*
 \aw2_library::add_shortcode('search','new_ticket', 'search_new_ticket');
