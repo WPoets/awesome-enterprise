@@ -7,7 +7,7 @@ namespace aw2\util;
 function otp($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	$return_value=mt_rand(100000,999999);
+	$return_value=\mt_rand(100000,999999);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
@@ -136,9 +136,9 @@ function constant($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array('constant_key'=>'all'), $atts) );
 	
 	if($constant_key=='all'){
-		$return_value=get_defined_constants();  
+		$return_value=\get_defined_constants();  
 	}else{
-		$return_value=constant($constant_key);  
+		$return_value=\constant($constant_key);  
 	}
 
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
