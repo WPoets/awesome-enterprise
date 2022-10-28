@@ -3557,7 +3557,7 @@ static function resolve_string($o){
 			break;
 		case 'esc_sql':
 			array_shift($o->pieces);
-			$o->value=esc_sql($string);
+			$o->value=self::esc_sql($string);
 			break;			
 		case 'encrypt':
 			array_shift($o->pieces);
