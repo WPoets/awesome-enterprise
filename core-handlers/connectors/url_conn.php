@@ -107,7 +107,10 @@ function get($atts,$content=null,$shortcode=null){
 
 	if(!$return_value){
 		$url=$config['url'] . '/' . $post_type . '/' . $module . '.module.html?rnd='.rand();
-		$code = @file_get_contents($url);
+		
+		$code = false;
+		if(\aw2\url_conn\collection\url_exists($url))
+			$code = @file_get_contents($url);
 
 		if($code===false)
 			$return_value=array();
@@ -191,7 +194,10 @@ function meta($atts,$content=null,$shortcode=null){
 	if(!$metas){
 		// read the settings.json for the app which is key value folder
 		$url=$config['url'] . '/' . $post_type;
-		$metas =  @file_get_contents($url.'/settings.json');
+		
+		$metas='{}';
+		if(\aw2\url_conn\collection\url_exists($url.'/settings.json'))
+			$metas =  @file_get_contents($url.'/settings.json');
 		$metas= json_decode($metas,true);
 				
 		if(SET_ENV_CACHE){
