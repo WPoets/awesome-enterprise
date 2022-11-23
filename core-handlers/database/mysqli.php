@@ -42,4 +42,3 @@ function transaction($atts,$content=null,$shortcode){
 	$atts['dbserver']=\aw2_library::get_default_db_conn();
 	return \aw2\dbconn\transaction($atts,$content,$shortcode);
 }
-

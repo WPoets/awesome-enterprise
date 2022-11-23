@@ -58,18 +58,29 @@ function connect($atts,$content=null,$shortcode=null){
 		$live_debug_event['stream']='dbserver.connect';
 
 	}
+	if(!defined('DB_CONNECTIONS')){
+		define('DB_CONNECTIONS',
+			array(
+				'primary_db'=>array(
+					'host'=>DB_HOST,
+					'user'=>DB_USER,
+					'password'=>DB_PASSWORD
+				)
+			));		
+	}
 
-	if(is_null($db_connection) || !defined('DB_CONNECTIONS')) {
+	if(is_null($db_connection) || !isset(DB_CONNECTIONS['primary_db'])) {
 		
 		if(\aw2_library::is_live_debug()){
 			
 			$temp_debug=$live_debug_event;
 			$temp_debug['error']='yes';
-			$temp_debug['error_message']='db_connection/DB_CONNECTIONS is missing';
+			$temp_debug['error_message']='db_connection/DB_CONNECTIONS - primary_db is missing';
 			$temp_debug['error_type']='db_conn_error';
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#FFC3C3']);
 		}
 	}
+	
 	
 	$db_conections = DB_CONNECTIONS;
 	

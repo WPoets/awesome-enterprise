@@ -168,7 +168,9 @@ class awesome_flow{
 			//self::run_core('config');
 			self::load_env_settings();
 			
-			
+			$primary_db = \aw2\dbserver\connect(array('db_connection'=>'primary_db'));
+			\aw2_library::set('settings.connections.primary_server',$primary_db);
+			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'settings.connections.primary_server'));
 			
 			$ref=&aw2_library::get_array_ref();
 			if(!isset($ref['content_types']))$ref['content_types']=array();
