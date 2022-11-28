@@ -320,3 +320,7 @@ function _list($atts,$content=null,$shortcode=null){
 	return $return_value;	
 }
 
+function url_exists(string $url): bool
+{
+    return str_contains(get_headers($url)[0], "200 OK");
+}
