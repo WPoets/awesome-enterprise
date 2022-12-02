@@ -4427,6 +4427,13 @@ static function service_template_run($template,$atts=array()){
 		$return_value=self::$stack['template']['_return'];
 	}
 	
+	$template_type='regular';
+	if(isset($template['template_type']))$template_type=$template['template_type'];
+	
+	if($template_type==='aw2_arr'){
+		$return_value=\aw2\arr\create(array(),$return_value);
+	}
+	
 	$sc_exec=&self::get_array_ref('@sc_exec');
 	$sc_exec=$restore;	
 	
@@ -4503,6 +4510,14 @@ static function template_run($template,$content=null,$atts=array()){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
 	}
+
+	$template_type='regular';
+	if(isset($template_ptr['template_type']))$template_type=$template_ptr['template_type'];
+	
+	if($template_type==='aw2_arr'){
+		$return_value=\aw2\arr\create(array(),$return_value);
+	}
+
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='template.done';

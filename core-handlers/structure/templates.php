@@ -3,7 +3,7 @@ namespace aw2\templates;
 
 \aw2_library::add_service('templates','Manage Templates of the Active Module',['namespace'=>__NAMESPACE__]);
 
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
@@ -27,10 +27,11 @@ function unhandled($atts,$content=null,$shortcode){
 //////// Templates Library ///////////////////
 \aw2_library::add_service('templates.add','Add a Template to the Active Module',['namespace'=>__NAMESPACE__]);
 
-function add($atts,$content=null,$shortcode){
+function add($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null
+	'main'=>null,
+	'template_type'=>null
 	), $atts) );
 	
 	$ref=&\aw2_library::get_array_ref('module','templates');
@@ -38,6 +39,7 @@ function add($atts,$content=null,$shortcode){
 	
 	$ref[$main]['code']=$content;
 	$ref[$main]['name']=$main;
+	$ref[$main]['template_type']=$template_type;
 	
 	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 	if(isset($sc_exec['content_pos']))$ref[$main]['content_pos']=$sc_exec['content_pos'];
@@ -45,7 +47,7 @@ function add($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('templates.run','Run a Template of the Active Module',['namespace'=>__NAMESPACE__]);
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null

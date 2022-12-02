@@ -400,7 +400,7 @@ function set($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('arr.create','Build an array',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
