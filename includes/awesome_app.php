@@ -149,7 +149,12 @@ class awesome_app{
 		}
 		
 		$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-		$login_url .= $separator.'redirect_to='.urlencode(SITE_URL.'/'.$query->request);
+		$redirect_to=site_url().'/'.$query->request;
+		if(isset($_SERVER['QUERY_STRING'])){
+			$redirect_to .= '?'.$_SERVER['QUERY_STRING'];
+		}
+			
+		$login_url .= $separator.'redirect_to='.urlencode($redirect_to);
 		
 		if(isset($rights['access']['title'])){
 			$login_url .= '&title='. urlencode($rights['access']['title']);
@@ -199,7 +204,12 @@ class awesome_app{
 			}
 			
 			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$request);
+			$redirect_to=site_url().'/'.$request;
+			if(isset($_SERVER['QUERY_STRING'])){
+				$redirect_to .= '?'.$_SERVER['QUERY_STRING'];
+			}
+			
+			$login_url .= $separator.'redirect_to='.urlencode($redirect_to);
 			
 			if(isset($rights['access']['title'])){
 				$login_url .= '&title='. urlencode($rights['access']['title']);
@@ -241,7 +251,12 @@ class awesome_app{
 			}
 			
 			$separator = (parse_url($login_url, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$login_url .= $separator.'redirect_to='.urlencode(site_url().'/'.$request);
+			$redirect_to=site_url().'/'.$request;
+			if(isset($_SERVER['QUERY_STRING'])){
+				$redirect_to .= '?'.$_SERVER['QUERY_STRING'];
+			}
+			
+			$login_url .= $separator.'redirect_to='.urlencode($redirect_to);
 			
 			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
 			aw2_library::redirect($login_url);
