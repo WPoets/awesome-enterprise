@@ -2,6 +2,8 @@
  
 namespace aw2\service;
 
+use function aw2\c\not_null;
+
 \aw2_library::add_service('service.run','Used to run a service',['namespace'=>__NAMESPACE__]);
 
 function run($atts,$content=null,$shortcode=null){
@@ -11,10 +13,16 @@ function run($atts,$content=null,$shortcode=null){
 		'service'=>null,
 		'template'=>null,
 		'module'=>null,
+		'_atts_arr'=>array(),
 		'_default'=>'service'
 	), $atts) );
 	
 	$return_value = '';
+
+	if(is_array($_atts_arr)){
+		$atts = array_merge($atts,$_atts_arr);	
+	}
+
 	if($service){
 		$return_value=\aw2_library::service_run($service,$atts,$content,$_default);		
 	}
