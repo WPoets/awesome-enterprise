@@ -29,6 +29,20 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+
+##### 3.5
+* Improved: *arr.create* now supports two new attributes _path_ and _raw_content_ making it even easier to create arrays 
+* Improved: Introduced 2 new shortcodes to enable additional db connections as needed by the system *dbserver.connect* & *dbconn.register*. Also, mysqli shortcode now uses this new connection and keeps the WORDPRESS default connection and kept in primary_db
+* Improved: Added support for *o.arr_push* to push a new item to an existing array, it uses array_push php function
+* Improved: Introduced the support for *util.constant*. It returns an associative array with the names of all the constants and their values
+* Improved: Added support for template types while adding new templates. By adding *template_type='aw2_arr'* will allows us to define templates that return arrays. 
+* Improved: Added support for *_atts_arr* to *service.run* shortcode so that we can pass to services the attributes at a template level. 
+* Fixed: Removed notices in case obj_id or obj_type is not defined.
+* Fixed: Issue with converting a post_type to service.
+* Fixed: Issue with .esc_sql - it was using WordPress function, converted it to a awesome function.
+* Fixed: Issue : warning "failed to open stream" for external files.
+* Fixed: Issue while redirecting query strings were not respected.
+
 ##### 3.4.4
 * Improved: Added support for redis hash keys in session cache using _'session_cache.del'_ and _'session_cache.hlen'_
 * Improved: Added support for m.sort for sorting arrays, it supports 'asort','arsort','krsort','ksort','rsort','sort','array_multisort'.
