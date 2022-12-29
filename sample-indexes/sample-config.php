@@ -22,9 +22,9 @@ define('CONNECTIONS',
 		),
 		'common_code'=>array(
 			'connection_service'=>'wp_conn',
-			'db_name'=>'alpha_wordpoets_com_Svc03jGy',
-			'db_user'=>'alphawordpoecKAE',
-			'db_password'=>'c6ZQpHWYoX5rqTy4nGBhwsMj',
+			'db_name'=>'alpha_wordp',
+			'db_user'=>'alphawoecKAE',
+			'db_password'=>'c6ZQpHWYoX5r',
 			'db_host'=>'localhost',
 			'redis_db'=>102,
 			'cache_expiry'=>600
@@ -40,3 +40,18 @@ define('CONNECTIONS',
 	));
 
 //define('CODE_DEFAULT_CONNECTION','base_code');
+
+/* define database connections - that you want to use in awesome. */
+define('DB_CONNECTIONS',
+	array(
+		'primary_db'=>array(
+			'host'=>DB_HOST,
+			'user'=>DB_USER,
+			'password'=>DB_PASSWORD
+		),
+		'external_db'=>array(
+			'host'=>'localhost',
+			'user'=>'dcwo',
+			'password'=>'CB1ey'
+		)
+	));
