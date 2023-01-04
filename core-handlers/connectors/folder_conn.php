@@ -157,7 +157,7 @@ function meta($atts,$content=null,$shortcode=null){
 	
 	$config = $connection_arr[$connection];
 
-	$hash='modules:' . $post_type . ':' . $module;
+	$hash='modules_meta:' . $post_type . ':' . $module;
 	 
 	
 	$metas=array();
