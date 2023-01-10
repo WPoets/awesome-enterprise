@@ -4421,17 +4421,20 @@ static function service_template_run($template,$atts=array()){
 		
 
 	
-	$return_value=self::parse_shortcode($template['code']);
+	$template_type='aw2_code';
+	if(isset($template_ptr['template_type']))$template_type=$template_ptr['template_type'];
+	
+	if($template_type==='aw2_arr'){
+		$return_value=\aw2\arr\create(array(),$template['code']);
+	}
+
+	if($template_type==='aw2_code'){
+		$return_value=self::parse_shortcode($template['code']);
+	}
+	
 	if(isset(self::$stack['template']['_return'])){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
-	}
-	
-	$template_type='regular';
-	if(isset($template['template_type']))$template_type=$template['template_type'];
-	
-	if($template_type==='aw2_arr'){
-		$return_value=\aw2\arr\create(array(),$return_value);
 	}
 	
 	$sc_exec=&self::get_array_ref('@sc_exec');
@@ -4489,9 +4492,17 @@ static function template_run($template,$content=null,$atts=array()){
 		$sc_exec['start_pos']=$template_ptr['content_pos'];
 	}
 	
+		
+	$template_type='aw2_code';
+	if(isset($template_ptr['template_type']))$template_type=$template_ptr['template_type'];
 	
-	
-	$return_value=self::parse_shortcode($template_ptr['code']);
+	if($template_type==='aw2_arr'){
+		$return_value=\aw2\arr\create(array(),$template_ptr['code']);
+	}
+
+	if($template_type==='aw2_code'){
+		$return_value=self::parse_shortcode($template_ptr['code']);
+	}
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='template.code.executed';
@@ -4510,14 +4521,6 @@ static function template_run($template,$content=null,$atts=array()){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
 	}
-
-	$template_type='regular';
-	if(isset($template_ptr['template_type']))$template_type=$template_ptr['template_type'];
-	
-	if($template_type==='aw2_arr'){
-		$return_value=\aw2\arr\create(array(),$return_value);
-	}
-
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='template.done';
