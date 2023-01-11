@@ -1318,8 +1318,22 @@ static function add_handler($name,$call,$desc='',$prop=array()) {
 	self::set('handlers.' . $name,$build);
 }
 
+static function get_env_path($expr,$notfound='#error#'){
+	
+	$current=self::$stack;
+	
+	if(!is_array($expr))$expr=explode('.',$expr);	
+	
+	while(count($expr)>0){
+		$key=array_shift($expr);
+		if(isset($current[$key]))	$current=$current[$key];
+		else if(isset($current->$key))$current=$current->$key;
+		else	return $notfound;
+	}
+	return $current;
+}
 
-static function add_service($service,$desc=null,$atts=array()) {
+static function add_service_backup($service,$desc=null,$atts=array()) {
 	
 	//php8OK	
 	$atts['desc']=$desc;
@@ -1393,6 +1407,48 @@ static function add_service($service,$desc=null,$atts=array()) {
 	$atts['type'] = 'awesome';
 	$atts['@service'] = true;
 	$handler = array_merge($handler,$atts);
+	return;
+}
+
+static function add_service($service,$desc=null,$atts=array()) {
+	
+	//php8OK	
+	$atts['desc']=$desc;
+	$atts['@service'] = true;
+	$arr=self::get_env_path('handlers.' . $service,'');
+	if(!is_array($arr))$arr=array();
+	$final=array_merge($arr,$atts);
+	
+	switch (true) {
+		case isset($atts['code']):
+			$final['type'] = 'namespace';
+			break;
+		case isset($atts['content_type_def']):
+			$final['type'] = 'content_type_def';
+			break;
+		case isset($atts['content_type']):
+			$final['type'] = 'content_type';
+			break;
+		case isset($atts['app']):
+			$final['type'] = 'app';
+			break;
+		case isset($atts['module']):
+			$final['type'] = 'module';
+			break;
+		case isset($atts['post_type']) || isset($atts['source']):
+			$final['type'] = 'collection';
+			break;
+		case isset($atts['env_key']):
+			$final['type'] = 'env_key';
+			break;
+		case isset($atts['namespace']):
+			$final['type'] = 'namespace';
+			break;
+		default:
+			$final['type'] = 'awesome';
+	}
+
+	self::set('handlers.' . $service,$final);
 	return;
 }
 

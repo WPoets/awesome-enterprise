@@ -447,3 +447,19 @@ function search_deep($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('arr.unshift','Empty array',['namespace'=>__NAMESPACE__]);
+function unshift($atts,$content=null,$shortcode){
+	
+    if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+
+    extract(\aw2_library::shortcode_atts( array(
+        'array_path' => null,
+        'values' => array(),
+        ), $atts) );
+
+    $arr=\aw2_library::get($array_path);  
+    array_unshift($arr, ...$values);     
+    $return_value=$arr;
+    $return_value=\aw2_library::post_actions('all',$return_value,$atts);
+    return $return_value;
+}

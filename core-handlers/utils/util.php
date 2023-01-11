@@ -95,7 +95,7 @@ function nonce($atts,$content=null,$shortcode){
 	
 	if(!$main)return 'Main must be set';
 	
-	$return_value = wp_create_nonce($main);
+	$return_value = \wp_create_nonce($main);
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	
@@ -115,9 +115,9 @@ function qs_parse($atts,$content=null,$shortcode){
 	$i = 0;
 	$return_value=array();
 	foreach ($qs as $value){
-		$pos = strpos($value, '$$');
+		$pos = \strpos($value, '$$');
 		if ($pos !== false) {
-			$arr=explode('$$',$value);
+			$arr=\explode('$$',$value);
 			$return_value[$arr[0]]=\aw2\clean\safe(['main'=>$arr[1]]);
 		}else{
 			$return_value[$i]=\aw2\clean\safe(['main'=>$value]);

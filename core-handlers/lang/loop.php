@@ -1,6 +1,6 @@
 <?php
 namespace aw2\loop;
-
+\aw2_library::add_service('loop.live_arr','Loop Library',['namespace'=>__NAMESPACE__]);
 \aw2_library::add_service('loop','Loop Library',['namespace'=>__NAMESPACE__]);
 
 
@@ -134,4 +134,63 @@ function unhandled($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+
+
+function live_arr($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+    
+    extract(\aw2_library::shortcode_atts( array(
+        'main' => null,
+        'start' => null,
+        'stop' => null,
+        'step' => 1
+        ), $atts) );
+    $pieces=$shortcode['tags'];
+    if(count($pieces)!=3)return 'error:You must have exactly two parts to the loop shortcode';
+    $ctr=$pieces[2];
+    $stack_id=\aw2_library::push_child($ctr,$main);
+    $call_stack=&\aw2_library::get_array_ref('call_stack',$stack_id);
+    
+
+    $index=1;
+    $output=array();
+
+    $items=\aw2_library::get($main);
+        
+    while (!empty($items)) {
+        $item = array_shift($items);
+        \aw2_library::set($main,$items);
+
+
+        if(isset($call_stack['break_on_next']))break;
+        $call_stack['index']=$index;
+        $call_stack['counter']=$index-1;
+        $call_stack['item']=&$item;
+        $call_stack['key']=$key;
+        
+        $call_stack['first']=false;
+        $call_stack['last']=false;
+        $call_stack['between']=false;
+        $call_stack['odd']=false;
+        $call_stack['even']=false;
+        
+        if ($index % 2 != 0)
+            $call_stack['odd']= true;
+        else
+            $call_stack['even']= true;
+        if($index==1)$call_stack['first']=true;
+        if($index==$call_stack['count'])$call_stack['last']=true;
+        if($index!=$call_stack['count'])$call_stack['between']=true;
+        $output[]=\aw2_library::parse_shortcode($content,false,'yes');
+        $index++;
+        $items=\aw2_library::get($main);
+		
+    }
+    $string=implode($output);    
+        
+            
+    \aw2_library::pop_child($stack_id);    
+    $return_value=\aw2_library::post_actions('all',$string,$atts);
+    return $return_value;
+}
 
