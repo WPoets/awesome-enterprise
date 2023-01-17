@@ -29,6 +29,14 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.1
+* Improved: added support for _arr.unshift_
+* Improved: introduced _loop.live_arr_ to enabling looping an array that is changing at runtime
+* Improved: improved the way add_service function was working
+
+* Fixed: fixed the issue with template type aw2_arr, it was getting executed
+* Fixed: added unique keys for metas
+* Fixed: fixed the issue where missing modules were checked everytime it was accessed by url_connector
 
 ##### 3.5
 * Improved: *arr.create* now supports two new attributes _path_ and _raw_content_ making it even easier to create arrays 
