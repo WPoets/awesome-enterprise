@@ -105,7 +105,7 @@ function get($atts,$content=null,$shortcode=null){
 		
 	}
 
-	if(!$return_value){
+	if(is_null($return_value)){
 		$url=$config['url'] . '/' . $post_type . '/' . $module . '.module.html?rnd='.rand();
 		
 		$code = false;
@@ -184,20 +184,21 @@ function meta($atts,$content=null,$shortcode=null){
 
 	$hash='modules_meta:' . $post_type . ':' . $module;
 	
-	$metas=array();
+	$metas=null;
 	
 	if(USE_ENV_CACHE){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$metas=json_decode($data,true);
 	}
 	
-	if(!$metas){
+	if(is_null($metas)){
 		// read the settings.json for the app which is key value folder
 		$url=$config['url'] . '/' . $post_type;
 		
 		$metas='{}';
 		if(\aw2\url_conn\collection\url_exists($url.'/settings.json'))
 			$metas =  @file_get_contents($url.'/settings.json');
+		
 		$metas= json_decode($metas,true);
 				
 		if(SET_ENV_CACHE){
@@ -257,13 +258,14 @@ function get($atts,$content=null,$shortcode=null){
 	
 	
 	$hash='collection:' . $post_type;
+	$results = null;
 	
 	if(USE_ENV_CACHE){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
 	}
 	
-	if(!$results){
+	if(is_null($results)){
 		
 		$results = \aw2\url_conn\get_results($config['path'],$post_type);
 		
@@ -308,7 +310,7 @@ function _list($atts,$content=null,$shortcode=null){
 		$results=json_decode($data,true);
 	}
 	
-	if(!$results){
+	if(is_null($results)){
 		$results = \aw2\url_conn\get_results($config,$post_type, false);			
 		if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
