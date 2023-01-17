@@ -282,7 +282,7 @@ class awesome_flow{
 
 	static function load_env_settings(){
 		$settings=&aw2_library::get_array_ref('settings');
-		$settings=array();
+		if(!is_array($settings)) $settings=array();
 		
 		$exists=aw2_library::module_exists_in_collection(['post_type'=>AWESOME_CORE_POST_TYPE],'settings');
 		if(!$exists) return;
