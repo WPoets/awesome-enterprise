@@ -244,15 +244,15 @@ class awesome_flow{
 
 		if(!defined('SET_ENV_CACHE')){
 			
-			if(DEVELOP_FOR_AWESOMEUI)
-				define('SET_ENV_CACHE', false);
-			else{
+			//if(DEVELOP_FOR_AWESOMEUI)
+			//	define('SET_ENV_CACHE', false);
+			//else{
 				$val=\aw2_library::get('@live_debug.config.set_env_cache');
 				if($val==='no')
 					define('SET_ENV_CACHE', false);
 				else	
 					define('SET_ENV_CACHE', true);
-			}
+			//}
 		}
 
 		if(!defined('LOG_EXCEPTIONS')){
