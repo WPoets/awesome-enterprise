@@ -107,10 +107,10 @@ function get($atts,$content=null,$shortcode=null){
 	
 				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($return_value),null);
-		}			
+		//}			
 	}
 	
 	if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
@@ -173,10 +173,10 @@ function meta($atts,$content=null,$shortcode=null){
 		$metas =  file_get_contents($path.'/settings.json');
 		$metas= json_decode($metas,true);
 				
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
-		}
+		//}
 		
 	}
 	
@@ -239,15 +239,23 @@ function get($atts,$content=null,$shortcode=null){
 	if(USE_ENV_CACHE){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='connection.cache.used';
+			$live_debug_event['cache_used']='yes';
+			$live_debug_event['result']=$return_value;
+			$debug_format['bgcolor']='#DEB6AB';
+
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
 	}
 	
 	if(!$results){
 		
 		$results = \aw2\folder_conn\get_results($config,$post_type);
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
-		}
+		//}
 		
 		
 	}
@@ -288,10 +296,10 @@ function _list($atts,$content=null,$shortcode=null){
 	if(!$results){
 		$results = \aw2\folder_conn\get_results($config,$post_type, false);			
 		
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
-		}
+		//}
 		
 	}
 	$return_value=$results;

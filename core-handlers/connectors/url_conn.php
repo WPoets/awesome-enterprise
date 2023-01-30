@@ -129,10 +129,10 @@ function get($atts,$content=null,$shortcode=null){
 		}
 
 			
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($return_value),null);
-		}			
+		//}			
 	}
 	
 	if(defined('SET_DEBUG_CACHE') && SET_DEBUG_CACHE){
@@ -201,10 +201,10 @@ function meta($atts,$content=null,$shortcode=null){
 		
 		$metas= json_decode($metas,true);
 				
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
-		}
+		//}
 		
 	}
 
@@ -269,10 +269,10 @@ function get($atts,$content=null,$shortcode=null){
 		
 		$results = \aw2\url_conn\get_results($config['path'],$post_type);
 		
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
-		}
+		//}
 		
 	}
 	$return_value=array();
@@ -312,10 +312,10 @@ function _list($atts,$content=null,$shortcode=null){
 	
 	if(is_null($results)){
 		$results = \aw2\url_conn\get_results($config,$post_type, false);			
-		if(SET_ENV_CACHE){
+		//if(SET_ENV_CACHE){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
-		}
+		//}
 	}
 	$return_value=$results;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
