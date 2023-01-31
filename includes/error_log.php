@@ -336,13 +336,13 @@ class aw2_error_log{
 		set @errfile='".$errfile."';
 		set @errline='".$errline."';
 	
-		SELECT @id:=ID FROM ".AWESOME_LOG_DB.".awesome_exceptions WHERE post_type=@post_type and source=@source and module=@module and position=@pos and errno=@errno and errfile=@errfile and errline=@errline;
+		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.`awesome_exceptions` WHERE post_type=@post_type and source=@source and module=@module and position=@pos and errno=@errno and errfile=@errfile and errline=@errline;
 	
 		IF @id is not null THEN
-			UPDATE ".AWESOME_LOG_DB.".awesome_exceptions SET no_of_times = no_of_times + 1,  status ='active' WHERE ID=@id;
+			UPDATE `".AWESOME_LOG_DB."`.`awesome_exceptions` SET no_of_times = no_of_times + 1,  status ='active' WHERE ID=@id;
 			SELECT @id;
 		ELSE
-			INSERT INTO ".AWESOME_LOG_DB.".`awesome_exceptions` (`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`,`user`, `header_data`,`request_data`,`sql_query`,`request_url`,`message`, `errno`, `errfile`, `errline`, `call_stack`,`trace`, `no_of_times`, `status`) VALUES ( '".$exception_type."', '".$post_type."', '".$source."', '".$module."', '".$location."', '".$app_name."', '".$sc."', '".$position."', '".$link."','".$user."', ' ".$header_value."','".$request."','".$sql_query."','".$url."','".$message."', '".$errno."', '".$errfile."', '".$errline."', '".$call_stack."','".$trace."', '1', '".$status."');
+			INSERT INTO `".AWESOME_LOG_DB."`.`awesome_exceptions` (`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`,`user`, `header_data`,`request_data`,`sql_query`,`request_url`,`message`, `errno`, `errfile`, `errline`, `call_stack`,`trace`, `no_of_times`, `status`) VALUES ( '".$exception_type."', '".$post_type."', '".$source."', '".$module."', '".$location."', '".$app_name."', '".$sc."', '".$position."', '".$link."','".$user."', ' ".$header_value."','".$request."','".$sql_query."','".$url."','".$message."', '".$errno."', '".$errfile."', '".$errline."', '".$call_stack."','".$trace."', '1', '".$status."');
 		
 			SELECT LAST_INSERT_ID();
 		END IF;
