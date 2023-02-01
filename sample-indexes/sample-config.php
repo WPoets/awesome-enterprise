@@ -18,6 +18,7 @@ define('CONNECTIONS',
 			'connection_service'=>'folder_conn',
 			'path'=>'/var/www/awnxt.thearks.in/base-code',
 			'redis_db'=>101,
+			'read_only'=>true,
 			'cache_expiry'=>300
 		),
 		'common_code'=>array(
@@ -34,6 +35,7 @@ define('CONNECTIONS',
 			'connection_service'=>'url_conn',
 			'url'=>'https://cdn.getawesomestudio.com/code',
 			'redis_db'=>103,
+			'read_only'=>true,
 			'cache_expiry'=>300
 		)
 		

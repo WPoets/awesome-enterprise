@@ -70,19 +70,27 @@ function get($atts,$content=null,$shortcode=null){
 		throw new Exception($connection.' connection is not defined');
 	
 	$config = $connection_arr[$connection];
-
+	$use_env_cache=USE_ENV_CACHE;
+	$set_env_cache=SET_ENV_CACHE;
+	$readonly= isset($config['read_only'])?$config['read_only']:false;
+	 
+	if($readonly){
+		$use_env_cache=true;
+		$set_env_cache=true;
+	}
+		
 	$hash='modules:' . $post_type . ':' . $module;
 	if(\aw2_library::is_live_debug()){
 		$live_debug_event['action']='connection.getting';
 		$live_debug_event['cache_key']=$hash;
-		$live_debug_event['use_env_cache']=USE_ENV_CACHE;
+		$live_debug_event['use_env_cache']=$use_env_cache;
 		$live_debug_event['config']=$config;
 		$debug_format['bgcolor']='#DEB6AB';
 
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 	}
 	$return_value='';
-	if(USE_ENV_CACHE){
+	if($use_env_cache){
 		$return_value=\aw2\global_cache\get(["main"=>$hash ,"db"=>$config['redis_db']],null,null);
 		$return_value=json_decode($return_value,true);
 	}
@@ -105,8 +113,8 @@ function get($atts,$content=null,$shortcode=null){
 
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
-		if(SET_ENV_CACHE){
-			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+		if($set_env_cache){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'600';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($return_value),null);
 		}			
 	}
@@ -154,22 +162,39 @@ function meta($atts,$content=null,$shortcode=null){
 		throw new Exception($connection.' connection is not defined');
 	
 	$config = $connection_arr[$connection];
+	$use_env_cache=USE_ENV_CACHE;
+	$set_env_cache=SET_ENV_CACHE;
+	$readonly= isset($config['read_only'])?$config['read_only']:false;
+	 
+	if($readonly){
+		$use_env_cache=true;
+		$set_env_cache=true;
+	}
 
 	$hash='modules_meta:' . $post_type . ':' . $module;
 	
 	$metas=null;
-	if(USE_ENV_CACHE){
+	if($use_env_cache){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$metas=json_decode($data,true);
 	}
 	
 	if(!$metas){
+		$post_table= 'wp_posts';
+		$post_meta_table= 'wp_postmeta';
+		
+		if(IS_WP){
+			global $wpdb;	
+			$post_table = $wpdb->posts;
+			$post_meta_table = $wpdb->postmeta;
+		}
+	
 		$sql="
 		with q0 as(
-		   select ID from wp_posts where post_name='".$module."' and post_type='".$post_type."'
+		   select ID from ".$post_table." where post_name='".$module."' and post_type='".$post_type."'
 		),
 		q1 as (
-		   select post_id,meta_key,meta_value from wp_postmeta join q0 on post_id=q0.ID
+		   select post_id,meta_key,meta_value from ".$post_meta_table." join q0 on post_id=q0.ID
 		)
 		select *from q1;
 		";
@@ -180,7 +205,7 @@ function meta($atts,$content=null,$shortcode=null){
 			$metas[$result['meta_key']]=$result['meta_value'];
 		}
 		
-		if(SET_ENV_CACHE){
+		if($set_env_cache){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($metas),null);
 		}
@@ -236,21 +261,37 @@ function get($atts,$content=null,$shortcode=null){
 		throw new Exception($connection.' connection is not defined');
 	
 	$config = $connection_arr[$connection];
-	
+	$use_env_cache=USE_ENV_CACHE;
+	$set_env_cache=SET_ENV_CACHE;
+	$readonly= isset($config['read_only'])?$config['read_only']:false;
+	 
+	if($readonly){
+		$use_env_cache=true;
+		$set_env_cache=true;
+	}
+
 	$hash='collection:' . $post_type;
 	
 	$results='';
-	if(USE_ENV_CACHE){
+	if($use_env_cache){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
 	}
 	
 	if(!$results){
-		$sql="select post_content,post_type,ID,post_name,post_title from wp_posts where post_status='publish' and post_type='" . $post_type . "'";
+		
+		$post_table= 'wp_posts';
+		if(IS_WP){
+			global $wpdb;	
+			$post_table = $wpdb->posts;
+			
+		}
+		
+		$sql="select post_content,post_type,ID,post_name,post_title from ".$post_table." where post_status='publish' and post_type='" . $post_type . "'";
 		$results =\aw2\wp_conn\get_results($sql,$connection,$config);				
 
-		if(SET_ENV_CACHE){
-			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+		if($set_env_cache){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'600';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
 		}
 		
@@ -282,21 +323,35 @@ function _list($atts,$content=null,$shortcode=null){
 		throw new Exception($connection.' connection is not defined');
 	
 	$config = $connection_arr[$connection];
-	
+	$use_env_cache=USE_ENV_CACHE;
+	$set_env_cache=SET_ENV_CACHE;
+	$readonly= isset($config['read_only'])?$config['read_only']:false;
+	 
+	if($readonly){
+		$use_env_cache=true;
+		$set_env_cache=true;
+	}	
 	$hash='collection_list:' . $post_type;
 	
 	$results=null;
-	if(USE_ENV_CACHE){
+	if($use_env_cache){
 		$data=\aw2\global_cache\get(["main"=>$hash,"db"=>$config['redis_db']],null,null);
 		$results=json_decode($data,true);
 	}
 	
 	if(!$results){
-		$sql="select post_type,ID,post_name,post_title from wp_posts where post_status='publish' and post_type='" . $post_type . "'";
+		$post_table= 'wp_posts';
+		if(IS_WP){
+			global $wpdb;	
+			$post_table = $wpdb->posts;
+			
+		}
+		
+		$sql="select post_type,ID,post_name,post_title from ".$post_table." where post_status='publish' and post_type='" . $post_type . "'";
 		$results =\aw2\wp_conn\get_results($sql,$connection,$config);				
 		
-		if(SET_ENV_CACHE){
-			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'300';
+		if($set_env_cache){
+			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'600';
 			\aw2\global_cache\set(["key"=>$hash,"db"=>$config['redis_db'],'ttl'=>$ttl],json_encode($results),null);
 		}
 	}

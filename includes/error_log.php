@@ -245,11 +245,11 @@ class aw2_error_log{
 		set @pos='".$position."';
 		set @template='".$template."';
 		
-		SELECT @id:=ID FROM ".AWESOME_LOG_DB.".datatype_mismatch WHERE post_type=@post_type and source=@source and module_slug=@module and position=@pos and template_name=@template ;
+		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.datatype_mismatch WHERE post_type=@post_type and source=@source and module_slug=@module and position=@pos and template_name=@template ;
 	
 		IF @id is null THEN
 			
-			INSERT INTO ".AWESOME_LOG_DB.".`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".$sc."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
+			INSERT INTO `".AWESOME_LOG_DB."`.`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".$sc."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
 			
 		END IF;
 			
