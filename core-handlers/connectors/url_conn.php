@@ -298,7 +298,7 @@ function get($atts,$content=null,$shortcode=null){
 	
 	if(is_null($results)){
 		
-		$results = \aw2\url_conn\get_results($config['path'],$post_type);
+		$results = \aw2\url_conn\get_results($config,$post_type);
 		
 		if($set_env_cache){
 			$ttl = isset($config['cache_expiry'])?$config['cache_expiry']:'600';

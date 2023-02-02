@@ -273,7 +273,7 @@ function get($atts,$content=null,$shortcode=null){
 		}
 	}
 	
-	if(!$results){
+	if(is_null($results)){
 		
 		$results = \aw2\folder_conn\get_results($config,$post_type);
 		if($set_env_cache){
@@ -325,7 +325,7 @@ function _list($atts,$content=null,$shortcode=null){
 		$results=json_decode($data,true);
 	}
 	
-	if(!$results){
+	if(is_null($results)){
 		$results = \aw2\folder_conn\get_results($config,$post_type, false);			
 		
 		if($set_env_cache){
