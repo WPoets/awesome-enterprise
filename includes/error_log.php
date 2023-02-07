@@ -356,7 +356,11 @@ class aw2_error_log{
 		$obj = \aw2_library::$mysqli->multi_query($sql);
 		
 	
-		$result = $obj->fetchAll("col");
+		try {
+			$result = $obj->fetchAll("col");
+		} catch (Exception $e) {} 
+		//this is added to handle the situation where for some reason above code fails and $result is not set.
+
 		$last_insert_id='';
 
 		if(is_array($result) &&!empty($result))
