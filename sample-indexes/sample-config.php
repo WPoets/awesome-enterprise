@@ -57,3 +57,5 @@ define('DB_CONNECTIONS',
 			'password'=>'CB1ey'
 		)
 	));
+//This is required so that we can use mysqli.* as a shortcode since it is already there. In a new system this is not required
+define('MYSQLI_CONNECTION','primary_db');    
