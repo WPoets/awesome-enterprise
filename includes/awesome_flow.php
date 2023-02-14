@@ -139,10 +139,13 @@ class awesome_flow{
 					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 				}					
 			}		
+			
+			if(defined('MYSQLI_CONNECTION')) {
+				$mysqli_db = \aw2\dbserver\connect(array('db_connection'=>MYSQLI_CONNECTION));
+				\aw2_library::set('settings.connections.mysqli_db',$mysqli_db);
+				\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'settings.connections.mysqli_db'));
 
-			$primary_db = \aw2\dbserver\connect(array('db_connection'=>'primary_db'));
-			\aw2_library::set('settings.connections.primary_server',$primary_db);
-			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'settings.connections.primary_server'));
+			}   
 			
 			//load all the apps
 			self::load_apps();

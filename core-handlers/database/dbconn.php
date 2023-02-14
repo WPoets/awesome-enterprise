@@ -59,6 +59,7 @@ function connect($atts,$content=null,$shortcode=null){
 
 	}
 	if(!defined('DB_CONNECTIONS')){
+		/**
 		define('DB_CONNECTIONS',
 			array(
 				'primary_db'=>array(
@@ -67,22 +68,33 @@ function connect($atts,$content=null,$shortcode=null){
 					'password'=>DB_PASSWORD
 				)
 			));		
+		**/	
+		if(\aw2_library::is_live_debug()){
+			
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']='DB_CONNECTIONS - connection is not defined';
+			$temp_debug['error_type']='db_conn_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#FFC3C3']);
+		}
+		return '';
 	}
-
-	if(is_null($db_connection) || !isset(DB_CONNECTIONS['primary_db'])) {
+	$db_conections = DB_CONNECTIONS;
+	
+	if(is_null($db_connection) ) {
 		
 		if(\aw2_library::is_live_debug()){
 			
 			$temp_debug=$live_debug_event;
 			$temp_debug['error']='yes';
-			$temp_debug['error_message']='db_connection/DB_CONNECTIONS - primary_db is missing';
+			$temp_debug['error_message']='db_connection/DB_CONNECTIONS - connection not specified';
 			$temp_debug['error_type']='db_conn_error';
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#FFC3C3']);
 		}
 	}
 	
 	
-	$db_conections = DB_CONNECTIONS;
+	
 	
 	if(!isset($db_conections[$db_connection])){
 		if(\aw2_library::is_live_debug()){
