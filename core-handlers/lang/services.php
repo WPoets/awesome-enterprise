@@ -15,6 +15,7 @@ function add($atts,$content=null,$shortcode){
 
 	$atts['service_id']=$main;
 
+	if(!isset($atts['connection']))$atts['connection']='#default';
 
 	if(\aw2_library::is_live_debug()){
 		

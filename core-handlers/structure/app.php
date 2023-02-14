@@ -68,3 +68,52 @@ function aw2_app_return($atts,$content=null,$shortcode){
 	return;
 }
 
+
+
+\aw2_library::add_service('app.collection.modules.list','get a list of modules of collection',['func'=>'modules_list','namespace'=>__NAMESPACE__]);
+
+
+//[app.collection.modules.list active collection=config /]	
+function modules_list($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract(\aw2_library::shortcode_atts( array(
+		'main'=>null,
+		'collection'=>null
+	), $atts) );
+	
+	$collection=\aw2_library::get('apps.' . $main . '.collection.' . $collection);
+	//$modules=\aw2_library::get_collection($collection);
+ 		if(!isset($collection['connection']))$collection['connection']='#default';
+	$connection_arr=\aw2_library::$stack['code_connections'][$collection['connection']];
+	
+	$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\_list';
+		
+	$atts['connection']=$collection['connection'];
+	$atts['post_type']=$collection['post_type'];
+	$modules = call_user_func($connection_service,$atts);
+
+	return $modules;
+}
+
+\aw2_library::add_service('app.collection.module.get','get a module',['func'=>'module_get','namespace'=>__NAMESPACE__]);
+
+//[app.collection.module.get  active collection=config module='m1'/]	
+
+function module_get($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract(\aw2_library::shortcode_atts( array(
+		'main'=>null,
+		'collection'=>null,
+		'module'=>null
+	), $atts) );
+	
+	$collection=\aw2_library::get('apps.' . $main . '.collection.' . $collection);
+	$module=\aw2_library::get_module($collection,$module);
+ 	
+	return $module;
+}
+
+
+
+
+

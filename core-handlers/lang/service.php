@@ -114,4 +114,46 @@ function runbackup($atts,$content,$shortcode){
 
 
 
+\aw2_library::add_service('service.modules.list','get a list of modules of collection',['func'=>'modules_list','namespace'=>__NAMESPACE__]);
+
+
+//[service.modules.list db_service /]	
+function modules_list($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract(\aw2_library::shortcode_atts( array(
+		'main'=>null
+	), $atts) );
+	
+	$collection=\aw2_library::get('handlers.' . $main);
+
+	if(!isset($collection['connection']))$collection['connection']='#default';
+	$connection_arr=\aw2_library::$stack['code_connections'][$collection['connection']];
+	
+	$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\_list';
+		
+	$atts['connection']=$collection['connection'];
+	$atts['post_type']=$collection['post_type'];
+	$modules = call_user_func($connection_service,$atts);
+	return $modules;
+}
+
+
+\aw2_library::add_service('service.module.get','get a modules',['func'=>'module_get','namespace'=>__NAMESPACE__]);
+//[service.module.get db_service module=m1 /]	
+
+//[service.modules.list db_service /]	
+function module_get($atts,$content=null,$shortcode=null){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+ 	extract(\aw2_library::shortcode_atts( array(
+		'main'=>null,
+		'service'=>null
+	), $atts) );
+	
+	$collection=\aw2_library::get('handlers.' . $service);
+	$module=\aw2_library::get_module($collection,$main);
+ 	
+	return $module;
+}
+
+
 
