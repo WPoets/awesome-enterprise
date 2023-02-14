@@ -182,7 +182,7 @@ function str($atts,$content=null,$shortcode){
 
 	$main = \aw2_library::get($main);
 		
-	$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]','\\\0',$main);
+	$return_value=\mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]','\\\0',$main);
 	$return_value=AW2_APOS.$return_value.AW2_APOS;
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
