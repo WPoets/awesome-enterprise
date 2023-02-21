@@ -31,10 +31,13 @@ function highlight($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
-	'lang'=>'html'
+	'lang'=>'html',
+	'code'=>null,
+	
 	), $atts) );
 	$return_value='';
 	
+	if(!is_null($code))$content=$code;
 	\aw2_library::set('@prismjs.active','yes');
 	\aw2_library::set('@prismjs.active','no');
 	if(\aw2_library::get('@prismjs.active')==='no'){
@@ -42,7 +45,7 @@ function highlight($atts,$content=null,$shortcode=null){
 		$return_value .='<script type="spa/axn" axn="core.run_script" cdn_js_files="prismjs/prism.js" cdn_css_files="prismjs/prism.css"></script>';
 	}
 	
-	$return_value .='<pre class="line-numbers"><code class="language-'.$lang.'">'.$content .'</code></pre>';
+	$return_value .='<pre class="line-numbers"><code class="language-'.$lang.'">'.htmlentities($content) .'</code></pre>';
 	
 		
 	return $return_value;
