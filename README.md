@@ -29,6 +29,16 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.2
+* Improved: performance of apps being delivered from CDN, also added new key 'read_only'=>true, in connection to ensure remote code always stays cached.
+* Improved: introduced _service.modules.list_, _service.module.get_,  _app.collection.modules.list_ and _app.collection.module.get_
+* Improved: introduced MYSQLI_CONNECTION to set the default settings to use for mysqli.* database connection
+
+* Fixed: fixed the issue with settings, it was resetting
+* Fixed: if database had special character in name then it was giving sql error, fixed it.
+* Fixed: fixed issues in the collection.get for folder_conn
+* Fixed: fixed the situation so that incase error_log itself creates an issue, it does not distrubes the flow.
+
 ##### 3.5.1
 * Improved: added support for _arr.unshift_
 * Improved: introduced _loop.live_arr_ to enabling looping an array that is changing at runtime
