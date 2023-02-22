@@ -29,6 +29,12 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.3
+* Improved: added new shortcode _redis_db.get_ to ensure that we can read key from across any redis db specifed in shortcode eg. `[redis_db.get redis_sample_key db='2' field='debug_code' /]`.
+* Improved: Added ability to pass code as content in _code.highlight_ shortcode.
+
+* Fixed: converted > & < etc to htmlentities to ensure that spa script tags don't get executed by mistake.
+
 ##### 3.5.2
 * Improved: performance of apps being delivered from CDN, also added new key 'read_only'=>true, in connection to ensure remote code always stays cached.
 * Improved: introduced _service.modules.list_, _service.module.get_,  _app.collection.modules.list_ and _app.collection.module.get_
