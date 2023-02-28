@@ -190,8 +190,7 @@ function conn_handler($atts,$content=null,$shortcode=null){
 	
 	$atts['dbserver']=$mysqli;
 	
-	$return_value =\aw2_library::service_run($service,$atts,$content,'service');	
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	$return_value =\aw2_library::service_run($service,$atts,$content,'service');
 	return $return_value;
 }
 
