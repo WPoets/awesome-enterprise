@@ -29,6 +29,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.3.1
+* Fixed: dbconn had issues - 'set' was saving blank value.
+
 ##### 3.5.3
 * Improved: added new shortcode _redis_db.get_ to ensure that we can read key from across any redis db specifed in shortcode eg. `[redis_db.get redis_sample_key db='2' field='debug_code' /]`.
 * Improved: Added ability to pass code as content in _code.highlight_ shortcode.
