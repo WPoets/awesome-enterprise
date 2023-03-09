@@ -217,7 +217,9 @@ class awesome_flow{
 		}	
 		//time_zone
 		$time_zone = aw2_library::get('settings.time_zone');
+		if(empty($time_zone) && defined('TIMEZONE'))$time_zone=TIMEZONE;
 		if(!empty($time_zone))date_default_timezone_set($time_zone);
+		
 		
 		//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 		//echo '/*' .  '::end initialize:' .$timeConsumed . '*/';
