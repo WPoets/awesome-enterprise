@@ -29,6 +29,14 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+
+##### 3.5.3.2
+* Improved: added new constant TIMEZONE, that can be used to define the timezone for php execution.
+
+* Fixed: dbconn was not working whenever env variable was cached.
+* Fixed: loop was giving warning when we were looping objects
+* Fixed: warning 'start_time' not defined
+ 
 ##### 3.5.3.1
 * Fixed: dbconn had issues - 'set' was saving blank value.
 
