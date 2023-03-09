@@ -452,7 +452,7 @@ function multi($atts,$content=null,$shortcode){
 	//**Instantiate the DB Connection**//
 	$mysqli=$dbserver;
 	unset($dbserver);
-	
+	$start=microtime(true);
 	if(\aw2_library::is_live_debug()){
 		
 		$live_debug_event=array();
@@ -461,6 +461,7 @@ function multi($atts,$content=null,$shortcode){
 		$live_debug_event['stream']='mysqli.multi';
 		$live_debug_event['mysqli_service']='mysqli.multi';
 		$live_debug_event['raw_query']=$content;
+		$live_debug_event['start_time'] = $start;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
 	}
 	

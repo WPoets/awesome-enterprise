@@ -6,6 +6,12 @@ class awesome_flow{
 		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
 		self::setup_constants();
 		
+		if(defined('MYSQLI_CONNECTION')) {
+			$mysqli_db = \aw2\dbserver\connect(array('db_connection'=>MYSQLI_CONNECTION));
+			\aw2_library::set('connections.db.mysqli_db',$mysqli_db);
+			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'connections.db.mysqli_db'));
+
+		} 
 		
 		if(WP_DEBUG){
 			error_reporting(E_ALL);
@@ -138,14 +144,7 @@ class awesome_flow{
 					$debug_format['bgcolor']='#E7E0C9';
 					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 				}					
-			}		
-			
-			if(defined('MYSQLI_CONNECTION')) {
-				$mysqli_db = \aw2\dbserver\connect(array('db_connection'=>MYSQLI_CONNECTION));
-				\aw2_library::set('settings.connections.mysqli_db',$mysqli_db);
-				\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'settings.connections.mysqli_db'));
-
-			}   
+			}		  
 			
 			//load all the apps
 			self::load_apps();
