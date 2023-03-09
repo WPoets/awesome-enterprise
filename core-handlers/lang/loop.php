@@ -31,7 +31,9 @@ function unhandled($atts,$content=null,$shortcode){
 		}
 
 		$call_stack['source']=$items;
-		$call_stack['count']=count($items);
+		$call_stack['count']=0;
+        if(is_countable($items))
+            $call_stack['count']=count($items);
 		
 		$index=1;
 		$output=array();

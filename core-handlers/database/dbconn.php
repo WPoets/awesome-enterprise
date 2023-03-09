@@ -702,7 +702,7 @@ function transaction($atts,$content=null,$shortcode){
 	//**Instantiate the DB Connection**//
 	$mysqli=$dbserver;
 	unset($dbserver);
-
+	$start=microtime(true);
 	if(\aw2_library::is_live_debug()){
 		
 		$live_debug_event=array();
@@ -710,6 +710,7 @@ function transaction($atts,$content=null,$shortcode){
 		$live_debug_event['action']='query.called';
 		$live_debug_event['stream']='mysqli.transaction';
 		$live_debug_event['mysqli_service']='mysqli.transaction';
+		$live_debug_event['start_time']=$start;
 		$live_debug_event['raw_query']=$content;
 		$live_debug_event['isolation']=$isolation;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
