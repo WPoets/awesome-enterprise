@@ -313,7 +313,7 @@ class awesome_flow{
 		$cache['enable']='no';
 		if(isset($_SERVER['REQUEST_METHOD'])&& $_SERVER['REQUEST_METHOD']==='GET'){
 			if(!isset($_SERVER['QUERY_STRING']) || empty($_SERVER['QUERY_STRING'])){
-				if(!isset($_SERVER['HTTP_REFERER']) || empty($_SERVER['HTTP_REFERER'])){
+				
 					if(!(array_key_exists('wordpress_logged_in',$_COOKIE) || array_key_exists('aw2_vsession',$_COOKIE) || array_key_exists('wordpress_no_cache',$_COOKIE))){
 						if(!IS_WP){
 							$cache['failed']='Not WP';
@@ -330,10 +330,7 @@ class awesome_flow{
 					else{
 						$cache['failed']='Restricted Cookies are there';
 					}
-				}
-				else{
-					$cache['failed']='Referrer is there';
-				}
+				
 			}
 			else{
 				$cache['failed']='Query String is there';
