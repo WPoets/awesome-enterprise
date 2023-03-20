@@ -9,7 +9,7 @@ class awesome_flow{
 		if(defined('MYSQLI_CONNECTION')) {
 			$mysqli_db = \aw2\dbserver\connect(array('db_connection'=>MYSQLI_CONNECTION));
 			\aw2_library::set('connections.db.mysqli_db',$mysqli_db);
-			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'connections.db.mysqli_db'));
+			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'connections.db.mysqli_db','db_connection'=>MYSQLI_CONNECTION));
 
 		} 
 		

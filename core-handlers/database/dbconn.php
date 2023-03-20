@@ -79,7 +79,7 @@ function connect($atts,$content=null,$shortcode=null){
 		}
 		return '';
 	}
-	$db_conections = DB_CONNECTIONS;
+	$db_connections = DB_CONNECTIONS;
 	
 	if(is_null($db_connection) ) {
 		
@@ -96,7 +96,7 @@ function connect($atts,$content=null,$shortcode=null){
 	
 	
 	
-	if(!isset($db_conections[$db_connection])){
+	if(!isset($db_connections[$db_connection])){
 		if(\aw2_library::is_live_debug()){
 			
 			$temp_debug=$live_debug_event;
@@ -107,7 +107,7 @@ function connect($atts,$content=null,$shortcode=null){
 		}
 	}
 	
-	$return_value = new \SimpleMySQLi($db_conections[$db_connection]['host'], $db_conections[$db_connection]['user'], $db_conections[$db_connection]['password'], '', "utf8mb4", "assoc");
+	$return_value = new \SimpleMySQLi($db_connections[$db_connection]['host'], $db_connections[$db_connection]['user'], $db_connections[$db_connection]['password'], '', "utf8mb4", "assoc");
 	$return_value->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
@@ -144,6 +144,7 @@ Registers a db conn. Points to a database at run time. WIll switch the connectio
 	'main'=>null,
 	'conn_path'=>null,
 	'db_name'=>null,
+	'db_connection'=>null,
 	'desc'=>''
 	), $atts) );
 
@@ -151,10 +152,16 @@ Registers a db conn. Points to a database at run time. WIll switch the connectio
 	if(is_null($conn_path))throw new Exception('conn_path is not defined');
 	if(is_null($main))throw new Exception('main is not defined');
 	
+	if(is_null($db_connection) && !defined('MYSQLI_CONNECTION')) throw new Exception('db_conection is not passed and MYSQLI_CONNECTION is not defined');
+	
+	if(is_null($db_connection)) $db_connection=MYSQLI_CONNECTION;
+
+
 	//\aw2_library::set('settings.connections.' . $main,$conn);
 	$p=array();
 	$p['conn_path']=$conn_path;
 	$p['db_name']=$db_name;
+	$p['db_connection']=$db_connection;
 	$p['namespace']=__NAMESPACE__;
 	$p['func']='conn_handler';
 	\aw2_library::add_service($main,$desc,$p);
@@ -169,11 +176,27 @@ function conn_handler($atts,$content=null,$shortcode=null){
 	$service='dbconn.' . implode('.', $shortcode['tags_left']);
 	
 	$conn_path=$shortcode['handler']['conn_path'];
+	
 	$mysqli=\aw2_library::get($conn_path);
 
 	$db_name=$shortcode['handler']['db_name'];
-	$result=$mysqli->select_db($db_name);
-	
+	$db_connection=$shortcode['handler']['db_connection'];
+	//$result=$mysqli->select_db($db_name);
+	$db_connections = DB_CONNECTIONS;
+
+	if(!isset($db_connections[$db_connection])){
+		if(\aw2_library::is_live_debug()){
+			
+			$temp_debug=$live_debug_event;
+			$temp_debug['error']='yes';
+			$temp_debug['error_message']='db_connection '.$db_connection.' is not defined.';
+			$temp_debug['error_type']='query_error';
+			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#FFC3C3']);
+		}
+	}
+
+	$result=$mysqli->change_user($db_connections[$db_connection]['user'], $db_connections[$db_connection]['password'], $db_name);
+
 	if(\aw2_library::is_live_debug() && !$result){
 		
 		$live_debug_event=array();
