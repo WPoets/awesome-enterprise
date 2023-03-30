@@ -426,7 +426,13 @@ static function get_default_db_conn(){
 	//get the mysql connection
 	$mysqli = self::get($mysqli_handler['conn_path']);
 	//set the db
-	$mysqli->select_db($mysqli_handler['db_name']);
+	//$mysqli->select_db($mysqli_handler['db_name']);
+	$db_connection=$mysqli_handler['db_connection'];
+	//$result=$mysqli->select_db($db_name);
+	$db_conections = DB_CONNECTIONS;
+
+	$result=$mysqli->change_user($db_conections[$db_connection]['user'], $db_conections[$db_connection]['password'], $db_name);
+
 	//return the obj
 	return $mysqli;
 	

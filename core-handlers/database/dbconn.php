@@ -79,7 +79,7 @@ function connect($atts,$content=null,$shortcode=null){
 		}
 		return '';
 	}
-	$db_connections = DB_CONNECTIONS;
+	$db_conections = DB_CONNECTIONS;
 	
 	if(is_null($db_connection) ) {
 		
@@ -96,7 +96,7 @@ function connect($atts,$content=null,$shortcode=null){
 	
 	
 	
-	if(!isset($db_connections[$db_connection])){
+	if(!isset($db_conections[$db_connection])){
 		if(\aw2_library::is_live_debug()){
 			
 			$temp_debug=$live_debug_event;
@@ -107,7 +107,7 @@ function connect($atts,$content=null,$shortcode=null){
 		}
 	}
 	
-	$return_value = new \SimpleMySQLi($db_connections[$db_connection]['host'], $db_connections[$db_connection]['user'], $db_connections[$db_connection]['password'], '', "utf8mb4", "assoc");
+	$return_value = new \SimpleMySQLi($db_conections[$db_connection]['host'], $db_conections[$db_connection]['user'], $db_conections[$db_connection]['password'], '', "utf8mb4", "assoc");
 	$return_value->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
@@ -182,9 +182,9 @@ function conn_handler($atts,$content=null,$shortcode=null){
 	$db_name=$shortcode['handler']['db_name'];
 	$db_connection=$shortcode['handler']['db_connection'];
 	//$result=$mysqli->select_db($db_name);
-	$db_connections = DB_CONNECTIONS;
+	$db_conections = DB_CONNECTIONS;
 
-	if(!isset($db_connections[$db_connection])){
+	if(!isset($db_conections[$db_connection])){
 		if(\aw2_library::is_live_debug()){
 			
 			$temp_debug=$live_debug_event;
@@ -195,7 +195,7 @@ function conn_handler($atts,$content=null,$shortcode=null){
 		}
 	}
 
-	$result=$mysqli->change_user($db_connections[$db_connection]['user'], $db_connections[$db_connection]['password'], $db_name);
+	$result=$mysqli->change_user($db_conections[$db_connection]['user'], $db_conections[$db_connection]['password'], $db_name);
 
 	if(\aw2_library::is_live_debug() && !$result){
 		
