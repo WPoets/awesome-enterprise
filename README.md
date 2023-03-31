@@ -29,6 +29,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.3.3
+
+* Fixed: dbconn was giving issues when using multi query
+* Fixed: changed mysqli.php file to use the dbconn service when function are directly called.
 
 ##### 3.5.3.2
 * Improved: added new constant TIMEZONE, that can be used to define the timezone for php execution.
