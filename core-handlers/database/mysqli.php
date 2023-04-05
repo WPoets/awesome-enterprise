@@ -5,10 +5,10 @@ namespace aw2\mysqli;
 function get_default_conn($base,$s){
 	$shortcode=array();
 	
-	if(!is_null($s))
-		 $shortcode['tags_left']=$base . implode('.', $s['tags_left']);
-	else	
-		$shortcode['tags_left']=$base;
+	if(!empty($s))
+		$shortcode['tags_left']=array_unshift($s['tags_left'],$base); 
+	else
+		$shortcode['tags_left']=array($base);
 
 	$shortcode['handler']['conn_path'] = 'connections.db.mysqli_db';
 	$shortcode['handler']['db_name'] = DB_NAME;
