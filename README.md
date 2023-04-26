@@ -29,6 +29,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.4
+
+* Improved: Added support for 'ROOT_APP' and if it is defined then in a Non WordPress case also we can add support for module based pages.
+
 ##### 3.5.3.3
 
 * Fixed: dbconn was giving issues when using multi query
