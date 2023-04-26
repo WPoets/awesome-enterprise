@@ -1,6 +1,6 @@
 <?php 
 
-
+//define('ROOT_APP', 'home_pages');
 define('SITE_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
 define('HOME_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
 

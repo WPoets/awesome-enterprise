@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 
 //Are we using Word Press. This is required because of the way Wordpress works
 define('IS_WP', false);
+//define('ROOT_APP', 'home_pages');
 define('AWESOME_DEBUG', false);
 
 //Load the config
