@@ -413,9 +413,11 @@ class awesome_flow{
 		if(\aw2_library::endswith($request,'/'))
 			$request=substr($request, 0,-1);
 
-
-		if(empty($request)){
-			self::initialize_root(); // it is front page hence request is not set so setup root.
+		if(empty($request) && defined('ROOT_APP')){
+			$request = ROOT_APP;
+		}
+		else if(empty($request)){
+			self::initialize_root($query); // it is front page hence request is not set so setup root.
 			return;
 		}
 
@@ -484,6 +486,12 @@ class awesome_flow{
 			}
 			
 			\aw2_library::service_run('controllers.' . $name,['o'=>$o],null,'service'); // run the controller service, it is responsible for handling echo and exit.
+		}
+
+		if(!$app->exists($app_slug)  && defined('ROOT_APP')){
+			$app_slug = ROOT_APP;
+			//prepend to array $pieces the ROOT_APP
+			array_unshift($pieces,$app_slug);
 		}
 		
 		if($app->exists($app_slug)){
