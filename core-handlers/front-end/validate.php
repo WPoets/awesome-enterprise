@@ -41,7 +41,7 @@ function positive_int($atts,$content=null,$shortcode){
 	
 	// default min and max ranges
 	$min = !$min_range ? 1 : $min_range;
-	$max = !$max_range ? 10000000 : $max_range;
+	$max = !$max_range ? 10000000000 : $max_range;
 	
 	// validation check for positive_int
 	if (filter_var($main, FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min, "max_range"=>$max))) === false) {
@@ -72,7 +72,7 @@ function zero_positive_int($atts,$content=null,$shortcode){
 	
 	// default min and max ranges
 	$min = 0;
-	$max = !$max_range ? 10000000 : $max_range;
+	$max = !$max_range ? 10000000000 : $max_range;
 	
 	// validation check for positive_int
 	if (filter_var($main, FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min, "max_range"=>$max))) === false) {
@@ -103,7 +103,7 @@ function zero_positive_float($atts,$content=null,$shortcode){
 	
 	// default min and max ranges
 	$min = 0;
-	$max = !$max_range ? 10000000 : $max_range;
+	$max = !$max_range ? 10000000000 : $max_range;
 	
 	// validation check for positive_int
 	if (filter_var($main, FILTER_VALIDATE_FLOAT, array("options" => array("min_range"=>$min, "max_range"=>$max))) === false) {
