@@ -15,13 +15,6 @@ function solve($atts,$content=null,$shortcode){
 	$replacement = '';
 	$result= preg_replace($pattern, $replacement, $main);
 	
-	if (isset($_COOKIE['debug_hello_dolly'])){
-		$upload_dir = wp_upload_dir();		
-		$path= $upload_dir['path'] . '/log/log.html';
-		$fp = fopen($path, 'a');
-		$m=\aw2_library::get_array_ref('module');
-		fwrite($fp, \util::var_dump($m,true));
-	}
 	try {
 		$return_value=eval('return ' . $result .  ' ;');
 		
