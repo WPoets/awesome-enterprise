@@ -97,6 +97,14 @@ function get($atts,$content=null,$shortcode=null){
 	if($use_env_cache){
 		$return_value=\aw2\global_cache\get(["main"=>$hash ,"db"=>$config['redis_db']],null,null);
 		$return_value=json_decode($return_value,true);
+	if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='connection.cache.used';
+			$live_debug_event['cache_used']='yes';
+			$live_debug_event['result']=$return_value;
+			$debug_format['bgcolor']='#DEB6AB';
+
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}
 	}
 
 	if(!$return_value){

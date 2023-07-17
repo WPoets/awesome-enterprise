@@ -80,7 +80,7 @@ class awesome_auth{
 	}
 	
 	static function vsession($auth){
-		if(!IS_WP)return false;
+		//if(!IS_WP)return false;
 		//check for cookie -> 
 		if(isset($_COOKIE['aw2_vsession'])){
 						

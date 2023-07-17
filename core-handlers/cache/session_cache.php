@@ -33,12 +33,13 @@ function get($atts,$content=null,$shortcode=null){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'prefix'=>'',
+	'db'=>REDIS_DATABASE_SESSION_CACHE
 	), $atts) );
 	
 	if(!$main)return 'Main must be set';		
 	if($prefix)$main=$prefix . $main;
 	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+	$redis = \aw2_library::redis_connect($db);
 	$return_value='';
 	if($redis->exists($main))
 		$return_value = $redis->get($main);
