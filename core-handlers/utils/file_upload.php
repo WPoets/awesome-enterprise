@@ -18,11 +18,7 @@ function upload($atts,$content=null,$shortcode){
 		'set_featured'=>false,
 		'woo_product_gal'=>false
 	), $atts, 'aw2_upload' ) );
-	// These files need to be included as dependencies when on the front end.
-	require_once( ABSPATH . 'wp-admin/includes/image.php' );
-	require_once( ABSPATH . 'wp-admin/includes/file.php' );
-	require_once( ABSPATH . 'wp-admin/includes/media.php' );
-	
+
 	// Allow certain file formats
 	$allowed = array('gif', 'png' ,'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'csv');
 	
@@ -32,6 +28,11 @@ function upload($atts,$content=null,$shortcode){
 	}
 	
 	if($main=='attach_to_post'){
+		// These files need to be included as dependencies when on the front end.
+		require_once( ABSPATH . 'wp-admin/includes/image.php' );
+		require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		require_once( ABSPATH . 'wp-admin/includes/media.php' );
+			
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];  
 			
