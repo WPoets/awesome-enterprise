@@ -325,7 +325,7 @@ class aw2_error_log{
 				
 		if(!defined('AWESOME_LOG_DB'))
 			define('AWESOME_LOG_DB', DB_NAME);
-		
+	/** 	
 		$sql = "
 		start TRANSACTION;
 		set @post_type='".$post_type."';
@@ -350,8 +350,68 @@ class aw2_error_log{
 		
 		COMMIT;
 		";
-
+*/
 		//echo $sql;
+
+		$sql ="
+		START TRANSACTION;
+		set @post_type='".$post_type."';
+		set @source='".$source."';
+		set @module='".$module."';
+		set @pos='".$position."';
+		set @errno='".$errno."';
+		set @errfile='".$errfile."';
+		set @errline='".$errline."';
+
+		INSERT INTO `".AWESOME_LOG_DB."`.`awesome_exceptions`
+		(`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`, `user`, `header_data`, `request_data`, `sql_query`, `request_url`, `message`, `errno`, `errfile`, `errline`, `call_stack`, `trace`, `no_of_times`, `status`) SELECT 
+		'".$exception_type."' exception_type,
+		  '".$post_type."' post_type,
+		  '".$source."' source,
+		  '".$module."' module,
+		  '".$location."' location, 
+		  '".$app_name."' app_name, 
+		  '".$sc."' sc, 
+		  '".$position."' position, 
+		  '".$link."' link,
+		  '".$user."' user, 
+		  '".$header_value."' header_data,
+		  '".$request."' request_data,
+		  '".$sql_query."' sql_query,
+		  '".$url."' request_url,
+		  '".$message."' message, 
+		  '".$errno."' errno, 
+		  '".$errfile."' errfile, 
+		  '".$errline."' errline, 
+		  '".$call_stack."' call_stack,
+		  '".$trace."' trace,
+		   '0' no_of_times, 
+		   'active' status
+	FROM DUAL
+	WHERE NOT EXISTS (
+	  SELECT 1
+	  FROM `".AWESOME_LOG_DB."`.`awesome_exceptions`
+	  WHERE 
+		 post_type = @post_type
+	  AND source = @source
+	  AND module = @module
+	  AND position = @pos
+	  AND errno = @errno
+	  AND errfile = @errfile
+	  AND errline = @errline
+	  LIMIT 1
+	);
+
+		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.`awesome_exceptions` WHERE post_type = @post_type AND source = @source AND module = @module AND position = @pos AND errno = @errno AND errfile = @errfile AND errline = @errline LIMIT 1;
+ 
+
+		UPDATE `".AWESOME_LOG_DB."`.`awesome_exceptions`
+		SET no_of_times = no_of_times + 1
+		WHERE ID = @id;
+
+		SELECT @id;
+		COMMIT;
+		";
 		
 		$obj = \aw2_library::$mysqli->multi_query($sql);
 		
