@@ -170,7 +170,7 @@ class controllers{
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
 		
-		$filename=$_REQUEST['filename'];
+		$filename=preg_replace('/\.\.\/+/', '', $_REQUEST['filename']); 
 		$file_extension=explode('.',$filename);
 		$extension=end($file_extension);
 		
