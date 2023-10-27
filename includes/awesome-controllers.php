@@ -210,7 +210,7 @@ class controllers{
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
 		
-		$filename=$_REQUEST['filename'];
+		$filename=preg_replace('/\.\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
 		$file_extension=explode('.',$filename);
 		$extension=end($file_extension);
 		
@@ -398,7 +398,7 @@ class controllers{
 		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
 		
-		$filename=$_REQUEST['filename'];
+		$filename=preg_replace('/\.\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
 		
 		header("Content-type: application/csv");
 		header('Content-Disposition: attachment;filename="' . $filename);
@@ -422,7 +422,7 @@ class controllers{
 		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
 		
-		$filename=$_REQUEST['filename'];
+		$filename=preg_replace('/\.\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
 		
 		header("Content-type: application/csv");
 		header('Content-Disposition: attachment;filename="' . $filename);
