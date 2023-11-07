@@ -175,7 +175,8 @@ class controllers{
 		$extension=end($file_extension);
 		
 		$folder=aw2_library::get('realpath.app_folder');
-		$path=$folder . $filename;
+		$path=realpath($folder . $filename);
+		if($path === false ) exit;
 		
 		switch ($extension) {
 			case 'excel':
@@ -215,7 +216,8 @@ class controllers{
 		$extension=end($file_extension);
 		
 		$folder=aw2_library::get('realpath.app_folder');
-		$path=$folder . $filename;
+		$path=realpath($folder . $filename);
+		if($path === false ) exit;
 	
 		switch ($extension) {
 			case 'excel':
@@ -253,7 +255,8 @@ class controllers{
 		
 		$filename=self::$module;	
 		$folder=aw2_library::get('realpath.app_folder');
-		$path=$folder . $filename;
+		$path=realpath($folder . $filename);
+		if($path === false ) exit;
 
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header('Content-Disposition: attachment;filename="' . $filename.'"');
