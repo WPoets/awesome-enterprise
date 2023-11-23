@@ -581,7 +581,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 
 	if($sc_exec_restore==='yes')$restore=self::sc_exec_setup_pos();	
 	$count=0;
-	$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+	$content = preg_replace_callback( "/$pattern/s", self::class . '::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
 	if($sc_exec_restore==='yes')self::sc_exec_restore($restore);	
 	//$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content );
 		

@@ -1,6 +1,15 @@
 <?php
 
 class awesome_app{
+	public $base_path;
+	public $path;
+	public $safe_id;
+	public $slug;
+	public $name;
+	public $post_id;
+	public $collection;
+	public $settings;
+	public $user;
 	
 	public function exists($slug){
 		$registered_apps=&aw2_library::get_array_ref('apps');
