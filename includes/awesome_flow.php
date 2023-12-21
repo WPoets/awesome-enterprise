@@ -192,7 +192,9 @@ class awesome_flow{
 				["main"=>ENV_CACHE,"field"=>"apps","value"=>serialize($ref['apps'])]);				
 				
 				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"settings","value"=>serialize($ref['settings'])]);
-				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"css","value"=>serialize($ref['css'])]);
+
+				$css = isset($ref['css']) ? serialize($ref['css']) : '';
+				aw2\global_cache\hset(["main"=>ENV_CACHE,"field"=>"css","value"=>$css]);
 
 				$content_types=$ref['content_types'];
 				$ct_arr=array();
