@@ -29,6 +29,19 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+
+##### 3.5.5
+
+* Improved: added debug code for folder connection
+* Fixed: switched to real path to ensure only correct files are allowed to be downloaded.
+* Fixed: removed depriciation notices to improve compatibility with PHP 8.2
+* Fixed: updated dependency of less.php to 4 to improve compatibility with php 8.2
+* Fixed: moved the require_once to ensure that they only used in specific case and not all scenarios.
+* Fixed: made changes so that error log becomes compatible with mysql 8.
+* Fixed: made session cache dynamic, instead of using default.
+* Fixed:  the notice of 'undefined variable css'
+
+
 ##### 3.5.4
 
 * Improved: Added support for 'ROOT_APP' and if it is defined then in a Non WordPress case also we can add support for module based pages.
