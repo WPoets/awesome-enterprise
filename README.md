@@ -22,7 +22,7 @@ Above example is for Nginx server.
 
 ### Reporting a bug
 
-Checkout the [existing issues](https://github.com/WPoets/awesome-enterprise/issues) for solutions or upcoming fixes. 
+Check out the [existing issues](https://github.com/WPoets/awesome-enterprise/issues) for solutions or upcoming fixes. 
 
 If you don't find your issue already listed, do [create an issue](https://github.com/WPoets/awesome-enterprise/issues/new), please include as much detail as you can.
 
@@ -34,9 +34,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 * Improved: added debug code for folder connection
 * Fixed: switched to real path to ensure only correct files are allowed to be downloaded.
-* Fixed: removed depriciation notices to improve compatibility with PHP 8.2
-* Fixed: updated dependency of less.php to 4 to improve compatibility with php 8.2
-* Fixed: moved the require_once to ensure that they only used in specific case and not all scenarios.
+* Fixed: removed depreciation notices to improve compatibility with PHP 8.2
+* Fixed: updated dependency of less.php to 4 to improve compatibility with PHP 8.2
+* Fixed: moved the require_once to ensure that they are only used in specific cases and not all scenarios.
 * Fixed: made changes so that error log becomes compatible with mysql 8.
 * Fixed: made session cache dynamic, instead of using default.
 * Fixed:  the notice of 'undefined variable css'
@@ -44,25 +44,25 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ##### 3.5.4
 
-* Improved: Added support for 'ROOT_APP' and if it is defined then in a Non WordPress case also we can add support for module based pages.
+* Improved: Added support for 'ROOT_APP' and if it is defined then in a Non-WordPress case also, we can add support for module based pages.
 
 ##### 3.5.3.3
 
 * Fixed: dbconn was giving issues when using multi query
-* Fixed: changed mysqli.php file to use the dbconn service when function are directly called.
+* Fixed: changed mysqli.php file to use the dbconn service when functions are directly called.
 
 ##### 3.5.3.2
 * Improved: added new constant TIMEZONE, that can be used to define the timezone for php execution.
 
 * Fixed: dbconn was not working whenever env variable was cached.
-* Fixed: loop was giving warning when we were looping objects
+* Fixed: loop was giving a warning when we were looping objects
 * Fixed: warning 'start_time' not defined
  
 ##### 3.5.3.1
 * Fixed: dbconn had issues - 'set' was saving blank value.
 
 ##### 3.5.3
-* Improved: added new shortcode _redis_db.get_ to ensure that we can read key from across any redis db specifed in shortcode eg. `[redis_db.get redis_sample_key db='2' field='debug_code' /]`.
+* Improved: added new shortcode _redis_db.get_ to ensure that we can read key from across any redis db specified in shortcode eg. `[redis_db.get redis_sample_key db='2' field='debug_code' /]`.
 * Improved: Added ability to pass code as content in _code.highlight_ shortcode.
 
 * Fixed: converted > & < etc to htmlentities to ensure that spa script tags don't get executed by mistake.
@@ -75,11 +75,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Fixed: fixed the issue with settings, it was resetting
 * Fixed: if database had special character in name then it was giving sql error, fixed it.
 * Fixed: fixed issues in the collection.get for folder_conn
-* Fixed: fixed the situation so that incase error_log itself creates an issue, it does not distrubes the flow.
+* Fixed: fixed the situation so that incase error_log itself creates an issue, it does not disturb the flow.
 
 ##### 3.5.1
 * Improved: added support for _arr.unshift_
-* Improved: introduced _loop.live_arr_ to enabling looping an array that is changing at runtime
+* Improved: introduced _loop.live_arr_ to enable looping an array that is changing at runtime
 * Improved: improved the way add_service function was working
 
 * Fixed: fixed the issue with template type aw2_arr, it was getting executed
@@ -96,7 +96,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Fixed: Removed notices in case obj_id or obj_type is not defined.
 * Fixed: Issue with converting a post_type to service.
 * Fixed: Issue with .esc_sql - it was using WordPress function, converted it to a awesome function.
-* Fixed: Issue : warning "failed to open stream" for external files.
+* Fixed: Issue: warning "failed to open stream" for external files.
 * Fixed: Issue while redirecting query strings were not respected.
 
 ##### 3.4.4
