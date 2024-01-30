@@ -38,6 +38,9 @@ function console($value, $atts){
 //log
 \aw2_library::add_service('o.log','Output the value in log file in defined directory. Use o.log',['namespace'=>__NAMESPACE__]);
 function log($value, $atts){
+	if(!defined(LOG_PATH))
+		return $value;
+
 	if($atts['log'] === 'yes')
 		$filename = "log.html";
 	else
