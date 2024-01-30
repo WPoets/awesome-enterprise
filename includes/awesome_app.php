@@ -182,7 +182,7 @@ class awesome_app{
 		
 		$app=aw2_library::get_array_ref('app');
 		
-		$exists=aw2_library::module_exists_in_collection($app['collection']['config'],'rights');
+		$exists=isset($app['collection']['config'])?aw2_library::module_exists_in_collection($app['collection']['config'],'rights'):false;
 		
 		if($exists){
 			
