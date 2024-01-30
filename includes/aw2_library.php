@@ -4073,7 +4073,7 @@ static function module_exists_in_collection($collection,$module){
 		$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\module\\exists';
 
 		$atts['connection']=$collection['connection'];
-		$atts['post_type']=$collection['post_type'];
+		$atts['post_type']=isset($collection['post_type'])?$collection['post_type']:'';
 		$atts['module']=$module;
 
 		$arr = call_user_func($connection_service,$atts);
@@ -4089,7 +4089,7 @@ static function get_module_meta($collection,$module){
 		$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\module\\meta';
 	
 		$atts['connection']=$collection['connection'];
-		$atts['post_type']=$collection['post_type'];
+		$atts['post_type']=isset($collection['post_type'])?$collection['post_type']:'';
 		$atts['module']=$module;
 
 		$arr = call_user_func($connection_service,$atts);
