@@ -24,11 +24,16 @@ Above example is for Nginx server.
 
 Check out the [existing issues](https://github.com/WPoets/awesome-enterprise/issues) for solutions or upcoming fixes. 
 
-If you don't find your issue already listed, do [create an issue](https://github.com/WPoets/awesome-enterprise/issues/new), please include as much detail as you can.
+If you don't find your issue already listed, do [create an issue](https://github.com/WPoets/awesome-enterprise/issues/new). Please include as much detail as you can.
 
 
 ### Changelog 
 
+##### 3.5.6
+
+* Fixed: Undefined array key "post_type"
+* Fixed: Undefined array key "config"
+* Fixed: if LOG_PATH is not defined do nothing.
 
 ##### 3.5.5
 
