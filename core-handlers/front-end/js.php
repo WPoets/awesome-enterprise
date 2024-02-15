@@ -27,6 +27,9 @@ function run_on_activity($atts,$content=null,$shortcode){
 	), $atts) );
 	
 	if(empty($src) && empty($content)) return;
+    if(!empty($content))
+        $content = \aw2_library::parse_shortcode($content);
+
 
 	$chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' ;
 	$uniqueid=\substr( \str_shuffle( $chars ), 0, 12 );
