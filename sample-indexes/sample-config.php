@@ -10,6 +10,8 @@ define( 'REDIS_DATABASE_GLOBAL_CACHE', '4' );
 define( 'REDIS_DATABASE_SESSION_CACHE', '5' );
 define( 'REDIS_DATABASE_DB', '10' );
 
+define('LOG_EXCEPTIONS',false);
+
 define('AWESOME_PATH', '/var/www/awesome-enterprise');
 
 define('CONNECTIONS',

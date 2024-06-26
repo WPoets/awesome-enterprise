@@ -553,6 +553,9 @@ function multi_self($mysqli,$atts,$content,$tags_left){
     //**Parse the query from content**//
     $sql=\aw2_library::parse_shortcode($content);
 	
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	$sc_exec['query']=$sql;	
+	
 	if(empty($return_value)){
 		$obj = $mysqli->multi_query(add_comment_to_sql($sql));
 		$result = $obj->fetchAll("assoc");
@@ -575,6 +578,8 @@ function multi_search($mysqli,$atts,$content,$tags_left){
 	//**Prepare the query**//
 	$sql="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; ". PHP_EOL . $atts['dataset']['query'];
 
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	$sc_exec['query']=$sql;	
 
 	$start=microtime(true);
 	if(\aw2_library::is_live_debug()){
@@ -646,7 +651,9 @@ function multi_fetch($mysqli,$atts,$content,$tags_left){
 	
 	//**Prepare the query**//
 	$sql="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;". PHP_EOL . \aw2_library::parse_shortcode($content);
-
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	$sc_exec['query']=$sql;	
+	
 	$start=microtime(true);
 	if(\aw2_library::is_live_debug()){
 		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
@@ -679,7 +686,10 @@ function multi_cud($mysqli,$atts,$content,$tags_left){
 	
     //**Parse the query from content**//
     $sql=\aw2_library::parse_shortcode($content);
-
+	
+	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
+	$sc_exec['query']=$sql;	
+	
 	$start=microtime(true);
 	if(\aw2_library::is_live_debug()){
 		$live_debug_event=\aw2_library::get('@live_debug.multi_query');
