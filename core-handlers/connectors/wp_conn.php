@@ -234,7 +234,13 @@ function exists($atts,$content=null,$shortcode=null){
 	
 	$results=\aw2\wp_conn\collection\_list($atts);
 	$module_names = array_column($results, 'post_title', 'post_name');
-		
+	
+	//%e0%a4%86%e0%a4%82%e0%a4%a4%e0%a4%b0 is possible in case hindi is used in post slug. this is fix for it
+	// Decode the keys and create a new array
+	$decoded_keys = array_map('urldecode', array_keys($module_names));
+	$module_names = array_combine($decoded_keys, array_values($module_names));
+	unset($decoded_keys);
+	
 	if(isset($module_names[$module]))
 		$return_value= true;
 	else	
