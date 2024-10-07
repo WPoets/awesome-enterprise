@@ -4,7 +4,7 @@ namespace aw2\html;
 \aw2_library::add_service('html.trusted','Throws out a trusted template',['namespace'=>__NAMESPACE__]);
 
 
-function trusted($atts,$content=null,$shortcode){
+function trusted($atts,$content=null,$shortcode=null){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	$html=\aw2_library::parse_shortcode($content);

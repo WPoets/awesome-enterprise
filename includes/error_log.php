@@ -131,6 +131,9 @@ class aw2_error_log{
 		if(strpos($err_file, 'wp-admin/includes/file.php') !== false) return;
 		if(strpos($err_file, 'wp-includes/capabilities.php') !== false) return;
 
+		if((strpos($err_msg, 'open_basedir') !== false) && (strpos($err_file, 'matthiasmullie/minify/src/Minify.php') !== false)) return;
+
+
 		$sc_exec=&aw2_library::get_array_ref('@sc_exec');
 		$sc_exec['err_msg']=$err_msg;
 		$sc_exec['err_file']=$err_file;

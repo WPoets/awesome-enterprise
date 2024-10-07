@@ -546,23 +546,37 @@ class controllers{
 			$live_debug_event['stream']='page';
 			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 		}	
-
- 
-	
-		$slug= $o->pieces[0];
 		
 		$app=&aw2_library::get_array_ref('app');
 		
-	if(isset($app['settings']['enable_cache'])){
-		self::set_cache_header($app['settings']['enable_cache']);
-	}
-	else	
-			self::set_cache_header('no'); // HTTP 1.1.
-	
-	self::set_index_header();
-	
+		if(isset($app['settings']['enable_cache'])){
+			self::set_cache_header($app['settings']['enable_cache']);
+		}
+		else	
+				self::set_cache_header('no'); // HTTP 1.1.
+		
+		self::set_index_header();
+		$slug= $o->pieces[0];
+		$final_page_slug = $slug;
 			
 		if(isset($app['collection']['pages'])){
+			if(count($o->pieces) > 1){
+
+				// Loop through pieces in reverse order
+				for ($i = count($o->pieces) - 1; $i >= 0; $i--) {
+					$currentPiece = $o->pieces[$i];
+					
+					// Check if module exists
+					if (aw2_library::module_exists_in_collection($app['collection']['pages'], $currentPiece)) {
+						// Build path string with existing pieces
+						$path = array_slice($o->pieces, 0, $i + 1);
+						$o->pieces = array_slice($o->pieces,$i + 1);
+						$slug = $currentPiece;	
+						$final_page_slug = implode("/", $path);
+					}
+				}
+
+			}				
 			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
 				array_shift($o->pieces);
 				self::set_qs($o);
@@ -580,7 +594,7 @@ class controllers{
 					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 				}	
 				
-				$output = self::run_layout($app, 'pages', $slug,$query);
+				$output = self::run_layout($app, 'pages', $final_page_slug,$query);
 			
 				if($output !== false){
 					echo $output; 
