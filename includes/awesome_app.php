@@ -198,7 +198,15 @@ class awesome_app{
 			}
 			
 			// must be logged in
-			if(!isset($rights['auth']) && is_user_logged_in() )return;
+			//if(!isset($rights['auth']) && is_user_logged_in() )return;
+			//if(!isset($rights['auth'])) $rights['auth'] = array();
+			
+			if (!isset($rights['auth'])) {
+				$rights['auth'] = array();
+				if (is_user_logged_in()) {
+					return; // Allow access for any logged-in user if no auth rules are set
+				}
+			}
 
 			foreach($rights['auth'] as $auth){
 				if(is_callable(array('awesome_auth', $auth['method']))){
