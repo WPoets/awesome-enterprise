@@ -146,11 +146,16 @@ function upload($atts,$content=null,$shortcode){
 					if($overwrite_file == 'no'){
 						// don't overwrite an existing file
 						$i = 0;
-						$name = pathinfo($tmp_file_name);
+						
+						$pathinfo = pathinfo($tmp_file_name);
+						$filename = isset($pathinfo['filename']) ? $pathinfo['filename'] : 'file';
+						$extension = isset($pathinfo['extension']) ? '.' . $pathinfo['extension'] : '';
+
 						while (file_exists($upload_dir . $tmp_file_name)) {
 							$i++;
-							$tmp_file_name = $name["filename"] . "-" . $i . "." . $name["extension"];
+							$tmp_file_name = $filename . "-" . $i . $extension;
 						}
+
 					}
 					
 					if (!file_exists($upload_dir)) {
