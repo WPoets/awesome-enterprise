@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../extra-handlers/communication-handler"
+		}
+	],
+	"settings": {}
+}
