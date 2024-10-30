@@ -36,7 +36,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Improved: Using the latest version of less.php
 * Improved: In awesome controller for pages - added support to handle sub-pages in the apps.
 * Improved: Changed the implementation for taxonomy to support parent-child urls
-* Fixed: When you use Hindi for slug in the WordPress saves name in URL encoded format, and the check was failing
+* Fixed: When you use Hindi for slug in WordPress, it saves the name in URL encoded format, and that check was failing
 * Fixed: In error log, decided to stop logging open_basedir error for minify.php as it is mostly css file url
 * Fixed: Undefined array key "auth"
 * Fixed: Undefined array key "extension"
