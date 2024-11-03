@@ -61,3 +61,16 @@ define('DB_CONNECTIONS',
 	));
 //This is required so that we can use mysqli.* as a shortcode since it is already there. In a new system this is not required
 define('MYSQLI_CONNECTION','primary_db');    
+
+
+//this is reauired is you are planning to few urls ourside wp using different index.php file.
+
+/** Sets up WordPress vars and included files. */
+if ( !defined( 'IS_WP' ) ) {
+	define('IS_WP', true);
+}
+
+if( IS_WP){
+	/** Sets up WordPress vars and included files. */
+	require_once ABSPATH . 'wp-settings.php';
+}
