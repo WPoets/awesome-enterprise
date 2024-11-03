@@ -286,8 +286,14 @@ function config($atts,$content=null,$shortcode){
 
 		if($action==='set_array')
 			$return_value=config_set_array($content_type,$main,$content);
-		else
-			$return_value=config_get($content_type,$shortcode['tags_left'],$atts,$content);
+		else{
+			if($action==='set_from_path')
+		          $return_value=config_set_from_path($content_type,$main,$atts);
+	                else        
+		          $return_value=config_get($content_type,$shortcode['tags_left'],$atts,$content);
+            }
+		
+		//else 	$return_value=config_get($content_type,$shortcode['tags_left'],$atts,$content);
 			
 	}
 	else{
@@ -318,6 +324,25 @@ function config_set_array($content_type,$main,$content){
 	return;
 }
 
+function config_set_from_path($content_type,$main,$atts){
+    if(!isset($atts['path']))
+		throw new Exception('path is not defined');
+
+
+    $arr=\aw2_library::get($atts['path']);
+
+	
+    if($main){
+        \aw2_library::set('content_types.' . $content_type . '.config' . '.' . $main ,$arr);
+    }
+    else{
+        $ref=\aw2_library::get_array_ref('content_types',$content_type,'config');
+        $final=array_merge($ref,$arr);
+        \aw2_library::set('content_types.' . $content_type . '.config',$final);
+
+    }
+    return;
+}
 
 function config_get($content_type,$arr,$atts,$content){
 	$main=implode('.',$arr);
