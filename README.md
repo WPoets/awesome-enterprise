@@ -29,6 +29,19 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.7
+
+* Improved: Added support so that the awesome shortcodes can be used to write the script.
+* Improved: Added better logging for SQL queries
+* Improved: Using the latest version of less.php
+* Improved: In awesome controller for pages - added support to handle sub-pages in the apps.
+* Improved: Changed the implementation for taxonomy to support parent-child urls
+* Fixed: When you use Hindi for slug in WordPress, it saves the name in URL encoded format, and that check was failing
+* Fixed: In error log, decided to stop logging open_basedir error for minify.php as it is mostly css file url
+* Fixed: Undefined array key "auth"
+* Fixed: Undefined array key "extension"
+
+
 ##### 3.5.6
 
 * Fixed: Undefined array key "post_type"
