@@ -100,6 +100,9 @@ class awesome_flow{
 		
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
 			header('awesome_cache: used');
+			$now = DateTime::createFromFormat('U.u', microtime(true));
+			$val=$now->format("m-d-Y H:i:s.u");
+			header('cache_time:' . $val);
 
 			if(\aw2_library::is_live_debug()){
 				$live_debug_event['action']='setup.cache.used';
@@ -144,8 +147,8 @@ class awesome_flow{
 					$debug_format['bgcolor']='#E7E0C9';
 					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 				}					
-			}		  
-			
+			}		
+
 			//load all the apps
 			self::load_apps();
 			self::run_core('apps');
@@ -173,7 +176,9 @@ class awesome_flow{
 
 			//self::run_core('config');
 			self::load_env_settings();
-
+			
+			
+			
 			$ref=&aw2_library::get_array_ref();
 			if(!isset($ref['content_types']))$ref['content_types']=array();
 			self::run_core('content-types');

@@ -9,14 +9,14 @@ class aw2_template{
 	public $code=AW2_ERROR;
 	public $name=AW2_ERROR;
 	
-}	
+} 	
 
 class aw2_error{
 	public $status='error';
 	public $message='';
 	public $error_code='';
 }
- 
+  
 
 class aw2_library{
 
@@ -62,6 +62,17 @@ static function load_all_extra_handlers(){
 }
 
 private static $hasArray = false;
+
+
+static function get_service_params($atts){
+	//php8OK
+	$service=array('name'=>null,'atts'=>array());
+	foreach ($atts as $key => $value) {
+		if ($key === 's.@') $service['name'] = $value;
+		elseif (strpos($key, 's.') === 0) $service['atts'][substr($key, 2)] = $value;
+	}
+	return $service;
+}
 
 static function esc_sql($value){
 	if(!self::$mysqli)self::$mysqli = self::new_mysqli();
@@ -555,6 +566,120 @@ static function unescape_invalid_shortcodes( $content ) {
  
     return $content;
 }
+ 
+static function bytecode_shortcode($content) {
+
+	$content = preg_replace("/\/\/\*.*\*\/\//sU", "", $content);
+
+	$re = '/\[(\[?)((?:[a-zA-Z0-9\-_@])+\.(?:[a-zA-Z0-9\-._@])+)(?![\w-])([^\]\/]*(?:\/(?!\])[^\]\/]*)*?)(?:(\/)\]|\](?:([^\[]*+(?:\[(?!\/\2\])[^\[]*+)*+)\[\/\2\])?)(\]?)|[^\[]+|(.+?)/ms';
+
+	preg_match_all($re, $content, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE, 0);
+
+		$now = DateTime::createFromFormat('U.u', microtime(true));
+		$val=$now->format("m-d-Y H:i:s.u");
+		echo $val . 'match-start<br>';
+
+	// Print the entire match result
+	
+	$out='';
+	foreach($matches as $m){
+		if(count($m)===1)
+			$out.=$m[0][0];
+		else{
+			$now = DateTime::createFromFormat('U.u', microtime(true));
+			$val=$now->format("m-d-Y H:i:s.u");
+			echo $val . 'every loop' . count($m) . '<br>';			
+			//\util::var_dump($m);
+			$out.=self::shortcode_tag($m);
+			
+		}
+		
+	}
+		$now = DateTime::createFromFormat('U.u', microtime(true));
+		$val=$now->format("m-d-Y H:i:s.u");
+		echo $val . 'match-end' . count($m) . '<br>';
+	
+
+	return $out;	
+}
+
+
+static function parse_single( $content) {
+	//php8OK	
+	if(self::is_live_debug()){
+		
+		$live_debug_event=array();
+		$live_debug_event['flow']='parser';
+		$live_debug_event['action']='parser.single.called';
+		$live_debug_event['content']=substr(print_r($content, true),0,500);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
+	}
+
+	
+	if(is_null($content)) return $content;
+	if ( false === strpos( $content, '[' ) )return $content;
+	
+	$pattern = self::get_shortcode_regex();
+
+	
+	$pattern =str_replace("_handler","(?:[a-zA-Z0-9\-._@])+",$pattern);	
+
+	$flag=preg_match("/$pattern/s", $content, $m, PREG_OFFSET_CAPTURE);
+
+
+	if($flag===0)return $content;
+
+
+	//$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+
+	$content=self::single_tag( $m );
+	
+
+	if(self::is_live_debug()){
+		$live_debug_event['action']='parser.single.done';
+		$live_debug_event['result']=substr(print_r($content, true),0,5000);
+		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
+	}
+
+	return  $content;
+}
+
+
+static function single_tag( $m ) {
+	//php8OK	
+	global $shortcode_tags;
+
+	$tag = $m[2][0];
+	$attr = self::shortcode_parse_atts( $m[3][0] );
+
+
+	if ( isset( $m[5][0] ) )
+		$content=$m[5][0];	
+	else
+		$content=null;
+		
+	$inputs=array();
+	$inputs['tags']= $tag;
+	$inputs['atts'] = $attr;
+
+	if ( isset( $m[5][0] ) )
+		$inputs['content']=$m[5][0];	
+
+
+	$reply=self::process_handler($inputs);
+ 
+	if($reply==='#not_awesome_sc#'){
+		if(isset($shortcode_tags[$tag])){
+			return $m[1][0] . call_user_func( $shortcode_tags[$tag], $attr, $content, $tag ) . $m[6][0];
+		}
+
+		return $m[0][0];
+	}	
+	return $reply;
+}
+
+
+
 static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore='no') {
 	//php8OK	
 
@@ -563,7 +688,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 		$live_debug_event=array();
 		$live_debug_event['flow']='parser';
 		$live_debug_event['action']='parser.called';
-		$live_debug_event['content']=substr(print_r($content, true),0,500);
+		$live_debug_event['content']=substr(print_r($content, true),0,100);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
 	}
 
@@ -574,21 +699,14 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 
 	
 	$pattern = self::get_shortcode_regex();
-
-
 	
 	$pattern =str_replace("_handler","(?:[a-zA-Z0-9\-._@])+",$pattern);	
-
 	if($sc_exec_restore==='yes')$restore=self::sc_exec_setup_pos();	
 	$count=0;
 	$content = preg_replace_callback( "/$pattern/s", self::class . '::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
 	if($sc_exec_restore==='yes')self::sc_exec_restore($restore);	
 	//$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content );
 		
-	
-	
-
-	
 
 	if(isset(self::$stack['_return']))return '';
 	
@@ -597,7 +715,7 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='parser.done';
-		$live_debug_event['result']=substr(print_r($content, true),0,5000);
+		$live_debug_event['result']=substr(print_r($content, true),0,100);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F5EDDC']);
 	}
 
@@ -718,9 +836,11 @@ static function shortcode_tag( $m ) {
 	if ( $m[1][0] === '[' && $m[6][0] === ']' ) {
 		return substr($m[0][0], 1, -1);
 	}
+ 
 
 	$tag = $m[2][0];
 	$attr = self::shortcode_parse_atts( $m[3][0] );
+
 
 	if ( isset( $m[5][0] ) )
 		$content=$m[5][0];	
@@ -734,8 +854,10 @@ static function shortcode_tag( $m ) {
 	if ( isset( $m[5][0] ) )
 		$inputs['content']=$m[5][0];	
 
+
 	$reply=self::process_handler($inputs);
 
+ 
 	if($reply==='#not_awesome_sc#'){
 		if(isset($shortcode_tags[$tag])){
 			return $m[1][0] . call_user_func( $shortcode_tags[$tag], $attr, $content, $tag ) . $m[6][0];
@@ -869,21 +991,31 @@ static function process_handler($inputs){
 	if(!empty($atts))self::pre_action_parse($atts);
 
 	$pre_compiler_check=array('c','and','or','m','m2','o','o2');
+	$pre_processor_check=array('c','pipe','pipe.1');
+
 	$pre=array();
 	$pre['primary']=array();
 		
 	if(!empty($atts)){
 		foreach ($atts as $key => $value) {
+
+			$processor_key = self::safe_explode(':',$key,2);
 			
-			$pre_key = self::safe_explode('.',$key);
-			
-			if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
-				$pre[$pre_key[0]][$pre_key[1]] = $value;
-			}else{
-				$pre['primary'][$key] = $value;
+			if(count($processor_key)>1 && in_array($processor_key[0],$pre_processor_check)){
+				$pre[$processor_key[0] . ':'][$processor_key[1]] = $value;
+			}
+			else{
+				$pre_key = self::safe_explode('.',$key);
+				
+				if(count($pre_key)>1 && in_array($pre_key[0],$pre_compiler_check)){
+					$pre[$pre_key[0]][$pre_key[1]] = $value;
+				}else{
+					$pre['primary'][$key] = $value;
+				}
 			}
 		}
-	}	
+	}
+
 
 	if(self::is_live_debug()){
 		$live_debug_event['action']='sc.parsed';
@@ -891,7 +1023,11 @@ static function process_handler($inputs){
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7F5F2']);
 	}
 
-				
+	if(isset($pre['c:'])){
+		$c_reply=\aw2\c_colon\c_check($pre['c:']);
+		if($c_reply===false)return '';
+	}
+			
 	$check_cond = true ;
 	if(isset($pre['c'])){
 		//loop and call chain which will update all atts
@@ -1126,6 +1262,14 @@ static function process_handler($inputs){
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#EEF2FF']);
 	}	
 
+	if(isset($pre['pipe:'])){
+		$reply=\aw2\pipe_colon\pipe_run($pre['pipe:'],$reply);
+	}
+	
+	if(isset($pre['pipe.1:'])){
+		$reply=\aw2\pipe_colon\pipe_run($pre['pipe.1:'],$reply);
+	}
+	
 	if(isset($pre['m'])){
 		//$reply=self::modify_output($reply,$pre['m']);
 		foreach ($pre['m'] as $key => $value) {
@@ -1250,7 +1394,7 @@ static function resolve_chain($str,&$atts=null,$content=null){
 static function shortcode_parse_atts($text) {
 	//php8OK	
 	$atts = array();
-	$pattern = '/([-a-zA-Z0-9_.@\$]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@\$]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@\$]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+	$pattern = '/([-a-zA-Z0-9_.@\$:]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@\$:]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@\$:]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
 	$text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
 	if ( preg_match_all($pattern, $text, $match, PREG_SET_ORDER) ) {
 		foreach ($match as $m) {
@@ -1617,6 +1761,7 @@ static function pre_action_parse(&$atts) {
 	
 	foreach ($atts as $key =>$value) {
 		$pattern = '/{\s*\"/';
+		//This is to allow json to go through because json always starts with { and then a double quote
 		if (is_string($value) && preg_match($pattern, $value)!==1 && strpos($value, '{') !== false && strpos($value, '}') !== false) {
 
 			$startpos = strrpos($value, "{");
@@ -1642,9 +1787,13 @@ static function pre_action_parse(&$atts) {
 		if(is_string($atts[$key])){
 			$parts=explode(':',$atts[$key],2);
 			if(count($parts)===2){
+				if($parts[0]==='get')$atts[$key]=self::get($parts[1]);
+				if($parts[0]==='request2')$atts[$key]=\aw2\request2\get(['main'=>$parts[1]]);
+				if($parts[0]==='x')$atts[$key]=self::parse_single('[' . $parts[1] . ']');				
 				if($parts[0]==='int')$atts[$key]=(int)$parts[1];
 				if($parts[0]==='num')$atts[$key]=(float)$parts[1];
 				if($parts[0]==='str')$atts[$key]=(string)$parts[1];
+				if($parts[0]==='null')$atts[$key]=null;
 				if($parts[0]==='comma')$atts[$key]=explode(',', (string)$parts[1]);
 				if($parts[0]==='bool'){
 					if($parts[1] === '' || $parts[1] === 'false')
@@ -2517,9 +2666,9 @@ static function set($key,$value,$content=null,$atts=null){
 	'overwrite'=>'yes'
 	), $atts) );
 	if($key==null || $key=='')return;
-	$return_value=null;
+
 	if($value===null)$value=self::safe_trim(self::parse_shortcode($content));
-	
+
 	$pieces=explode('.',$key);
 	switch ($pieces[0]) {
 		case 'session':
@@ -2557,13 +2706,21 @@ static function set($key,$value,$content=null,$atts=null){
 			reset($arr);
 		break;
 		case 'first':
-			reset($arr);
-			$pieces[0]= key($arr); 
+			if(is_array($arr)){
+				reset($arr);
+				$pieces[0]= key($arr); 
+			}else{
+				throw new InvalidArgumentException('first: Array expected');
+			}
 		break;
 		case 'last':
-			end($arr);
+			if(is_array($arr)){
+				end($arr);
 			$pieces[0]= key($arr); 
-			reset($arr);
+				reset($arr);
+			}else{
+				throw new InvalidArgumentException('last: Array expected');
+			}
 		break;
 	}
 		
@@ -4051,10 +4208,11 @@ static function get_collection($collection){
 	$connection_arr=self::$stack['code_connections'][$collection['connection']];
 	
 	$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\get';
-		
+	
 	$atts['connection']=$collection['connection'];
 	$atts['post_type']=$collection['post_type'];
 	$modules = call_user_func($connection_service,$atts);
+
 	foreach ($modules as $key=>$value) {
 		$modules[$key]['collection']=$collection;
 	}
@@ -4554,7 +4712,8 @@ static function template_run($template,$content=null,$atts=array()){
 		$sc_exec['start_pos']=$template_ptr['content_pos'];
 	}
 	
-		
+	
+	
 	$template_type='aw2_code';
 	if(isset($template_ptr['template_type']))$template_type=$template_ptr['template_type'];
 	
@@ -4583,6 +4742,8 @@ static function template_run($template,$content=null,$atts=array()){
 		unset(self::$stack['_return']);
 		$return_value=self::$stack['template']['_return'];
 	}
+
+
 	
 	if(self::is_live_debug()){
 		$live_debug_event['action']='template.done';
@@ -4867,313 +5028,378 @@ public $arr=array();
 public $ptr=null;
 public $is_api=false;
 //public $ctr=0;
-
-public function parse($str){
 	
-	$this->str=$str;
-	
-	while (!ctype_space($this->str) && $this->str!=='') {
-		//$this->ctr++;
-		//d('counter',$this->ctr); 
-		//if($this->ctr>=50)die();
-		if(empty($this->stack)){
-			$this->next_element();
-		}
-		else{
-			$this->within_element();
-
-		}
-	}
-	if(!empty($this->stack)){
-		echo '<br>You have nodes which have not been completed: ';
-		util::var_dump($this->stack);
-		return '';
-	}
-	return $this->arr;
-}	
-
-private function next_element(){
-	//$pattern = '/\s*\[([a-zA-Z].*?)(\/]|])/';
-	
-	$pattern = '/\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])/';
-	// <whitespace>[<atleast one character><any thing lazy>(optional /)] 
-	$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-
-	
-	if(!$reply){
-		echo '<br>Remaining String.' . $this->str;
-		echo '<br>No elements found in the above string.';
-		die();
-	}
-	$text=$match[1][0];	
-	
-	$state=$match[2][0];
-	$next_char= strlen($match[2][0]) + $match[2][1];	
-	$this->str=substr($this->str,$next_char);
-
-	$this->new_node($text,$state);
-}
-
-//Extract all the attributes of the node
-private function new_node($text,$state){
-	$atts=array();
-	$pattern = '/([-a-zA-Z0-9_.]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
-	
-	$reply=preg_match_all($pattern, $text, $match, PREG_SET_ORDER);
-	if(!$reply){
-		echo '<br>Remaining String.' . $this->str;
-		echo '<br>The string being parsed: ' . $text;
-		echo '<br>. Something is wrong with the above text';
-		die();
-	}
-	
-	//extract all the attributes
-	
-	foreach ($match as $m) {
-		if (!empty($m[1]))
-			$atts[strtolower($m[1])] = stripcslashes($m[2]);
-		elseif (!empty($m[3]))
-			$atts[strtolower($m[3])] = stripcslashes($m[4]);
-		elseif (!empty($m[5]))
-			$atts[strtolower($m[5])] = stripcslashes($m[6]);
-		elseif (isset($m[7]) && strlen($m[7]))
-			$atts[] = stripcslashes($m[7]);
-		elseif (isset($m[8]))
-			$atts[] = stripcslashes($m[8]);
-	}
-	//decide the name of the item
-	$item_name=$atts[0]; 
-	unset($atts[0]);
-	
-	//pre actions - the type attribute will now be main
-	//if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-	
-	aw2_library::pre_action_parse($atts);
-	$reply=aw2_library::checkcondition($atts);
-	//decide whether we want to keep this node
-	if($reply==false){
-		//we dont want to keep this node
-		if ($state=='/]'){
-			//it is a self closing node
-			return;
-		}
-			//open node
-		$this->remove_named_node($item_name);
-		return;
-	}
-	
-	//decide where the array will go
-	$last_node=end($this->stack);
-	if($last_node)
-		$ptr=&$last_node->ptr;
-	else
-		$ptr=&$this->arr; 
-
-
+	public function parse($str){
 		
-	
-	//it is do. It has to be executed
-	if($item_name=='do'){
+		$this->str=$str;
 		
-
-		$pattern = '/^((?s:.*?))(\[\/do\])/';
+		while (!ctype_space($this->str) && $this->str!=='') {
+			//$this->ctr++;
+			//d('counter',$this->ctr); 
+			//if($this->ctr>=50)die();
+			if(empty($this->stack)){
+				$this->next_element();
+			}
+			else{
+				$this->within_element();
+	
+			}
+		}
+		if(!empty($this->stack)){
+			echo '<br>You have nodes which have not been completed: ';
+			util::var_dump($this->stack);
+			return '';
+		}
+		return $this->arr;
+	}	
+	
+	private function next_element(){
+		//$pattern = '/\s*\[([a-zA-Z].*?)(\/]|])/';
+		
+		$pattern = '/\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])/s';
+		// <whitespace>[<atleast one character><any thing lazy>(optional /)] 
 		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
+	
+		
 		if(!$reply){
 			echo '<br>Remaining String.' . $this->str;
-			echo '<br>. Something is wrong. A do was not closed';
+			echo '<br>No elements found in the above string.';
 			die();
 		}
-		$do=$match[1][0];
+		$text=$match[1][0];	
+		
+		$state=$match[2][0];
 		$next_char= strlen($match[2][0]) + $match[2][1];	
 		$this->str=substr($this->str,$next_char);
-		$result=aw2_library::parse_shortcode($do);
+	
+		$this->new_node($text,$state);
+	}
 
-		if(array_key_exists('_return',aw2_library::$stack)){
-			$result=aw2_library::$stack['_return'];
-			unset(aw2_library::$stack['_return']);
+	//Extract all the attributes of the node
+	private function new_node($text,$state){
+		//delhi name='Delhi' country='India' gets the full node including 
+		$atts=array();
+		$pattern = '/([-a-zA-Z0-9_.:@]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.:@]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.:@]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+		
+		$reply=preg_match_all($pattern, $text, $match, PREG_SET_ORDER);
+		if(!$reply){
+			echo '<br>Remaining String.' . $this->str;
+			echo '<br>The string being parsed: ' . $text;
+			echo '<br>. Something is wrong with the above text';
+			die();
+		}
+		
+		//extract all the attributes
+		
+		foreach ($match as $m) {
+			if (!empty($m[1]))
+				$atts[strtolower($m[1])] = stripcslashes($m[2]);
+			elseif (!empty($m[3]))
+				$atts[strtolower($m[3])] = stripcslashes($m[4]);
+			elseif (!empty($m[5]))
+				$atts[strtolower($m[5])] = stripcslashes($m[6]);
+			elseif (isset($m[7]) && strlen($m[7]))
+				$atts[] = stripcslashes($m[7]);
+			elseif (isset($m[8]))
+				$atts[] = stripcslashes($m[8]);
+		}
+		//decide the name of the item
+		$item_name=$atts[0]; 
+		unset($atts[0]);
+		
+		//pre actions - the type attribute will now be main
+		//if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
+		
+		\aw2_library::pre_action_parse($atts);
+
+		$reply=aw2_library::checkcondition($atts);
+		//decide whether we want to keep this node
+		if($reply===true){
+			$pre_compiler_check = array('c');
+			$pre = array();
+			$service_atts = array();
+			
+			if (!empty($atts)) {
+				foreach ($atts as $key => $value) {
+					$pre_key = \aw2_library::safe_explode(':', $key);
+					
+					if (count($pre_key) > 1 && in_array($pre_key[0], $pre_compiler_check)) {
+						$pre[$pre_key[0]][$pre_key[1]] = $value;
+					} else {
+						$service_atts[$key] = $value;
+					}
+				}
+			}
+
+			if(isset($pre['c']))$reply=\aw2\c_colon\c_check($pre['c']);
+			
+			$atts=$service_atts;
 		}
 	
-		if(is_array($result)){
-			if(!is_array($ptr))$ptr=array();
+	
+		if($reply===false){
+			//we dont want to keep this node
+			if ($state=='/]'){
+				//it is a self closing node
+				return;
+			}
+				//open node
+			$this->remove_named_node($item_name);
+			return;
+		}
 
-			foreach ($result as $key => $value) {
-				if(array_key_exists($key,$ptr) &&  is_array($ptr[$key])){
-					$ptr[$key]=array_merge($ptr[$key],$value);
+		
+		//decide where the array will go
+		$last_node=end($this->stack);
+		if($last_node)
+			$ptr=&$last_node->ptr;
+		else
+			$ptr=&$this->arr; 
+	
+	
+			
+		
+		//it is do. It has to be executed
+		//item name is the name of the node it is do. It has to be executed
+		if($item_name=='do' || $item_name=='@do'){
+			
+	
+			//$pattern = '/^((?s:.*?))(\[\/do\])/';
+			
+			$pattern =   '/^((?s:.*?))(\[\/@?do\])/';
+	
+			$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
+			if(!$reply){
+				echo '<br>Remaining String.' . $this->str;
+				echo '<br>. Something is wrong. A do was not closed';
+				die();
+			}
+			$do=$match[1][0];
+			$next_char= strlen($match[2][0]) + $match[2][1];	
+			$this->str=substr($this->str,$next_char);
+			$result=aw2_library::parse_shortcode($do);
+	
+			if(array_key_exists('_return',aw2_library::$stack)){
+				$result=aw2_library::$stack['_return'];
+				unset(aw2_library::$stack['_return']);
+			}
+		
+			if(is_array($result)){
+				if(!is_array($ptr))$ptr=array();
+	
+				foreach ($result as $key => $value) {
+					if(array_key_exists($key,$ptr) &&  is_array($ptr[$key])){
+						$ptr[$key]=array_merge($ptr[$key],$value);
+					}
+					else	
+						$ptr[$key]=$value;
 				}
-				else	
+			}
+			else
+				$this->str=$result . $this->str ;
+	
+			return;
+		}
+	
+		
+		if(!is_array($ptr))$ptr=array();
+		$raw=false;			
+		
+		/*
+			[steps next=ab]
+		*/
+		if($item_name!='atts'){
+			
+			if($item_name==='@new'){
+				$ptr[]=null;
+			}
+			elseif($item_name==='@key'){
+				$ptr[$atts['main']]=null;
+				unset($atts['main']);			
+			}		
+			elseif($item_name==='@key2'){
+				$ptr[$atts['main']]=null;
+				unset($atts['main']);			
+			}		
+			elseif(!array_key_exists($item_name,$ptr))
+			{
+				$ptr[$item_name]=null;
+				//previous node [steps]=null
+			}
+			end($ptr); 
+			//will give key of last item
+			$ptr=&$ptr[key($ptr)];		
+	
+			//$ptr=&$ptr[$item_name];
+			//point to steps
+			
+			
+			//[steps new ...] or [steps raw ...] 
+			
+			if(array_key_exists('main',$atts)){
+				$type=$atts['main'];
+				unset($atts['main']);
+				
+				if($type=='raw'){
+					$raw=true;
+				}
+				else{
+					switch ($type) {
+						case 'new':
+							/*
+								[steps new ...]
+								Already pointing to steps 
+								steps[]=null
+								point to the new node as it will be last node
+							*/
+							$ptr[]=null;
+							break;
+						default:
+							/*
+								[steps hello ...]
+								Already pointing to steps 
+								steps[hello]=null
+								point to the new node as it will be last node
+							*/
+							$ptr[$type]=null;
+							break;
+					}
+					end($ptr); 
+					//will give key of last item
+					$ptr=&$ptr[key($ptr)];
+				}
+			}	
+		}
+		
+		if(!empty($atts)){
+			foreach ($atts as $key => $value) {
+				if($key==='_value'){
+					$ptr=null;
+					$ptr=$value;
+				}
+				else		
 					$ptr[$key]=$value;
 			}
 		}
-		else
-			$this->str=$result . $this->str ;
-
-		return;
-	}
-
-	
-	if(!is_array($ptr))$ptr=array();
-	$raw=false;			
-	
-	
-	if($item_name!='atts'){
-		if(!array_key_exists($item_name,$ptr)){
-			$ptr[$item_name]=null;
-		}	
-		$ptr=&$ptr[$item_name];
 		
-		if(array_key_exists('main',$atts)){
-			$type=$atts['main'];
-			unset($atts['main']);
+		if($state==']'){
+			$o=new stdClass();
+			$o->element_type='OPEN';
+			$o->element_name=$item_name;
+			$o->ptr=&$ptr;
+			$o->raw=$raw;
 			
-			if($type=='raw'){
-				$raw=true;
-			}
-			else{
-				switch ($type) {
-					case 'new':
-						$ptr[]=null;
-						break;
-					default:
-						$ptr[$type]=null;
-						break;
-				}
-				end($ptr); 
-				$ptr=&$ptr[key($ptr)];
-			}
-		}	
-	}
-
-	if(!empty($atts)){
-		foreach ($atts as $key => $value) {
-			if($key==='_value'){
-				$ptr=null;
-				$ptr=$value;
-			}
-			else		
-				$ptr[$key]=$value;
+			$this->stack[]=$o;
 		}
+		
 	}
 	
-	if($state==']'){
-		$o=new stdClass();
-		$o->element_type='OPEN';
-		$o->element_name=$item_name;
-		$o->ptr=&$ptr;
-		$o->raw=$raw;
-		
-		$this->stack[]=$o;
-	}
 	
-}
-
-
-private function within_element(){
-	$last_node=end($this->stack);
-	$name=$last_node->element_name;
-	
-	if($last_node->raw){
+	private function within_element(){
+		$last_node=end($this->stack);
+		$name=$last_node->element_name;
 		
-		$pattern = '/((?s:.*?))(\[\/' . $name . '\])/';
+		if($last_node->raw){
+			
+			$pattern = '/((?s:.*?))(\[\/' . $name . '\])/';
+			$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
+			if(!$reply){
+				echo '<br>Remaining String.' . $this->str;
+				echo '<br>Raw element was started but not ended';
+				echo '<br>' . $name ;
+				die();
+			}
+			$next_char= strlen($match[2][0]) + $match[2][1];	
+			$this->str=substr($this->str,$next_char);		
+			$last_node->ptr=$match[1][0];
+			array_pop($this->stack);
+			return;
+		}
+		
+		//$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|(?:\s*\[([a-zA-Z].*?)(\/]|]))|(?s:(.*?)(\[\/' . $name .'\]))/s';	
+			$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])|(?s:(.*?)(\[\/' . $name .'\]))/s';	
 		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 		if(!$reply){
 			echo '<br>Remaining String.' . $this->str;
-			echo '<br>Raw element was started but not ended';
+			echo '<br>Something went wrong within the content of the element';
 			echo '<br>' . $name ;
+			
 			die();
 		}
-		$next_char= strlen($match[2][0]) + $match[2][1];	
-		$this->str=substr($this->str,$next_char);		
-		$last_node->ptr=$match[1][0];
-		array_pop($this->stack);
-		return;
-	}
 	
-	//$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|(?:\s*\[([a-zA-Z].*?)(\/]|]))|(?s:(.*?)(\[\/' . $name .'\]))/s';	
-		$pattern = '/^(?:\s*\[raw\]((?s:.*?))\[\/raw\]\s*(\[\/' . $name .'\]))|\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])|(?s:(.*?)(\[\/' . $name .'\]))/s';	
-	$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-	if(!$reply){
-		echo '<br>Remaining String.' . $this->str;
-		echo '<br>Something went wrong within the content of the element';
-		echo '<br>' . $name ;
-		
-		die();
-	}
-
-	//there is a raw node
-	if(!empty($match[2][0])){
-		$last_node=end($this->stack);
-		if(is_array($last_node->ptr))
-			;
-		else	
-			$last_node->ptr=$match[1][0];
-		
-		$next_char= strlen($match[2][0]) + $match[2][1];	
-		$this->str=substr($this->str,$next_char);
-		array_pop($this->stack);
-	}
-	
-	//there is a child node
-	if(!empty($match[4][0])){
-		$next_char= strlen($match[4][0]) + $match[4][1];	
-		$this->str=substr($this->str,$next_char);
-		$this->new_node($match[3][0],$match[4][0]);
-	}
-	
-	//open node being closed
-	if(!empty($match[6][0])){
-		$last_node=end($this->stack);
-		if(is_array($last_node->ptr))
-			;
-		else{
-			$last_node->ptr=$match[5][0];
-			$pos = strrpos($last_node->ptr, "[");
-			if ($pos !== false)$last_node->ptr=aw2_library::parse_shortcode($last_node->ptr);
-		}	
-		$next_char= strlen($match[6][0]) + $match[6][1];	
-		$this->str=substr($this->str,$next_char);
-
-
-		array_pop($this->stack);
-	}
-}
-
-
-private function remove_named_node($item_name){
-	$flag=1;		
-
-	while ($flag>0) {
-		$match=$this->find_next_named_node($item_name);
-		if(!empty($match[1][0])){
-			//found a opening node
-			$flag=$flag + 1;
-			$next_char= strlen($match[1][0]) + $match[1][1];	
-			$this->str=substr($this->str,$next_char);
-		}
-		else{
-			//close was found
-			$flag=$flag - 1;
+		//there is a raw node
+		if(!empty($match[2][0])){
+			$last_node=end($this->stack);
+			if(is_array($last_node->ptr))
+				;
+			else	
+				$last_node->ptr=$match[1][0];
+			
 			$next_char= strlen($match[2][0]) + $match[2][1];	
 			$this->str=substr($this->str,$next_char);
-			if($flag==0)return;//found matching closing node
+			array_pop($this->stack);
+		}
+		
+		//there is a child node
+		if(!empty($match[4][0])){
+			$next_char= strlen($match[4][0]) + $match[4][1];	
+			$this->str=substr($this->str,$next_char);
+			$this->new_node($match[3][0],$match[4][0]);
+		}
+		
+		//open node being closed
+		if(!empty($match[6][0])){
+			$last_node=end($this->stack);
+			if(is_array($last_node->ptr))
+				;
+			else{
+				$last_node->ptr=$match[5][0];
+				$pos = strrpos($last_node->ptr, "[");
+				if ($pos !== false)$last_node->ptr=aw2_library::parse_shortcode($last_node->ptr);
+			}	
+			$next_char= strlen($match[6][0]) + $match[6][1];	
+			$this->str=substr($this->str,$next_char);
+	
+	
+			array_pop($this->stack);
 		}
 	}
-}
-
-private function find_next_named_node($item_name){
-	$pattern = '/((?:\[' . $item_name .'\s.*?])|(?:\[' . $item_name .'])|(?:\[' . $item_name .'\/]))|(\[\/' . $item_name .'])/';
-	$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
-	if(!$reply){
-		echo '<br>Remaining String.' . $this->str;
-		echo '<br>Was expecting to find a closing ' . $item_name . ' .Not Found';
-		die();
+	
+	
+	private function remove_named_node($item_name){
+		$flag=1;		
+	
+		while ($flag>0) {
+			$match=$this->find_next_named_node($item_name);
+			if(!empty($match[1][0])){
+				//found a opening node
+				$flag=$flag + 1;
+				$next_char= strlen($match[1][0]) + $match[1][1];	
+				$this->str=substr($this->str,$next_char);
+			}
+			else{
+				//close was found
+				$flag=$flag - 1;
+				$next_char= strlen($match[2][0]) + $match[2][1];	
+				$this->str=substr($this->str,$next_char);
+				if($flag==0)return;//found matching closing node
+			}
+		}
 	}
-	return $match;
-}
-
-
-
-}
-
+	
+	private function find_next_named_node($item_name){
+		$pattern = '/((?:\[' . $item_name .'\s.*?])|(?:\[' . $item_name .'])|(?:\[' . $item_name .'\/]))|(\[\/' . $item_name .'])/';
+		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
+		if(!$reply){
+			echo '<br>Remaining String.' . $this->str;
+			echo '<br>Was expecting to find a closing ' . $item_name . ' .Not Found';
+			die();
+		}
+		return $match;
+	}
+	
+	
+	}
 
 function period_date($str){
 	if($str=="")return;

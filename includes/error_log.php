@@ -3,7 +3,7 @@
 class aw2_error_log{
 	
 	static function awesome_exception($location,$exception=null){
-		if(!DEVELOP_FOR_AWESOMEUI){
+		if(!defined('DEVELOP_FOR_AWESOMEUI') || !DEVELOP_FOR_AWESOMEUI){
 			$error_msg ='Something is wrong (000), enable debug to see details.';
 			
 			if(!LOG_EXCEPTIONS)
@@ -16,6 +16,7 @@ class aw2_error_log{
 		
 		$atts['location']= $location;
 		$atts['post_type']= aw2_library::get('env.@sc_exec.collection.post_type');
+		$atts['connection']= aw2_library::get('env.@sc_exec.collection.connection');
 		$atts['source']= aw2_library::get('env.@sc_exec.collection.source');
 		$atts['module']= aw2_library::get('env.@sc_exec.module');
 		$atts['app_name']= aw2_library::get('env.app.name');
@@ -76,7 +77,7 @@ class aw2_error_log{
 		}
 		
 		
-		
+		$flag=true;
 		if(!is_null($exception)){
 			$atts['exception_type'] = get_class($exception);
 			$atts['errno'] = method_exists($exception,'getCode')? $exception->getCode() : '';
@@ -91,6 +92,9 @@ class aw2_error_log{
 
 		if(LOG_EXCEPTIONS)$error_id = self::save($atts);
 		
+		if($atts['exception_type']==='E_USER_NOTICE'){
+			$flag=false;
+		}
 		if(!isset($error_msg))$error_msg ='Developer:Something is wrong ('.$error_id.')';	
 
 		if(\aw2_library::is_live_debug()){

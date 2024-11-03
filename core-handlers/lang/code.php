@@ -50,3 +50,4 @@ function highlight($atts,$content=null,$shortcode=null){
 		
 	return $return_value;
 }
+ 

@@ -132,6 +132,10 @@ function flush($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array(
 	'db'=>REDIS_DATABASE_GLOBAL_CACHE
 	), $atts) );	
+	if(empty($db))
+		throw new \InvalidArgumentException('global_cache.flush: db is empty must be an integer.');
+		
+		$db=intval($db);
 		$redis = \aw2_library::redis_connect($db);
 	$redis->flushdb() ;
 }
