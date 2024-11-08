@@ -578,7 +578,6 @@ class controllers{
 
 			}				
 			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
-				array_shift($o->pieces);
 				self::set_qs($o);
 				$app['active']['collection'] = $app['collection']['pages'];
 				$app['active']['module'] = $slug;
