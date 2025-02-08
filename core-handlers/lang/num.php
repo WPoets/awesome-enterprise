@@ -47,86 +47,6 @@ function create($atts,$content=null,$shortcode){
 }
 
 
-\aw2_library::add_service('num.is.eq', 'Check if two floats are equal', ['func'=>'is_eq', 'namespace'=>__NAMESPACE__]);
-function is_eq($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_eq'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.eq: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-	
-/*
-Note that for floating-point equality comparisons (num.is.eq and num.is.neq), we use PHP_FLOAT_EPSILON to account for potential floating-point precision issues. This approach is more reliable than direct equality comparison for floats.
-*/	
-    
-    return abs($lhs - $rhs) < PHP_FLOAT_EPSILON;
-}
-
-\aw2_library::add_service('num.is.neq', 'Check if two floats are not equal', ['func'=>'is_neq', 'namespace'=>__NAMESPACE__]);
-function is_neq($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_neq'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.neq: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-
-/*
-Note that for floating-point equality comparisons (num.is.eq and num.is.neq), we use PHP_FLOAT_EPSILON to account for potential floating-point precision issues. This approach is more reliable than direct equality comparison for floats.
-*/	
-    
-    return abs($lhs - $rhs) >= PHP_FLOAT_EPSILON;
-}
-
-\aw2_library::add_service('num.is.lte', 'Check if one float is less than or equal to another', ['func'=>'is_lte', 'namespace'=>__NAMESPACE__]);
-function is_lte($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_lte'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.lte: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-    
-    return $lhs <= $rhs;
-}
-
-\aw2_library::add_service('num.is.gte', 'Check if one float is greater than or equal to another', ['func'=>'is_gte', 'namespace'=>__NAMESPACE__]);
-function is_gte($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_gte'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.gte: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-    
-    return $lhs >= $rhs;
-}
-
-\aw2_library::add_service('num.is.lt', 'Check if one float is less than another', ['func'=>'is_lt', 'namespace'=>__NAMESPACE__]);
-function is_lt($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_lt'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.lt: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-    
-    return $lhs < $rhs;
-}
-
-\aw2_library::add_service('num.is.gt', 'Check if one float is greater than another', ['func'=>'is_gt', 'namespace'=>__NAMESPACE__]);
-function is_gt($atts, $content=null, $shortcode=null) {
-    
-    extract(\aw2_library::shortcode_atts(array('lhs' => null, 'rhs' => null), $atts, 'is_gt'));
-    
-    if($lhs === null || $rhs === null || !is_float($lhs) || !is_float($rhs)) {
-        return \aw2_library::set_error('num.is.gt: both lhs and rhs must be float values. Use num: prefix for typecasting.');
-    }
-    
-    return $lhs > $rhs;
-}
-
 \aw2_library::add_service('num.is.positive', 'Check if a number is positive', ['func'=>'is_positive', 'namespace'=>__NAMESPACE__]);
 function is_positive($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'is_positive'));
@@ -192,8 +112,8 @@ function is_between($atts, $content=null, $shortcode=null) {
     return ($main >= $min && $main <= $max);
 }
 
-\aw2_library::add_service('num.ceiling', 'Round up to the nearest integer', ['func'=>'ceiling', 'namespace'=>__NAMESPACE__]);
-function ceiling($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.ceiling', 'Round up to the nearest integer', ['func'=>'_ceiling', 'namespace'=>__NAMESPACE__]);
+function _ceiling($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'ceiling'));
     
     if($main === null || !is_numeric($main)) {
@@ -203,8 +123,8 @@ function ceiling($atts, $content=null, $shortcode=null) {
     return ceil($main);
 }
 
-\aw2_library::add_service('num.floor', 'Round down to the nearest integer', ['func'=>'floor', 'namespace'=>__NAMESPACE__]);
-function floor($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.floor', 'Round down to the nearest integer', ['func'=>'_floor', 'namespace'=>__NAMESPACE__]);
+function _floor($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'floor'));
     
     if($main === null || !is_numeric($main)) {
@@ -214,19 +134,19 @@ function floor($atts, $content=null, $shortcode=null) {
     return floor($main);
 }
 
-\aw2_library::add_service('num.round', 'Round a number to a specified precision', ['func'=>'round', 'namespace'=>__NAMESPACE__]);
-function round($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.round', 'Round a number to a specified precision', ['func'=>'_round', 'namespace'=>__NAMESPACE__]);
+function _round($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
         'precision' => 0
     ), $atts, 'round'));
-    
-    if($main === null || !is_numeric($main)) {
+
+    if(!is_numeric($main)) {
         throw new \InvalidArgumentException('num.round: main must be a numeric value. Use num: prefix for typecasting.');
     }
     
-    if(!is_numeric($precision)) {
-        throw new \InvalidArgumentException('num.round: precision must be a numeric value.');
+    if(!is_int($precision)) {
+        throw new \InvalidArgumentException('num.round: precision must be a integer value.');
     }
     
     return round($main, $precision);
@@ -251,8 +171,8 @@ function truncate($atts, $content=null, $shortcode=null) {
     return floor($main * $pow) / $pow;
 }
 
-\aw2_library::add_service('num.abs', 'Get the absolute value of a number', ['func'=>'abs', 'namespace'=>__NAMESPACE__]);
-function abs($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.abs', 'Get the absolute value of a number', ['func'=>'_abs', 'namespace'=>__NAMESPACE__]);
+function _abs($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'abs'));
     
     if($main === null || !is_numeric($main)) {
@@ -262,8 +182,8 @@ function abs($atts, $content=null, $shortcode=null) {
     return abs($main);
 }
 
-\aw2_library::add_service('num.min', 'Return the minimum of two or more numbers', ['func'=>'min', 'namespace'=>__NAMESPACE__]);
-function min($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.min', 'Return the minimum of two or more numbers', ['func'=>'_min', 'namespace'=>__NAMESPACE__]);
+function _min($atts, $content=null, $shortcode=null) {
     $values = array();
     foreach ($atts as $key => $value) {
         if (strpos($key, 'var.') === 0) {
@@ -281,8 +201,8 @@ function min($atts, $content=null, $shortcode=null) {
     return min($values);
 }
 
-\aw2_library::add_service('num.max', 'Return the maximum of two or more numbers', ['func'=>'max', 'namespace'=>__NAMESPACE__]);
-function max($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.max', 'Return the maximum of two or more numbers', ['func'=>'_max', 'namespace'=>__NAMESPACE__]);
+function _max($atts, $content=null, $shortcode=null) {
     $values = array();
     foreach ($atts as $key => $value) {
         if (strpos($key, 'var.') === 0) {
@@ -311,8 +231,8 @@ function to_str($atts, $content=null, $shortcode=null) {
     return (string)$main;
 }
 
-\aw2_library::add_service('num.rand', 'Generate a random number within a specified range', ['func'=>'rand', 'namespace'=>__NAMESPACE__]);
-function rand($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.rand', 'Generate a random number within a specified range', ['func'=>'_rand', 'namespace'=>__NAMESPACE__]);
+function _rand($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'min' => 0,
         'max' => 1
@@ -325,8 +245,8 @@ function rand($atts, $content=null, $shortcode=null) {
     return $min + mt_rand() / mt_getrandmax() * ($max - $min);
 }
 
-\aw2_library::add_service('num.sum', 'Calculate the sum of multiple numbers', ['func'=>'sum', 'namespace'=>__NAMESPACE__]);
-function sum($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('num.sum', 'Calculate the sum of multiple numbers', ['func'=>'_sum', 'namespace'=>__NAMESPACE__]);
+function _sum($atts, $content=null, $shortcode=null) {
     $values = array();
     foreach ($atts as $key => $value) {
         if (strpos($key, 'var.') === 0) {

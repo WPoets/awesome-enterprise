@@ -48,6 +48,8 @@ function pop_context($stack_id){
 	//php8OK	
 
 	$call_stack=&\aw2_library::get_array_ref('call_stack');
+
+
     $stack=&\aw2_library::get_array_ref();
 
     $reverse=array_reverse ($call_stack);
@@ -67,17 +69,18 @@ function pop_context($stack_id){
 
 	}
 	
-	reset($call_stack);	
+	$call_stack=&\aw2_library::get_array_ref('call_stack');
     $stack=&\aw2_library::get_array_ref();
 
     foreach ($call_stack as $key => $value) {
-        if(isset($value['#_obj_#']['stack_path'])){
-            $stack[$value['#_obj_#']['stack_path']]=&$stack[$key];	
+
+		if(isset($value['#_obj_#']['stack_path'])){
+            $stack[$value['#_obj_#']['stack_path']]=&$call_stack[$key];	
              continue;   
         }
 		if(isset($value['obj_type'])){
-            $stack[$value['obj_type']]=&$stack[$key];	
+			$stack[$value['obj_type']]=&$call_stack[$key];	
 		}
-    }    
+    }   
 }
 

@@ -13,7 +13,10 @@ function set($atts,$content=null,$shortcode){
 	$token=uniqid ($prefix,true);
 
 	$sql="INSERT INTO wp_options ( option_name, option_value, autoload) VALUES ('$token', '$value', 'no');SELECT LAST_INSERT_ID() as ID;";
-	$r=\aw2\multi\select(array(),$sql,null);
+    $tags_left=['self'];
+    $rs=\aw2\mysqli\multi([],$sql,['tags_left'=>$tags_left]);
+    $r=$rs['rows'];
+
 	$id=$r[0]['ID'];
 
 	//$plugin_path=plugin_dir_path( __DIR__ );
@@ -24,7 +27,8 @@ function set($atts,$content=null,$shortcode){
 	$hash = $hashids->encode($id);
 	
 	$sql="update wp_options set option_name='$prefix" . "$hash' where option_id=$id";
-	$r=\aw2\multi\update(array(),$sql,null);
+    $tags_left=['cud'];
+    $r=\aw2\mysqli\multi([],$sql,['tags_left'=>$tags_left]);
   	
 	$return_value=$hash;	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -59,8 +63,10 @@ function get($atts,$content=null,$shortcode){
 		if (!empty($reply)) {
 			$id=$reply[0];		
 			$sql="select option_value from wp_options where option_name='$prefix" . "$hash' and option_id=$id";
-			$r=\aw2\multi\select(array(),$sql,null);
-			
+			$tags_left=['self'];
+			$rs=\aw2\mysqli\multi([],$sql,['tags_left'=>$tags_left]);
+			$r=$rs['rows']; 
+
 			if(count($r)===1){
 				$return_value['value']=$r[0]['option_value'];
 				$return_value['status']='success';

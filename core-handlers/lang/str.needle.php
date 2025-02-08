@@ -1,9 +1,7 @@
 <?php
 namespace aw2\str;
 
-
-
-\aw2_library::add_service('str.needle.count', 'Count occurrences of a string in another string or content', ['func'=>'needle_count', 'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('str.needle.count', 'Count case-insensitive occurrences of a string in another string or content', ['func'=>'needle_count', 'namespace'=>__NAMESPACE__]);
 function needle_count($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
@@ -24,10 +22,11 @@ function needle_count($atts, $content=null, $shortcode=null) {
         throw new \InvalidArgumentException('str.needle.count: haystack or parsed content must be a string.');
     }
     
-    return substr_count($search_in, $main);
+    // Convert both strings to lowercase for case-insensitive comparison
+    return substr_count(strtolower($search_in), strtolower($main));
 }
 
-\aw2_library::add_service('str.needle.pos_first', 'Find index of first occurrence of a string', ['func'=>'needle_pos_first', 'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('str.needle.pos_first', 'Find index of first case-insensitive occurrence of a string', ['func'=>'needle_pos_first', 'namespace'=>__NAMESPACE__]);
 function needle_pos_first($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
@@ -48,11 +47,12 @@ function needle_pos_first($atts, $content=null, $shortcode=null) {
         throw new \InvalidArgumentException('str.needle.pos_first: haystack or parsed content must be a string.');
     }
     
-    $index = strpos($search_in, $main);
+    // Convert both strings to lowercase for case-insensitive comparison
+    $index = stripos($search_in, $main);
     return $index === false ? -1 : $index;
 }
 
-\aw2_library::add_service('str.needle.pos_last', 'Find index of last occurrence of a string', ['func'=>'needle_pos_last', 'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('str.needle.pos_last', 'Find index of last case-insensitive occurrence of a string', ['func'=>'needle_pos_last', 'namespace'=>__NAMESPACE__]);
 function needle_pos_last($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
@@ -73,11 +73,12 @@ function needle_pos_last($atts, $content=null, $shortcode=null) {
         throw new \InvalidArgumentException('str.needle.pos_last: haystack or parsed content must be a string.');
     }
     
-    $index = strrpos($search_in, $main);
+    // Convert both strings to lowercase for case-insensitive comparison
+    $index = strripos($search_in, $main);
     return $index === false ? -1 : $index;
 }
 
-\aw2_library::add_service('str.needle.pos_n', 'Find index of nth occurrence of a string', ['func'=>'needle_pos_n', 'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('str.needle.pos_n', 'Find index of nth case-insensitive occurrence of a string', ['func'=>'needle_pos_n', 'namespace'=>__NAMESPACE__]);
 function needle_pos_n($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
@@ -107,7 +108,7 @@ function needle_pos_n($atts, $content=null, $shortcode=null) {
     $offset = 0;
     
     for ($i = 0; $i < $n; $i++) {
-        $pos = strpos($search_in, $main, $offset);
+        $pos = stripos($search_in, $main, $offset);
         if ($pos === false) {
             return -1;
         }
@@ -118,7 +119,7 @@ function needle_pos_n($atts, $content=null, $shortcode=null) {
     return $index;
 }
 
-\aw2_library::add_service('str.needle.replace', 'Replace occurrences of a string', ['func'=>'needle_replace', 'namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('str.needle.replace', 'Replace case-insensitive occurrences of a string', ['func'=>'needle_replace', 'namespace'=>__NAMESPACE__]);
 function needle_replace($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
@@ -133,6 +134,11 @@ function needle_replace($atts, $content=null, $shortcode=null) {
     if($haystack === null && $content === null) {
         throw new \InvalidArgumentException('str.needle.replace: Either haystack attribute or content must be provided.');
     }
+
+    if(is_null($replacement) || !is_string($replacement)) {
+        throw new \InvalidArgumentException('str.needle.replace: replacement must be provided');
+    }
+
     
     $search_in = $haystack !== null ? $haystack : \aw2_library::parse_shortcode($content);
     
@@ -140,5 +146,6 @@ function needle_replace($atts, $content=null, $shortcode=null) {
         throw new \InvalidArgumentException('str.needle.replace: haystack or parsed content must be a string.');
     }
     
-    return str_replace($main, $replacement, $search_in);
+    // Use str_ireplace for case-insensitive replacement
+    return str_ireplace($main, $replacement, $search_in);
 }

@@ -39,3 +39,14 @@ function site_url($atts,$content=null,$shortcode){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
+
+
+\aw2_library::add_service('php.die','Return the site url constant',['func'=>'_die','namespace'=>__NAMESPACE__]);
+
+function _die($atts,$content='No Message',$shortcode){
+	extract(\aw2_library::shortcode_atts( array(
+	'msg'=>'No Message'
+	), $atts) );
+	
+	die($msg . $content);
+}

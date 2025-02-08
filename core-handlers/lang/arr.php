@@ -4,16 +4,13 @@ namespace aw2\arr;
 
 \aw2_library::add_service('arr','Array Functions',['namespace'=>__NAMESPACE__]);
 
-\aw2_library::add_service('arr.is.arr', 'Check if the value is an array', ['func'=>'is_arr', 'namespace'=>__NAMESPACE__]);
-function is_arr($atts, $content=null, $shortcode=null) {
-    extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'is_arr'));
-    return is_array($main);
-}
 
-\aw2_library::add_service('arr.is.not_arr', 'Check if the value is not an array', ['func'=>'is_not_arr', 'namespace'=>__NAMESPACE__]);
-function is_not_arr($atts, $content=null, $shortcode=null) {
-    extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'is_not_arr'));
-    return !is_array($main);
+
+// arr.length - Get length of array
+\aw2_library::add_service('arr.length', 'Get length of array', ['namespace'=>__NAMESPACE__]);
+function length($atts, $content=null, $shortcode=null) {
+   $main = \aw2\common\build_array($atts, $content);    
+   return count($main);
 }
 
 
@@ -97,4 +94,37 @@ function unshift($atts,$content=null,$shortcode){
     $return_value=$arr;
     $return_value=\aw2_library::post_actions('all',$return_value,$atts);
     return $return_value;
+}
+
+// arr.get service
+\aw2_library::add_service('arr.get', 'Get an item from array', ['func'=>'arr_get', 'namespace'=>__NAMESPACE__]);
+function arr_get($atts, $content=null, $shortcode=null) {
+
+    if(!isset($atts['main'])) {
+        throw new \InvalidArgumentException('arr.get: main attribute must be provided with an environment path');
+    }   
+    $array = \aw2_library::get($atts['main']);
+    return $array;  
+}
+
+
+
+\aw2_library::add_service('arr.item.value', 'Get value of a key from array', ['func'=>'arr_item_value', 'namespace'=>__NAMESPACE__]);
+
+function arr_item_value($atts, $content=null, $shortcode=null) {
+    if(!isset($atts['main'])) {
+        throw new \InvalidArgumentException('arr.item.value: main attribute must be provided with an array');
+    }
+    
+    if(!isset($atts['key'])) {
+        throw new \InvalidArgumentException('arr.item.value: key attribute must be provided');
+    }
+    
+    $array = $atts['main'];
+    if(!is_array($array)) {
+        throw new \InvalidArgumentException('arr.item.value: main attribute must be an array');
+    }
+    
+    // Return empty string if key doesn't exist, otherwise return the value
+    return isset($array[$atts['key']]) ? $array[$atts['key']] : '';
 }

@@ -1,6 +1,38 @@
 <?php
 namespace aw2\clean;
 
+
+\aw2_library::add_service('clean.column_name','clean the column name',['namespace'=>__NAMESPACE__]);
+
+
+// column_name: A-Z, a-z, 0-9, - _
+function column_name($atts,$content=null,$shortcode){
+
+    extract(\aw2_library::shortcode_atts( array(
+        'main' => ""
+    ), $atts) );
+	
+    if (!is_string($main)) {
+        throw new \InvalidArgumentException('Input must be a string, ' . gettype($main) . ' given');
+    }
+    
+    // Convert to lowercase
+    $output = strtolower($main);
+    
+    // Convert hyphens to underscores
+    $output = str_replace('-', '_', $output);
+    
+    // Convert spaces to underscores (handles multiple spaces)
+    $output = preg_replace('/\s+/', '_', $output);
+    
+    // Remove all characters except a-z, 0-9, _
+    $output = preg_replace('/[^a-z0-9_]/', '', $output);
+    
+    return $output;
+}
+
+
+
 \aw2_library::add_service('clean.id','clean the id',['namespace'=>__NAMESPACE__]);
 
 
@@ -16,6 +48,8 @@ function id($atts,$content=null,$shortcode){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
+
+
 
 \aw2_library::add_service('clean.int','clean the int',['namespace'=>__NAMESPACE__]);
 

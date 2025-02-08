@@ -178,5 +178,58 @@ function is_not_in($atts, $content=null, $shortcode=null) {
     return strpos($parsed_content, $main) === false;
 }
 
+// String append service
+\aw2_library::add_service('str.append', 'Append string to target string', ['func'=>'str_append', 'namespace'=>__NAMESPACE__]);
+function str_append($atts, $content=null, $shortcode) {
+    // Validate required attributes
+    if(!isset($atts['main']) || !isset($atts['target'])) {
+        throw new \Exception('str.append: main and target attributes are required');
+    }
+    
+    // Validate main is string
+    if(!is_string($atts['main'])) {
+        throw new \Exception('str.append: main attribute must be a string');
+    }
+    
+    // Get and validate target value is string
+    $target_str = \aw2\common\env\get($atts['target']);
+    if(!is_string($target_str)) {
+        throw new \Exception('str.append: target value must be a string');
+    }
+    
+    // Optional separator must be string if provided
+    if(isset($atts['separator']) && !is_string($atts['separator'])) {
+        throw new \Exception('str.append: separator must be a string');
+    }
+    $separator = isset($atts['separator']) ? $atts['separator'] : '';
+    
+    return $target_str . $separator . $atts['main'];
+}
 
-
+// String prepend service
+\aw2_library::add_service('str.prepend', 'Prepend string to target string', ['func'=>'str_prepend', 'namespace'=>__NAMESPACE__]);
+function str_prepend($atts, $content=null, $shortcode) {
+    // Validate required attributes
+    if(!isset($atts['main']) || !isset($atts['target'])) {
+        throw new \Exception('str.prepend: main and target attributes are required');
+    }
+    
+    // Validate main is string
+    if(!is_string($atts['main'])) {
+        throw new \Exception('str.prepend: main attribute must be a string');
+    }
+    
+    // Get and validate target value is string
+    $target_str = \aw2\common\env\get($atts['target']);
+    if(!is_string($target_str)) {
+        throw new \Exception('str.prepend: target value must be a string');
+    }
+    
+    // Optional separator must be string if provided
+    if(isset($atts['separator']) && !is_string($atts['separator'])) {
+        throw new \Exception('str.prepend: separator must be a string');
+    }
+    $separator = isset($atts['separator']) ? $atts['separator'] : '';
+    
+    return $atts['main'] . $separator . $target_str;
+}

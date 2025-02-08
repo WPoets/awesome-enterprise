@@ -72,6 +72,38 @@ function modify($atts,$content=null,$shortcode){
 }
 
 
+\aw2_library::add_service('date.format','Format & return date string',['namespace'=>__NAMESPACE__]);
+function format($atts,$content=null,$shortcode){
+    
+    extract(\aw2_library::shortcode_atts( array(
+    'main'=>null,
+    'format'=>null
+    ), $atts, 'date.format' ) );
+    
+    if(is_null($main))
+        throw new \Exception('main parameter is required in date.format');
+        
+    if(is_null($format))
+        throw new \Exception('format parameter is required in date.format');
+    
+    if(!is_a($main, 'DateTime')) {
+        try {
+            $main = new \DateTime($main);
+        } catch(\Exception $e) {
+            throw new \Exception('Invalid date string provided: ' . $main);
+        }
+    }
+    
+    try {
+        $return_value = $main->format($format);
+    } catch(\Exception $e) {
+        throw new \Exception('Invalid format string provided: ' . $format);
+    }
+    
+    return $return_value;
+}
+
+
 /*
 [date.diff date1= date2='' diff_type]
 

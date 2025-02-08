@@ -44,6 +44,24 @@ function get($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('env.exists','Get an Environment Value',['namespace'=>__NAMESPACE__]);
+
+function exists($atts,$content=null,$shortcode){
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	'_prefix'=>null,
+	'default'=>''
+	), $atts, 'aw2_get' ) );
+	
+	if($_prefix)$main=$_prefix . '.' . $main;
+
+	if(\aw2_library::env_key_exists($main) === AW2_ERROR)
+		return false;
+
+	return true;
+}
+
 \aw2_library::add_service('env.set','Set an Environment Value',['namespace'=>__NAMESPACE__]);
 
 function set($atts,$content=null,$shortcode){
@@ -69,13 +87,38 @@ function set($atts,$content=null,$shortcode){
 	
 	foreach ($atts as $loopkey => $loopvalue) {
 		$newvalue=$loopvalue;
-		if($loopvalue==$assume_empty)$newvalue='';
+		if($loopvalue===$assume_empty)$newvalue='';
 		if(($loopvalue=='' || $loopvalue==null) && $default!=='##not_set##')$newvalue=$default;
 		if($_prefix)$loopkey=$_prefix . '.' . $loopkey;
 		\aw2_library::set($loopkey,$newvalue,null,$atts);
 	}
 	return;
 }
+
+
+\aw2_library::add_service('env.set_value','Set an Environment Value',['namespace'=>__NAMESPACE__]);
+function set_value($atts,$content=null,$shortcode){
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'_prefix'=>null,
+	'path'=>null,
+	'main'=>null
+	), $atts) );
+
+    if(!is_string($path)) {
+        throw new \InvalidArgumentException('path must be a string value.');
+    }
+    if(!isset($atts['main'])) {
+        throw new \InvalidArgumentException('main must be set');
+    }
+
+	
+	if($_prefix)$path=$_prefix . '.' . $path;
+	\aw2_library::set($path,$main,null,null);
+	
+	return;
+}
+
 
 \aw2_library::add_service('env.set.key','Set a complex Environment Value',['func'=>'_key' ,'namespace'=>__NAMESPACE__]);
 function _key($atts,$content=null,$shortcode){

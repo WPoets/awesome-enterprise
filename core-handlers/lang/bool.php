@@ -1,12 +1,12 @@
 <?php
 
-namespace aw2\bool;
+namespace aw2\_bool;
 
 \aw2_library::add_service('bool','Boolean Functions',['namespace'=>__NAMESPACE__]);
 
 
-\aw2_library::add_service('bool.is.bool', 'Check if the value is a boolean', ['func'=>'is_bool', 'namespace'=>__NAMESPACE__]);
-function is_bool($atts, $content=null, $shortcode=null) {
+\aw2_library::add_service('bool.is.bool', 'Check if the value is a boolean', ['func'=>'_is_bool', 'namespace'=>__NAMESPACE__]);
+function _is_bool($atts, $content=null, $shortcode=null) {
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'is_bool'));
     return is_bool($main);
 }
@@ -79,4 +79,20 @@ function is_false($atts, $content=null, $shortcode=null) {
     }
     
     return $main === false;
+}
+
+\aw2_library::add_service('bool.to.str', 'Convert boolean value to string representation', ['func'=>'bool_to_str', 'namespace'=>__NAMESPACE__]);
+
+function bool_to_str($atts, $content=null, $shortcode=null) {
+    if(\aw2_library::pre_actions('all', $atts, $content)==false) return;
+    
+    extract(\aw2_library::shortcode_atts(array(
+        'main' => null
+    ), $atts, 'bool_to_str'));
+    
+    if($main === null || !is_bool($main)) {
+        throw new \Exception('bool.to.str: main must be a boolean value. Use bool: prefix for typecasting.');
+    }
+    
+    return $main ? 'true' : 'false';
 }

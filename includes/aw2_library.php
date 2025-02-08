@@ -22,8 +22,15 @@ class aw2_library{
 
 static $conn=null;
 static $stack=array();
+static $funcstack=array();
 static $redis_conn=null;
 static $mysqli=null;
+
+
+static function reset_env($new_env){
+	self::$stack=null;
+	self::$stack=$new_env;
+}
 
 
 static function load_handlers_from_path($handlers_path,...$paths){
@@ -700,10 +707,16 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 	
 	$pattern = self::get_shortcode_regex();
 	
-	$pattern =str_replace("_handler","(?:[a-zA-Z0-9\-._@])+",$pattern);	
+	$pattern =str_replace("_handler","(?:[a-zA-Z0-9\-._@\^])+",$pattern);	
 	if($sc_exec_restore==='yes')$restore=self::sc_exec_setup_pos();	
 	$count=0;
-	$content = preg_replace_callback( "/$pattern/s", self::class . '::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+
+
+
+	$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+
+
+	
 	if($sc_exec_restore==='yes')self::sc_exec_restore($restore);	
 	//$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content );
 		
@@ -991,7 +1004,7 @@ static function process_handler($inputs){
 	if(!empty($atts))self::pre_action_parse($atts);
 
 	$pre_compiler_check=array('c','and','or','m','m2','o','o2');
-	$pre_processor_check=array('c','pipe','pipe.1');
+	$pre_processor_check=array('when','when.1','pipe','pipe.1','out','out.1','content','atts');
 
 	$pre=array();
 	$pre['primary']=array();
@@ -1017,17 +1030,39 @@ static function process_handler($inputs){
 	}
 
 
+	if(isset($pre['content:']['@'])){
+		$content=self::get($pre['content:']['@']);
+	}
+
+	if(isset($pre['content:']['path'])){
+		$content=self::get($pre['content:']['path']);
+	}
+	
+	
+	if(isset($pre['atts:']['path'])){
+		$pre['primary'] = array_merge(self::get($pre['atts:']['path']),$pre['primary']);
+	}
+
+	if(isset($pre['atts:']['arr'])){
+		$pre['primary'] = array_merge($pre['atts:']['arr'],$pre['primary']);
+	}	
+
 	if(self::is_live_debug()){
 		$live_debug_event['action']='sc.parsed';
 		$live_debug_event['parsed_atts']=$pre;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#F7F5F2']);
 	}
 
-	if(isset($pre['c:'])){
-		$c_reply=\aw2\c_colon\c_check($pre['c:']);
+	if(isset($pre['when:'])){
+		$c_reply=\aw2\when_colon\when_check($pre['when:']);
 		if($c_reply===false)return '';
 	}
-			
+
+	if(isset($pre['when.1:'])){
+		$c_reply=\aw2\when_colon\when_check($pre['when.1:']);
+		if($c_reply===false)return '';
+	}
+
 	$check_cond = true ;
 	if(isset($pre['c'])){
 		//loop and call chain which will update all atts
@@ -1299,7 +1334,16 @@ static function process_handler($inputs){
 		$live_debug_event['m_result']=substr(print_r($reply, true),0,500);
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#71DFE7']);
 	}	
-	
+
+	if(isset($pre['out:'])){
+		$final=\aw2\out_colon\out_run($pre['out:'],$reply);
+		if(!isset($pre['out.1:']))$reply=$final;
+	}
+	if(isset($pre['out.1:'])){
+		$reply=\aw2\out_colon\out_run($pre['out.1:'],$reply);
+	}
+
+
 	if(isset($pre['o'])){
 		//$reply=self::redirect_output($reply,$pre['o']);
 		foreach ($pre['o'] as $key => $value) {
@@ -1340,6 +1384,7 @@ static function process_handler($inputs){
 	
 	return $reply;	
 }
+ 
 
 static function resolve_chain($str,&$atts=null,$content=null){
 	//php8OK	
@@ -1394,7 +1439,7 @@ static function resolve_chain($str,&$atts=null,$content=null){
 static function shortcode_parse_atts($text) {
 	//php8OK	
 	$atts = array();
-	$pattern = '/([-a-zA-Z0-9_.@\$:]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@\$:]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@\$:]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+	$pattern = '/([-a-zA-Z0-9_.@\$:\^]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.@\$:\^]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.@\$:\^]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
 	$text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
 	if ( preg_match_all($pattern, $text, $match, PREG_SET_ORDER) ) {
 		foreach ($match as $m) {
@@ -1637,7 +1682,7 @@ static function get_shortcode_regex() {
 	}
 
 	$tagregexp = join( '|', array_map('preg_quote', $tagnames) );
-	$tagregexp = $tagregexp . '|(?:[a-zA-Z0-9\-_@])+\.(?:[a-zA-Z0-9\-._@])+';
+	$tagregexp = $tagregexp . '|(?:[a-zA-Z0-9\-_@\^])+\.(?:[a-zA-Z0-9\-._@])+';
 	// WARNING! Do not change this regex without changing do_shortcode_tag() and strip_shortcode_tag()
 	// Also, see shortcode_unautop() and shortcode.js.
 	return
@@ -1794,6 +1839,7 @@ static function pre_action_parse(&$atts) {
 				if($parts[0]==='num')$atts[$key]=(float)$parts[1];
 				if($parts[0]==='str')$atts[$key]=(string)$parts[1];
 				if($parts[0]==='null')$atts[$key]=null;
+				if($parts[0]==='arr' && $parts[1]==='empty')$atts[$key]=array();
 				if($parts[0]==='comma')$atts[$key]=explode(',', (string)$parts[1]);
 				if($parts[0]==='bool'){
 					if($parts[1] === '' || $parts[1] === 'false')
@@ -2582,15 +2628,25 @@ static function pop_child($stack_id){
 	$reverse=array_reverse ($stack);
 	foreach ($reverse as $key => $value) {
 		unset(self::$stack['call_stack'][$key]);
-		if(isset($value['obj_type'])){
+
+		if(isset($value['#_obj_#'])){
+            unset(self::$stack[$value['#_obj_#']['stack_path']]);
+        }
+        elseif(isset($value['obj_type'])){
 			unset(self::$stack[$value['obj_type']]);
 		}
+
 		if($key==$stack_id)
 				break;
 	}
 	
 	reset($stack);	
 	foreach ($stack as $key => $value) {
+        if(isset($value['#_obj_#']['stack_path'])){
+            self::$stack[$value['#_obj_#']['stack_path']]=&$stack[$key];	
+             continue;   
+        }
+
 		if(isset($value['obj_type'])){
 			self::$stack[$value['obj_type']]=&$stack[$key];	
 		}
@@ -2603,7 +2659,7 @@ static function last_child($obj_type){
 	$stack=&self::get_array_ref('call_stack');
 	$new_obj=null;
 	foreach ($stack as $key => $value) {
-		if(!isset($stack[$key]['obj_type'])){
+		if(!isset($stack[$key]['obj_type']) && !isset($stack[$key]['#_obj_#']['obj_type']) ){
 			self::user_notice("[You have destroyed the Key $key in the stack]");
 			if (DEVELOP_FOR_AWESOMEUI){
 				\util::var_dump($stack[$key]);
@@ -2612,8 +2668,9 @@ static function last_child($obj_type){
 			}
 		}
 		
-		if($stack[$key]['obj_type']==$obj_type)
+		if(isset($stack[$key]['obj_type']) &&  $stack[$key]['obj_type']==$obj_type){
 			$new_obj=$key;
+		}
 	}
 	return $new_obj;	
 }
@@ -4688,6 +4745,8 @@ static function template_run($template,$content=null,$atts=array()){
 			$temp_debug=$live_debug_event;
 			$temp_debug['error']='yes';
 			$temp_debug['error_type']='missing_asset';
+			$temp_debug['templates']=self::$stack['module'];
+
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
 		return 'Template not found - '.$template ;
@@ -5115,7 +5174,7 @@ public $is_api=false;
 		$reply=aw2_library::checkcondition($atts);
 		//decide whether we want to keep this node
 		if($reply===true){
-			$pre_compiler_check = array('c');
+			$pre_compiler_check = array('when');
 			$pre = array();
 			$service_atts = array();
 			
@@ -5131,7 +5190,7 @@ public $is_api=false;
 				}
 			}
 
-			if(isset($pre['c']))$reply=\aw2\c_colon\c_check($pre['c']);
+			if(isset($pre['when']))$reply=\aw2\when_colon\when_check($pre['when']);
 			
 			$atts=$service_atts;
 		}
@@ -5161,13 +5220,12 @@ public $is_api=false;
 		
 		//it is do. It has to be executed
 		//item name is the name of the node it is do. It has to be executed
-		if($item_name=='do' || $item_name=='@do'){
+		if($item_name=='do' || $item_name=='@do' || $item_name=='@do2'){
 			
 	
 			//$pattern = '/^((?s:.*?))(\[\/do\])/';
+			$pattern = '/^((?s:.*?))(\[\/' .$item_name . '\])/';
 			
-			$pattern =   '/^((?s:.*?))(\[\/@?do\])/';
-	
 			$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 			if(!$reply){
 				echo '<br>Remaining String.' . $this->str;
