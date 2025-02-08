@@ -10,6 +10,7 @@ function create($atts,$content=null,$shortcode){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'id'=>null,
+	'time'=>60,
 	'setcookie'=>'yes'
 	), $atts) );
 	
@@ -18,7 +19,9 @@ function create($atts,$content=null,$shortcode){
 	$ticket=uniqid();
 	$redis = \aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
 	$redis->hSet($ticket,'ticket_id',$ticket);
-	$redis->expire($ticket, 60*60);
+	if((float)$time >=0)
+		$redis->expire($ticket, $time*60);
+
 	unset($_COOKIE[$id]);
 	if($setcookie==='yes')setcookie($id, $ticket, -1, '/');
 	
