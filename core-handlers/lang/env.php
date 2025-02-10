@@ -122,7 +122,6 @@ function set_value($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('env.set.key','Set a complex Environment Value',['func'=>'_key' ,'namespace'=>__NAMESPACE__]);
 function _key($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
 	'_prefix'=>null,

@@ -331,6 +331,22 @@ function dump($atts,$content=null,$shortcode){
 	return $return_value;
 }
 
+\aw2_library::add_service('func.echo','Echo func Value',['func'=>'_echo','namespace'=>__NAMESPACE__]);
+
+function _echo($atts,$content=null,$shortcode){
+
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	), $atts, 'dump' ) );
+
+	$c='func';
+	if($main)$c.='.' . $main ;
+
+	$return_value=\aw2_library::get($c);
+	\util::var_dump($return_value);
+}
+
+
 \aw2_library::add_service('func.return','Return an active func',['func'=>'_return','namespace'=>__NAMESPACE__]);
 
 function _return($atts,$content=null,$shortcode){

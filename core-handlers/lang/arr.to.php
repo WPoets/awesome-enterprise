@@ -67,3 +67,56 @@ function _to_query_string($atts, $content=null, $shortcode=null) {
    
    return http_build_query($main, '', '&', $encoding);
 }
+
+
+
+// arr.to.nested - Transform flat array with dot notation keys to nested array structure
+\aw2_library::add_service('arr.to.nested', 'Transform flat array with dot notation to nested structure', ['func'=>'to_nested', 'namespace'=>__NAMESPACE__]);
+
+function to_nested($atts, $content=null, $shortcode=null){
+    if(!isset($atts['main']))
+        throw new \Exception('No input array provided');
+    
+    $input = $atts['main'];
+    
+    // Validate input is array
+    if(!is_array($input))
+        throw new \Exception('Input must be an array');
+    
+    $result = array();
+    
+    // Process each item in input array
+    foreach($input as $item){
+        if(!is_array($item)) continue;
+        
+        $temp = array();
+        foreach($item as $key => $value){
+            // Skip if key doesn't contain dots
+            if(strpos($key, '.') === false){
+                $temp[$key] = $value;
+                continue;
+            }
+            
+            // Split key by dots
+            $parts = explode('.', $key);
+            
+            // Build nested structure
+            $current = &$temp;
+            $last_key = array_pop($parts);
+            
+            foreach($parts as $part){
+                if(!isset($current[$part])){
+                    $current[$part] = array();
+                }
+                $current = &$current[$part];
+            }
+            
+            // Set final value
+            $current[$last_key] = $value;
+        }
+        
+        $result[] = $temp;
+    }
+    
+    return $result;
+}

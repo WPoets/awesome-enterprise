@@ -24,6 +24,10 @@ function out_run($atts = array(),$reply) {
         \aw2_library::set($atts['@env.set'],$reply);
         return;
     }
+    if (isset($atts['@func.set'])) {
+        \aw2_library::set('func.'.$atts['@func.set'],$reply);
+        return;
+    }
     if (isset($atts['@module.set'])) {
         \aw2_library::set('module.'.$atts['@module.set'],$reply);
         return;
