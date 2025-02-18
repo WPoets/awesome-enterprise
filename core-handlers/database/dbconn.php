@@ -173,7 +173,7 @@ Registers a db conn. Points to a database at run time. WIll switch the connectio
 function conn_handler($atts,$content=null,$shortcode=null){
 	//php8OK
 	
-	$service='dbconn.' . implode('.', $shortcode['tags_left']);
+	$service = 'dbconn.' . (is_array($shortcode['tags_left']) ? implode('.', $shortcode['tags_left']) : $shortcode['tags_left']);
 	
 	$conn_path=$shortcode['handler']['conn_path'];
 	
