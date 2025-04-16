@@ -40,6 +40,7 @@ namespace aw2\wp_conn\module;
 \aw2_library::add_service('wp_conn.module.get','Get a Module',['namespace'=>__NAMESPACE__]);
 
 function get($atts,$content=null,$shortcode=null){
+	global $table_prefix;
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -78,8 +79,16 @@ function get($atts,$content=null,$shortcode=null){
 		$use_env_cache=true;
 		$set_env_cache=true;
 	}
-		
-	$hash='modules:' . $post_type . ':' . $module;
+	
+	$blog_id = 1;
+	if (function_exists('get_current_blog_id')) {
+		$blog_id = get_current_blog_id();
+	} 
+
+	$posts_table = $table_prefix . 'posts';
+
+
+	$hash='blog:'.$blog_id.':modules:' . $post_type . ':' . $module;
 	if(\aw2_library::is_live_debug()){
 		$live_debug_event['action']='connection.getting';
 		$live_debug_event['cache_key']=$hash;
@@ -97,6 +106,8 @@ function get($atts,$content=null,$shortcode=null){
 
 	if(!$return_value){
 		$sql="select post_content,post_type,ID,post_name,post_title from wp_posts where post_type='" . $post_type . "' and post_name='" . $module . "'";
+		
+		$sql="select post_content,post_type,ID,post_name,post_title from ".$posts_table." where post_type='" . $post_type . "' and post_name='" . $module . "'";
 		
 		$results =\aw2\wp_conn\get_results($sql,$connection,$config);				
 
@@ -171,7 +182,12 @@ function meta($atts,$content=null,$shortcode=null){
 		$set_env_cache=true;
 	}
 
-	$hash='modules_meta:' . $post_type . ':' . $module;
+	$blog_id = 1;
+	if (function_exists('get_current_blog_id')) {
+		$blog_id = get_current_blog_id();
+	} 
+
+	$hash='blog:'.$blog_id.':modules_meta:' . $post_type . ':' . $module;
 	
 	$metas=null;
 	if($use_env_cache){
@@ -276,7 +292,12 @@ function get($atts,$content=null,$shortcode=null){
 		$set_env_cache=true;
 	}
 
-	$hash='collection:' . $post_type;
+	$blog_id = 1;
+	if (function_exists('get_current_blog_id')) {
+		$blog_id = get_current_blog_id();
+	} 
+
+	$hash='blog:'.$blog_id.':collection:' . $post_type;
 	
 	$results='';
 	if($use_env_cache){
@@ -337,7 +358,13 @@ function _list($atts,$content=null,$shortcode=null){
 		$use_env_cache=true;
 		$set_env_cache=true;
 	}	
-	$hash='collection_list:' . $post_type;
+	
+	$blog_id = 1;
+	if (function_exists('get_current_blog_id')) {
+		$blog_id = get_current_blog_id();
+	} 
+
+	$hash='blog:'.$blog_id.':collection_list:' . $post_type;
 	
 	$results=null;
 	if($use_env_cache){
@@ -365,4 +392,3 @@ function _list($atts,$content=null,$shortcode=null){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
-
