@@ -1093,12 +1093,13 @@ class controllers{
 	}
 	
 	static function module_parts(){
-		$t=strpos(self::$module,'.');
+		$module = (string)self::$module;
+		$t=strpos($module,'.');
 		if($t===false){
 			self::$template='';
 			return;	
 		}
-		$parts=explode ('.' , self::$module); 
+		$parts=explode ('.' , $module); 
 		
 		self::$module=$parts[0];
 		array_shift($parts);
