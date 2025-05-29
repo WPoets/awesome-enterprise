@@ -4831,7 +4831,7 @@ static function template_anon_run($template_content,$content=null,$atts=array())
 		$live_debug_event['action']='template.called';
 		$live_debug_event['stream']='template_anon_run';
 		
-		$live_debug_event['template']=$template;
+		$live_debug_event['template']=$template_content;
 		$live_debug_event['atts']=$atts;
 		\aw2\live_debug\publish_event(['event'=>$live_debug_event]);
 	}
