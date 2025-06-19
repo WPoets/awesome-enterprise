@@ -33,7 +33,7 @@ function minus_one($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
 	), $atts) );
-	$return_value= $main - 1 ;
+	$return_value= intval($main) - 1 ;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
@@ -46,7 +46,7 @@ function plus_one($atts,$content=null,$shortcode){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
 	), $atts) );
-	$return_value= $main + 1 ;
+	$return_value= intval($main) + 1 ;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
