@@ -45,6 +45,10 @@ function save_csv_page($atts,$content=null,$shortcode){
 
 	$buffer = fopen('php://memory','w');
 	foreach ($rows as $line) {
+		 if (is_string($line)) {
+       	 	$line = str_getcsv($line); 
+		 }
+
 		fputcsv($buffer, $line);
 	}
 	rewind($buffer);
