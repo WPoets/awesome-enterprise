@@ -5,8 +5,10 @@ namespace aw2\mysqli;
 function get_default_conn($base,$s){
 	$shortcode=array();
 	
-	if(!empty($s))
-		$shortcode['tags_left']=array_unshift($s['tags_left'],$base); 
+	if(!empty($s)){
+		array_unshift($s['tags_left'],$base);
+		$shortcode['tags_left']=$s['tags_left'];
+	}	
 	else
 		$shortcode['tags_left']=array($base);
 
