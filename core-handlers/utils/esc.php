@@ -28,14 +28,14 @@ function unsafe($atts,$content=null,$shortcode){
 			
 			//Loop and escape the whole array
 			foreach($main as $k=>$v){
-				$arr[]=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',$v);
+				$arr[]=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',(string) $v);
 			}
 			
 			//comma separated
 			$return_value=implode ( "," , $arr );
 
 		}else{
-			$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',$main);
+			$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',(string) $main);
 		}
 	}
 	
@@ -135,7 +135,7 @@ function table($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
     
 	$return_value=preg_replace('/[^A-Za-z0-9_\.]/','',$main);
 
@@ -150,7 +150,7 @@ function _int($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
 		
 	$return_value=preg_replace('/[^0-9-]/','',$main);
 	
@@ -165,7 +165,7 @@ function num($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
     
 	$return_value=preg_replace('/[^0-9-\.]/','',$main);
 	
@@ -180,7 +180,7 @@ function str($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
 		
 	$return_value=\mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]','\\\0',$main);
 	$return_value=AW2_APOS.$return_value.AW2_APOS;
@@ -196,7 +196,7 @@ function id($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
 
 	$return_value=preg_replace('/[^A-Za-z0-9\-\_\ ]/','',$main);
 	$return_value=AW2_APOS.$return_value.AW2_APOS;
@@ -219,7 +219,7 @@ function in($atts,$content=null,$shortcode){
 	if(is_array($main))
 		$main=implode ( "," , $main );
 	
-	$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]','\\\0',$main);
+	$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]','\\\0',(string) $main);
 	$return_value=AW2_APOS.$return_value.AW2_APOS;
 	
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -233,7 +233,7 @@ function like($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
     	
 	$return_value=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',$main);
 	
@@ -248,7 +248,7 @@ function _date($atts,$content=null,$shortcode){
 		'main'  	  => ""
         ), $atts) );
 
-	$main = \aw2_library::get($main);
+	$main = (string) \aw2_library::get($main);
     	
 	$return_value= "DATE('".$main."')";
 	
