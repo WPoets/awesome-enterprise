@@ -292,16 +292,25 @@ function _date_format($value, $atts){
 
 
 //format date
-\aw2_library::add_service('m.hhmm_format','Format the value as HH:MM:SS and return. Use m.date_format="<format>"',['func'=>'_date_format','namespace'=>__NAMESPACE__]);
+\aw2_library::add_service('m.hhmm_format','Format the value as HH:MM:SS and return. ',['func'=>'hhmm_format','namespace'=>__NAMESPACE__]);
 function hhmm_format($value, $atts){
-
-	do{
-        $c[] = str_pad(isset($c) && sizeof($c) > 1 ? $value : $value % 60, isset($c) && $value < 60 ? 1 : 2, 0, STR_PAD_LEFT);
-    }while(($value = floor($value / 60)) > 0 && sizeof($c) < 3);
+  // 1. Ensure the input is an integer (solves the error).
+    $minutes = (int) $value;
     
-    $return_value = implode(":", array_reverse($c));
+    // 2. Handle negative values just in case.
+    if ($minutes < 0) {
+        $minutes = 0;
+    }
 
-	return $return_value;
+    // 3. Calculate hours and remaining minutes using clear, simple math.
+    $hours = floor($minutes / 60);
+    $remainingMinutes = $minutes % 60;
+
+    // 4. Use sprintf() for reliable zero-padding and formatting.
+    //    This correctly formats 1 hour and 5 minutes as "01:05".
+    $return_value = sprintf('%02d:%02d', $hours, $remainingMinutes);
+    return  $return_value;
+    
 }
 
 
