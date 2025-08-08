@@ -3527,7 +3527,7 @@ static function get_shortcode($o){
 		$o->value='_error';
 		return;
 	}
-	$args=self::get_clean_args($o->$content);
+	$args=self::get_clean_args($o->content);
 	$sc=$o->pieces[0];
 	array_shift($o->pieces);
 
