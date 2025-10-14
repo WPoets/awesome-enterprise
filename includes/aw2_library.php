@@ -4749,7 +4749,8 @@ static function template_run($template,$content=null,$atts=array()){
 
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
-		return 'Template not found - '.$template ;
+		//return 'Template not found - '.$template ;
+		return 'Template not found - ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
 		
 	}
 	$template_ptr=self::$stack['module']['templates'][$template];
