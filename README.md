@@ -29,7 +29,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
-##### 3.5.8
+##### 3.6
 
 * Improved: Introduced shortcodes str, int, pipe:, c:, cond, arr, bool, x:, get:, when, out:, func, call stack, gb.register, func.service.create, func.echo.
 * Improved: Added support for "set_from_path"
