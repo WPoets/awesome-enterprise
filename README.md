@@ -47,6 +47,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Fixed: removed the warning preg_match_all(): Passing null to parameter #2 ($subject) of type string is deprecated
 * Fixed: m.hhmm_format function had errors
 * Fixed the issue error while passing parameters to shortcodes
+* Fixed: warning while using unsafe quotes
 
 ##### 3.5.7
 
