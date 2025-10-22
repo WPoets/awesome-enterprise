@@ -36,7 +36,6 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Improved: Added support for increasing timout for vsession from original 1 hour, you can now specify "time" attribute in mins
 * Improved: Added support for nested JSON to array conversion and json.to.arr.
 * Improved: Added support for multisite
-  
 * Fixed: In one specific condition qs parameters were getting lost
 * Fixed: Implode('.', 'cud') will return an empty string ('').
 * Fixed: fixed the strpos notice
