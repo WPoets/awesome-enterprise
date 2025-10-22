@@ -33,7 +33,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 * Improved: Introduced shortcodes str, int, pipe:, c:, cond, arr, bool, x:, get:, when, out:, func, call stack, gb.register, func.service.create, func.echo.
 * Improved: Added support for "set_from_path"
-* Improved: Added support for increasing timout for vsession from original 1 hour, you can now specify "time" attribute in mins
+* Improved: Added support for increasing timeout for vsession from the  original 1 hour, you can now specify "time" attribute in mins
 * Improved: Added support for nested JSON to array conversion and json.to.arr.
 * Improved: Added support for multisite
 * Fixed: In one specific condition qs parameters were getting lost
@@ -41,7 +41,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Fixed: fixed the strpos notice
 * Fixed: Invalid argument supplied for foreach()
 * Fixed: Undefined variable: template
-* Fixed: Excel was not detecting utf-8 so made changes to make ensure windows treat csv file as utf-8 encoded.
+* Fixed: Excel was not detecting UTF-8, so I made changes to ensure Windows treats the CSV file as UTF-8 encoded.
 * Fixed: Directly calling _mysqli_ function resulted in error
 * Fixed: removed the warning preg_match_all(): Passing null to parameter #2 ($subject) of type string is deprecated
 * Fixed: m.hhmm_format function had errors
@@ -53,10 +53,10 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Improved: Added support so that the awesome shortcodes can be used to write the script.
 * Improved: Added better logging for SQL queries
 * Improved: Using the latest version of less.php
-* Improved: In awesome controller for pages - added support to handle sub-pages in the apps.
+* Improved: In Awesome Controller for pages - added support to handle sub-pages in the apps.
 * Improved: Changed the implementation for taxonomy to support parent-child urls
 * Fixed: When you use Hindi for slug in WordPress, it saves the name in URL encoded format, and that check was failing
-* Fixed: In error log, decided to stop logging open_basedir error for minify.php as it is mostly css file url
+* Fixed: In the error log, decided to stop logging open_basedir error for minify.php, as it is mostly css file URL
 * Fixed: Undefined array key "auth"
 * Fixed: Undefined array key "extension"
 
@@ -149,7 +149,7 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ##### 3.4.2
 * Improved: Errors can now be viewed directly after switching on debugging mode
-* Improved: SQL queries now carry more info for debugging when view in sql process list
+* Improved: SQL queries now carry more info for debugging when viewed in sql process list
 * Improved: Removed commented code.
  
 ##### 3.4.1
@@ -157,9 +157,9 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ##### 3.4
 * Improved: Added support for live debugging using "debugger app" all major activities now support the debugging data.
-* Improved: Compatibility with php 7.4 and 8.1.
+* Improved: Compatibility with PHP 7.4 and 8.1.
 * Improved: Added `code.dump` to allow the ability to output the code shortcodes when needed.
-* Improved: Added `js.run_on_activity` to wrap javascript code to execute on user interaction with the browser.
+* Improved: Added `js.run_on_activity` to wrap JavaScript code to execute on user interaction with the browser.
 * Improved: Changed the way we can enable/disable or delete the code cache.   
 * Fixed: In the wp_conn the module name is converted to lowercase before finding it in post table. 
 * Fixed: Fixes in url connector.
@@ -171,11 +171,11 @@ If you don't find your issue already listed, do [create an issue](https://github
 * Fixed: made changes to reduce the notices when using PHP 8.1. 
 
 ##### 3.2.3.1
-* Fixed: In certain situations, error logging was resulting in multiple DB connections sometimes resulting in error 504.
+* Fixed: In certain situations, error logging was resulting in multiple DB connections, sometimes resulting in error 504.
 
 
 ##### 3.2.3
-* Improved: added support to use wordpress user login as virtual session using wp_vession. To use it, make sure you have added following line in your __rights__ module in the app
+* Improved: added support to use wordpress user login as virtual session using wp_vession. To use it, make sure you have added the following line in your __rights__ module in the app
 `
 [arr.create set='app.rights'] 
   [access mode='logged'  title='Login To APP'/]
@@ -183,7 +183,7 @@ If you don't find your issue already listed, do [create an issue](https://github
   [auth a1 method=wp_vsession all_roles=''  /]
 [/arr.create]
 `
-all_roles means, all the roles must be assigned to the user, it takes comma seprated list of roles and capabilites.
+all_roles means all the roles must be assigned to the user; it takes a comma-separated list of roles and capabilities.
 * Fixed: rights module usage was broken. 
 
 ##### 3.2.2
@@ -191,7 +191,7 @@ all_roles means, all the roles must be assigned to the user, it takes comma sepr
 
 ##### 3.2.1
 * Fixed: aw2.module was missing the support for using external connectors.
-* Improved: Added _m.number_to_word_ modifier to allows us to convert numeral to word representation. 
+* Improved: Added _m.number_to_word_ modifier to allow us to convert a numeral to a word representation. 
 
 
 ##### 3.2
