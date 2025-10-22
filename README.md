@@ -29,6 +29,25 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.5.8
+
+* Improved: Introduced shortcodes str, int, pipe:, c:, cond, arr, bool, x:, get:, when, out:, func, call stack, gb.register, func.service.create, func.echo.
+* Improved: Added support for "set_from_path"
+* Improved: Added support for increasing timout for vsession from original 1 hour, you can now specify "time" attribute in mins
+* Improved: Added support for nested JSON to array conversion and json.to.arr.
+* Improved: Added support for multisite
+  
+* Fixed: In one specific condition qs parameters were getting lost
+* Fixed: Implode('.', 'cud') will return an empty string ('').
+* Fixed: fixed the strpos notice
+* Fixed: Invalid argument supplied for foreach()
+* Fixed: Undefined variable: template
+* Fixed: Excel was not detecting utf-8 so made changes to make ensure windows treat csv file as utf-8 encoded.
+* Fixed: Directly calling _mysqli_ function resulted in error
+* Fixed: removed the warning preg_match_all(): Passing null to parameter #2 ($subject) of type string is deprecated
+* Fixed: m.hhmm_format function had errors
+* Fixed the issue error while passing parameters to shortcodes
+
 ##### 3.5.7
 
 * Improved: Added support so that the awesome shortcodes can be used to write the script.
