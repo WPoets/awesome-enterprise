@@ -4,6 +4,9 @@
 define('SITE_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
 define('HOME_URL', ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] );
 
+//define('USE_ENV_CACHE',false);
+//define('SET_ENV_CACHE',false);
+
 define( 'REDIS_HOST', '127.0.0.1' );
 define( 'REDIS_PORT', '6379' );
 define( 'REDIS_DATABASE_GLOBAL_CACHE', '4' );

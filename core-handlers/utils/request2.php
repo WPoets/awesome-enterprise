@@ -53,6 +53,7 @@ function _echo($atts,$content=null,$shortcode){
 	return;
 }
 
+/**
 function get_request($main){
 	if($main === 'request_body'){
 		$value = file_get_contents('php://input');
@@ -99,7 +100,7 @@ function get_request($main){
 	}
 	return;
 }
-
+ */
 
 function xss_clean($data)
 {
@@ -205,4 +206,75 @@ function replace_unicode_escape_sequence($match) {
 
 function unicode_decode($str) {
     return preg_replace_callback('/\\\\u([0-9a-f]{4})/i', '\aw2\request2\replace_unicode_escape_sequence', $str);
+}
+
+function get_request($main){
+	if($main === 'request_body'){
+		$value = file_get_contents('php://input');
+		return safe_clean_string($value);
+	}
+	
+	if($main === 'post_json'){
+		$post = $_POST;
+		array_walk_recursive(
+			$post,
+			function(&$item){
+				$item = safe_clean_string($item);
+			}
+		);
+		return json_encode($post);
+	}
+		
+	if(!empty($main) && array_key_exists($main, $_REQUEST)){
+		$return_value = $_REQUEST[$main];
+		
+		if(is_array($return_value)){
+			array_walk_recursive(
+				$return_value,
+				function(&$item){
+					$item = safe_clean_string($item);
+				}
+			);
+		} else {
+			$return_value = safe_clean_string($return_value);
+		}		
+		return $return_value;
+	}
+		
+	if(empty($main) && !empty($_REQUEST)){
+		$return_value = $_REQUEST;
+		array_walk_recursive(
+			$return_value,
+			function(&$item){
+				$item = safe_clean_string($item);
+			}
+		);
+		return $return_value;
+	}
+	
+	return null;
+}
+
+/**
+ * Modern, PHP 8.3 compliant string sanitization
+ * Replaces the heavy regex-based xss_clean()
+ */
+function safe_clean_string($data) {
+	// 1. PHP 8.3 Strictness: Prevent passing null to string functions
+	if ($data === null) {
+		return '';
+	}
+
+	// 2. Coerce to string to prevent TypeError in trim()
+	$data = (string) $data;
+
+	// 3. Basic cleanup
+	$data = stripslashes(trim($data));
+
+	// 4. Native XSS Mitigation
+	// ENT_QUOTES handles both ' and "
+	// ENT_SUBSTITUTE replaces invalid Unicode instead of returning an empty string
+	$data = htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+	return $data;
 }

@@ -4458,7 +4458,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
 		
-		return "$module Module not found " . self::convert_name_value_string($collection);
+		return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
 	}	
 
 	if(self::is_live_debug()){
@@ -4584,7 +4584,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
 	
-		return "$module Module not found " . self::convert_name_value_string($collection);
+		return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
 	}
 
 	if(self::is_live_debug()){
@@ -4749,7 +4749,7 @@ static function template_run($template,$content=null,$atts=array()){
 
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
-		return 'Template not found - '.$template ;
+		return 'Template not found - '.htmlentities($template);
 		
 	}
 	$template_ptr=self::$stack['module']['templates'][$template];
@@ -4907,7 +4907,7 @@ static function module_include($collection,$module){
 				$temp_debug['error_type']='missing_asset';
 				\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 			}
-			return "$module Module not found " . self::convert_name_value_string($collection);
+			return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
 		}	
 		
 		//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
@@ -4952,7 +4952,7 @@ static function module_include_raw($collection,$module){
 
 	//php8ok	
 	$arr=self::get_module($collection,$module);
-		if(!$arr)return "$module Module not found " . self::convert_name_value_string($collection);
+		if(!$arr)return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
 	$return_value=$arr['code'];	
 	return $return_value;	
 }
