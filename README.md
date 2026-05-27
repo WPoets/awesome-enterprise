@@ -29,6 +29,13 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+##### 3.6.1
+
+* Fixed: changed request2 function for better support for 8.3
+* Fixed: xss clean for template names
+* Improved: updated sample configs
+
+   
 ##### 3.6
 
 * Improved: Introduced shortcodes str, int, pipe:, c:, cond, arr, bool, x:, get:, when, out:, func, call stack, gb.register, func.service.create, func.echo.
