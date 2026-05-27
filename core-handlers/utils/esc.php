@@ -52,7 +52,7 @@ function unsafe_quotes($main){
 		
 		//Loop and escape the whole array
 		foreach($main as $k=>$v){
-			$arr[]=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',$v);
+			$arr[]=mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C\x5F]','\\\0',(string)$v);
 		}
 		
 		//comma separated with  quote
