@@ -1,10 +1,20 @@
 <?php
 namespace aw2\template;
 
-\aw2_library::add_service('template','Handles the active template',['env_key'=>'template']);
+if (!defined('AWESOME_LCNC') || AWESOME_LCNC === 'no') {
+    \aw2_library::add_service('template','Handles the active template',['env_key'=>'template']);
+
+	//deprecated
+	\aw2_library::add_service('template.set', 'Set template Value', ['namespace' => __NAMESPACE__]);
+	function set($atts, $content = null, $shortcode = array()) {
+		$atts['_prefix'] = 'template';
+		return \aw2\env\set($atts,$content,null);
+	}
+
+}
 
 \aw2_library::add_service('template.anon.run','Run an arbitrary template',['func'=>'anon_run','namespace'=>__NAMESPACE__]);
-function anon_run($atts,$content=null,$shortcode){
+function anon_run($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract(\aw2_library::shortcode_atts( array(
 		'main'=>null,
@@ -22,7 +32,7 @@ function anon_run($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('template.run','Run an arbitrary template',['namespace'=>__NAMESPACE__]);
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract(\aw2_library::shortcode_atts( array(
 		'main'=>null,
@@ -42,7 +52,7 @@ function run($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('template.return','End the active template',['func'=>'_return' , 'namespace'=>__NAMESPACE__]);
 
-function _return($atts,$content=null,$shortcode){
+function _return($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -60,50 +70,67 @@ function _return($atts,$content=null,$shortcode){
 	return;
 }
 
-/*
-//////// Template Library ///////////////////
-\aw2_library::add_library('template','Template Functions');
-
-function aw2_template_get($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_get($atts,$content,$shortcode);
+\aw2_library::add_service('template.dump', 'Dump template Value', ['namespace' => __NAMESPACE__]);
+function dump($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\dump($atts);
 }
 
-function aw2_template_unhandled($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	$pieces=$shortcode['tags'];
-	array_shift($pieces);
-	$atts['main']=implode(".",$pieces);		
-	return aw2_env_key_get($atts,$content,$shortcode);
-}
-
-function aw2_template_set($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_set($atts,$content,$shortcode);
+\aw2_library::add_service('template.echo', 'Echo template Value', ['func' => '_echo', 'namespace' => __NAMESPACE__]);
+function _echo($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    \aw2\common\env_services\_echo($atts);
 }
 
 
-function aw2_template_set_raw($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_set_raw($atts,$content,$shortcode);
+
+
+// Additional set services
+\aw2_library::add_service('template.set.path', 'Set template Value with Path', ['func' => 'set_path', 'namespace' => __NAMESPACE__]);
+function set_path($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\set_path($atts);
 }
 
-function aw2_template_set_array($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_set_array($atts,$content,$shortcode);
+\aw2_library::add_service('template.set.paths', 'Set multiple template Values with Paths', ['func' => 'set_paths', 'namespace' => __NAMESPACE__]);
+function set_paths($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\set_paths($atts);
+}
+
+\aw2_library::add_service('template.set.value', 'Set template Value directly', ['func' => 'set_value', 'namespace' => __NAMESPACE__]);
+function set_value($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\set_value($atts);
+}
+
+\aw2_library::add_service('template.set.content', 'Set template Value from Content', ['func' => 'set_content', 'namespace' => __NAMESPACE__]);
+function set_content($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\set_content($atts, $content);
+}
+
+\aw2_library::add_service('template.set.raw', 'Set Raw unparsed Content to template', ['func' => 'set_raw', 'namespace' => __NAMESPACE__]);
+function set_raw($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'template';
+    return \aw2\common\env_services\set_raw($atts, $content);
 }
 
 
-function aw2_template_dump($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_dump($atts,$content,$shortcode);
 
+if (defined('AWESOME_LCNC') && AWESOME_LCNC === 'yes') {
+    // Register basic template services
+	\aw2_library::add_service('template.path', 'Get a template Value', ['namespace' => __NAMESPACE__]);
+	function path($atts, $content = null, $shortcode = array()) {
+		$atts['start'] = 'template';
+		return \aw2\common\env_services\get($atts);
+	}
+	
+
+	// Register template existence check
+    \aw2_library::add_service('template.exists', 'Check existence of a path', ['namespace' => __NAMESPACE__]);
+    function exists($atts, $content = null, $shortcode = array()) {
+        $atts['start'] = 'template';
+        return \aw2\common\env_services\exists($atts);
+    }
 }
-
-function aw2_template_echo($atts,$content=null,$shortcode){
-	$atts['_prefix']='template';
-	return aw2_env_key_echo($atts,$content,$shortcode);
-}
-
-
-*/

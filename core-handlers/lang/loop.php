@@ -4,7 +4,7 @@ namespace aw2\loop;
 \aw2_library::add_service('loop','Loop Library',['namespace'=>__NAMESPACE__]);
 
 
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -138,7 +138,7 @@ function unhandled($atts,$content=null,$shortcode){
 
 
 
-function live_arr($atts,$content=null,$shortcode){
+function live_arr($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
     
     extract(\aw2_library::shortcode_atts( array(

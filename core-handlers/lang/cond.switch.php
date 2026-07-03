@@ -3,7 +3,7 @@ namespace aw2\cond;
 
 // Main switch handler
 \aw2_library::add_service('cond.switch', 'Switch between multiple cases based on value or conditions', ['func'=>'cond_switch', 'namespace'=>__NAMESPACE__]);
-function cond_switch($atts, $content=null, $shortcode) {
+function cond_switch($atts, $content=null, $shortcode = array()) {
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
         throw new \InvalidArgumentException('cond.switch: You must specify a context name starting with @');
@@ -43,7 +43,7 @@ function cond_switch($atts, $content=null, $shortcode) {
 namespace aw2\cond_switch_context;
 
 // Context handler
-function cond_switch_context_handler($atts, $content=null, $shortcode) {
+function cond_switch_context_handler($atts, $content=null, $shortcode = array()) {
     $service = 'cond_switch_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     return \aw2_library::service_run($service, $atts, $content);
@@ -65,7 +65,7 @@ function validate_context($context) {
 
 // Case handler
 \aw2_library::add_service('cond_switch_context.case', 'Execute if case matches', ['func'=>'case_handler','namespace'=>__NAMESPACE__]);
-function case_handler($atts, $content=null, $shortcode) {
+function case_handler($atts, $content=null, $shortcode = array()) {
     validate_context($atts['@context']);
     $info = &\aw2_library::get_array_ref($atts['@context'], 'info');
     
@@ -104,7 +104,7 @@ function case_handler($atts, $content=null, $shortcode) {
 
 // Default handler
 \aw2_library::add_service('cond_switch_context.default', 'Execute if no case matches', ['func'=>'default_handler','namespace'=>__NAMESPACE__]);
-function default_handler($atts, $content=null, $shortcode) {
+function default_handler($atts, $content=null, $shortcode = array()) {
     validate_context($atts['@context']);
     $info = &\aw2_library::get_array_ref($atts['@context'], 'info');
     

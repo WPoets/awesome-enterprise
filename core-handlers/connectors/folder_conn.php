@@ -347,3 +347,193 @@ function _list($atts,$content=null,$shortcode=null){
 	return $return_value;	
 }
 
+
+namespace aw2\folder_conn\func;
+\aw2_library::add_service('folder_conn.func.get','Get a Func',['namespace'=>__NAMESPACE__]);
+function get($atts,$content=null,$shortcode=null){
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	'connection'=>null,
+	'namespace'=>null,
+	'func'=>null,
+	), $atts) );
+
+    
+	// If connection is not defined, throw exception
+	if(!$connection)
+		throw new \Exception('Connection parameter is required');
+	
+	// Check the location
+	$connection_arr=\aw2_library::$stack['code_connections'];
+
+
+/*
+	if(!isset($connection_arr[$connection])) 
+		throw new \Exception($connection.' connection is not defined');
+	
+	$config = $connection_arr[$connection];
+*/
+    $config=array(
+        'connection_service'=>'folder_conn',
+        'path'=>'/var/www/awesome-enterprise/core-handlers/namespace-functions',  // Any code which is present on CDN can be used using URL connection
+        'redis_db'=>89,
+        'cache_expiry'=>3000
+     )   ;
+
+    $func_folder = null;
+	$func_filename = null;
+	
+	// Process main parameter if provided
+	if($main !== null) {
+		$parts = explode(':', $main);
+		if(count($parts) === 2) {
+			$func_folder = $parts[0];
+			$func_filename = $parts[1];
+		}
+	}
+	
+	// If namespace and func are provided, use them
+	if($namespace !== null && $func !== null) {
+		$func_folder = $namespace;
+		$func_filename = $func;
+	}
+	
+	// Validate we have the required information
+	if(!$func_folder || !$func_filename)
+		throw new \Exception('Function folder and filename are required. Provide either main=folder:filename or both namespace and func parameters');
+	
+	// Create hash and filename
+	$hash = 'func:' . $func_folder . ':' . $func_filename;
+
+	
+	$return_value = array();
+	
+	// Try to get from cache if enabled
+	if(defined('USE_ENV_CACHE') && USE_ENV_CACHE) {
+		$return_value = \aw2\global_cache\get(["main" => $hash, "db" => $config['redis_db']], null, null);
+		if($return_value) {
+			return json_decode($return_value, true);
+		}
+	}
+	
+	// If not in cache or cache disabled, read from file
+	$path = $config['path'] . '/' . $func_folder . '/' . $func_filename . '.func.awesome';
+	
+	// Check if file exists
+	if(!file_exists($path)) {
+		$return_value = [
+			'exists' => false
+		];
+	} else {
+		$content = file_get_contents($path);
+		
+		$ab = new \array_builder();
+		$return_value = $ab->parse($content);
+		$return_value['exists'] = true;
+	}
+	
+	// Store in cache if enabled
+	if(defined('SET_ENV_CACHE') && SET_ENV_CACHE) {
+		$ttl = isset($config['cache_expiry']) ? $config['cache_expiry'] : '300';
+		\aw2\global_cache\set(["key" => $hash, "db" => $config['redis_db'], 'ttl' => $ttl], json_encode($return_value), null);
+	}
+	
+	return $return_value;
+}
+
+
+
+namespace aw2\folder_conn\service;
+\aw2_library::add_service('folder_conn.service.get','Get a service',['namespace'=>__NAMESPACE__]);
+function get($atts,$content=null,$shortcode=null){
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'main'=>null,
+	'connection'=>null,
+	), $atts) );
+	
+	// If main is not defined, throw exception
+	if(!$main)
+		throw new \Exception('Main parameter is required');
+		
+	// Create hash for caching
+	$hash = 'service:' . $main;
+    
+	$return_value = array();
+
+	/*
+	// Check the location in code connections
+	$connection_arr = \aw2_library::$stack['code_connections'];
+	if(!isset($connection_arr[$connection])) 
+		throw new \Exception($connection.' connection is not defined');
+	
+	$config = $connection_arr[$connection];
+	*/
+
+	$config = array(
+		'connection_service'=>'folder_conn',
+		'path'=>'/var/www/awesome-enterprise/core-handlers/repository-services',  
+		'redis_db'=>89,
+		'cache_expiry'=>3000
+	);
+	
+	// Try to get from cache if enabled
+	if(defined('USE_ENV_CACHE_temp') && USE_ENV_CACHE) {
+		$return_value = \aw2\global_cache\get(["main" => $hash, "db" => $config['redis_db']], null, null);
+		if($return_value) {
+			return json_decode($return_value, true);
+		}
+	}
+	
+	// Split $main into parts with .
+	$parts = explode('.', $main);
+	
+	$current_folder = $config['path'];
+	$service_filename = null;
+	$path=null;	
+	// Loop through the parts to find the service file
+	foreach($parts as $part) {
+		// Check if this part with .service.html exists in current folder
+		$potential_service_file = $current_folder . '/' . $part . '.service.html';
+		if(file_exists($potential_service_file)) {
+			$service_filename = $part . '.service.html';
+			// Set the full path for the service file
+			$path = $current_folder . '/' . $service_filename;
+			break;
+		}
+		
+		// Check if this part is a folder
+		$potential_folder = $current_folder . '/' . $part;
+		if(is_dir($potential_folder)) {
+			$current_folder = $potential_folder;
+		} else {
+			// Neither a service file nor a folder - can't proceed
+			break;
+		}
+	}
+	
+
+	
+	// Check if file exists
+	if(is_null($path)) {
+		$return_value = [
+			'exists' => false
+		];
+	} else {
+		$content = file_get_contents($path);
+		
+		\util::var_dump($content);
+		$ab = new \array_builder();
+		$return_value = $ab->parse($content);
+		$return_value['exists'] = true;
+	}
+	
+	// Store in cache if enabled
+	if(defined('SET_ENV_CACHE') && SET_ENV_CACHE) {
+		$ttl = isset($config['cache_expiry']) ? $config['cache_expiry'] : '300';
+		\aw2\global_cache\set(["key" => $hash, "db" => $config['redis_db'], 'ttl' => $ttl], json_encode($return_value), null);
+	}
+	
+	return $return_value;
+}

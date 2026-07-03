@@ -7,7 +7,7 @@ namespace aw2\css;
 \aw2_library::add_service('css','CSS Handler',['namespace'=>__NAMESPACE__]);
 
 \aw2_library::add_service('less','LESS Compiler',['namespace'=>__NAMESPACE__]);
-function less($atts,$content=null,$shortcode){
+function less($atts,$content=null,$shortcode = array()){
 	//require_once (AWESOME_PATH . "/libraries/wp-less/wp-less.php");
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
@@ -21,7 +21,7 @@ function less($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('minify','Minify CSS and return',['namespace'=>__NAMESPACE__]);
-function minify($atts,$content=null,$shortcode){
+function minify($atts,$content=null,$shortcode = array()){
 	/* $path =AWESOME_PATH . "/libraries";
 	require_once $path . '/minify2/Minify.php';
 	require_once $path . '/minify2/CSS.php';
@@ -45,7 +45,7 @@ function minify($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('style','Output CSS Style',['namespace'=>__NAMESPACE__]);
-function style($atts,$content=null,$shortcode){
+function style($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	$return_value = less($atts,$content,$shortcode);

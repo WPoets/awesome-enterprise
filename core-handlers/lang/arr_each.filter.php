@@ -4,7 +4,7 @@ namespace aw2\arr;
 
 \aw2_library::add_service('arr_each.filter', 'Filters an array using the provided context and content', ['func'=>'arr_each_filter', 'namespace'=>__NAMESPACE__]);
 
-function arr_each_filter($atts, $content=null, $shortcode) {
+function arr_each_filter($atts, $content=null, $shortcode = array()) {
     
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
@@ -63,7 +63,7 @@ function arr_each_filter($atts, $content=null, $shortcode) {
 
 namespace aw2\arr_filter_context;
 
-function arr_filter_context_handler($atts, $content=null, $shortcode){
+function arr_filter_context_handler($atts, $content=null, $shortcode = array()){
     $service='arr_filter_context.' . implode('.',$shortcode['tags_left']);
     $atts['@context']=$shortcode['tags'][0];
     \aw2_library::service_run($service,$atts,null);
@@ -71,7 +71,7 @@ function arr_filter_context_handler($atts, $content=null, $shortcode){
 
 \aw2_library::add_service('arr_filter_context._modify', 'Modify array item during array filtering', ['namespace'=>__NAMESPACE__]);
 
-function modify($atts, $content=null, $shortcode) {
+function modify($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -100,7 +100,7 @@ function modify($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('arr_filter_context._select', 'Select item during array filtering', ['namespace'=>__NAMESPACE__]);
 
-function select($atts, $content=null, $shortcode) {
+function select($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -121,7 +121,7 @@ function select($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('arr_filter_context.filter', 'Filter Item during array filtering', ['namespace'=>__NAMESPACE__]);
 
-function filter($atts, $content=null, $shortcode) {
+function filter($atts, $content=null, $shortcode = array()) {
     // Extract attributes with defaults
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');

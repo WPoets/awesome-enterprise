@@ -2,7 +2,7 @@
 namespace aw2\pipe_colon;
 
 
-function pipe_run($atts = array(),$reply) {
+function pipe_run($atts,$reply) {
     if (!isset($atts['@']))
         throw new \InvalidArgumentException("Error: '@' missing in pipe:");
 

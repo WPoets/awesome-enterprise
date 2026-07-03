@@ -1,9 +1,8 @@
 <?php
 namespace aw2\content_type_def;
 
-
 \aw2_library::add_service('content_type_def','Runs Templates or gets data',['namespace'=>__NAMESPACE__]);
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;	
 	extract(\aw2_library::shortcode_atts( array(
 	'default'=>''
@@ -63,7 +62,7 @@ function unhandled($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('content_type_def.run','Run a template',['namespace'=>__NAMESPACE__]);
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;	
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>''
@@ -124,7 +123,7 @@ function run($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('content_type_def.cnt','Counts a content type path',['namespace'=>__NAMESPACE__]);
 
-function cnt($atts,$content=null,$shortcode){
+function cnt($atts,$content=null,$shortcode = array()){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>''
 	), $atts) );
@@ -147,7 +146,7 @@ function cnt($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('content_type_def.template','Add a Template to a content type',['namespace'=>__NAMESPACE__]);
-function template($atts,$content=null,$shortcode){
+function template($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -179,7 +178,7 @@ function template($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('content_type_def.get','Get an Environment Value',['namespace'=>__NAMESPACE__]);
 
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -200,7 +199,7 @@ function get($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('content_type_def.meta','Set a Meta Value',['namespace'=>__NAMESPACE__]);
-function meta($atts,$content=null,$shortcode){
+function meta($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -267,7 +266,7 @@ function meta_get($content_type,$arr,$atts,$content){
 
 
 \aw2_library::add_service('content_type_def.config','Set a Config Value',['namespace'=>__NAMESPACE__]);
-function config($atts,$content=null,$shortcode){
+function config($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -356,7 +355,7 @@ function config_get($content_type,$arr,$atts,$content){
 
 \aw2_library::add_service('content_type_def.dump','Dump a content type',['namespace'=>__NAMESPACE__]);
 
-function dump($atts,$content=null,$shortcode){
+function dump($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -382,7 +381,7 @@ function dump($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('content_type_def.echo','Echo a content type',['func'=>'_echo' ,'namespace'=>__NAMESPACE__]);
 
-function _echo($atts,$content=null,$shortcode){
+function _echo($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(

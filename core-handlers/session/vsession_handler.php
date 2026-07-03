@@ -6,7 +6,7 @@ namespace aw2\vsession;
 
 \aw2_library::add_service('vsession.create','Create the Vsession',['namespace'=>__NAMESPACE__]);
 
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'id'=>null,
@@ -31,7 +31,7 @@ function create($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('vsession.exists','Check if VSession Exists',['namespace'=>__NAMESPACE__]);
-function exists($atts,$content=null,$shortcode){
+function exists($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'id'=>null
@@ -52,7 +52,7 @@ function exists($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('vsession.set','set VSession',['namespace'=>__NAMESPACE__]);
-function set($atts,$content=null,$shortcode){
+function set($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -82,7 +82,7 @@ function set($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('vsession.get','Get VSession',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

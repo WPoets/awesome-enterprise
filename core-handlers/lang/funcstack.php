@@ -4,7 +4,7 @@ namespace aw2\funcstack;
 
 \aw2_library::add_service('funcstack.dump','Dump a funcstack function',['namespace'=>__NAMESPACE__]);
 
-function dump($atts,$content=null,$shortcode){
+function dump($atts,$content=null,$shortcode = array()){
 
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null

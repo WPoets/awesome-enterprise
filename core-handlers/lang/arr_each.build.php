@@ -4,7 +4,7 @@ namespace aw2\arr;
 
 \aw2_library::add_service('arr_each.build', 'Builds an array using the provided context and content', ['func'=>'arr_each_build', 'namespace'=>__NAMESPACE__]);
 
-function arr_each_build($atts, $content=null, $shortcode) {
+function arr_each_build($atts, $content=null, $shortcode = array()) {
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
         throw new \InvalidArgumentException('arr_each.build: You must specify a context name starting with @');
@@ -58,7 +58,7 @@ function arr_each_build($atts, $content=null, $shortcode) {
 // Create namespace for context handlers
 namespace aw2\arr_build_context;
 
-function arr_build_context_handler($atts, $content=null, $shortcode) {
+function arr_build_context_handler($atts, $content=null, $shortcode = array()) {
     $service = 'arr_build_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     \aw2_library::service_run($service, $atts, null);

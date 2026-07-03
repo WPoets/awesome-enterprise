@@ -5,7 +5,7 @@ namespace aw2\date;
 \aw2_library::add_service('date','Date Functions',['namespace'=>__NAMESPACE__]);
 
 \aw2_library::add_service('date.get','Returns DateTime',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -22,7 +22,7 @@ function get($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('date.create','Create & return DateTime',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -50,7 +50,7 @@ function create($atts,$content=null,$shortcode){
 	
 */
 \aw2_library::add_service('date.modify','Modify & return DateTime',['namespace'=>__NAMESPACE__]);
-function modify($atts,$content=null,$shortcode){
+function modify($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -73,7 +73,7 @@ function modify($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('date.format','Format & return date string',['namespace'=>__NAMESPACE__]);
-function format($atts,$content=null,$shortcode){
+function format($atts,$content=null,$shortcode = array()){
     
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null,
@@ -116,7 +116,7 @@ diff_type: english
 
 
 \aw2_library::add_service('date.diff','returns the differnce between two dates',['namespace'=>__NAMESPACE__]);
-function diff($atts,$content=null,$shortcode){
+function diff($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -184,7 +184,7 @@ function diff($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('date.aw2_period','Given a period, returns start_date and end_date',['namespace'=>__NAMESPACE__]);
-function aw2_period($atts,$content=null,$shortcode){
+function aw2_period($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -261,5 +261,5 @@ function aw2_period($atts,$content=null,$shortcode){
 }
 
 function pluralize( $count, $text ){ 
-    return $count . ( ( $count == 1 ) ? ( " $text" ) : ( " ${text}s" ) );
+    return $count . ( ( $count == 1 ) ? ( " $text" ) : ( " {$text}s" ) );
 }

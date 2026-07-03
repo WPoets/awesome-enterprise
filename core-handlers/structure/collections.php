@@ -18,7 +18,7 @@ function module_exists($atts,$content,$shortcode){
 }
 
 /*
-function aw2_collections_add($atts,$content=null,$shortcode){
+function aw2_collections_add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -56,13 +56,17 @@ function unhandled($atts,$content,$shortcode){
 
 \aw2_library::add_service('collection.register','Register a Collection.',['namespace'=>__NAMESPACE__]);
 
-function register($atts,$content=null,$shortcode){
+function register($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'desc'=>null
 	), $atts) );
 	
+	if ($main === null) {
+		$main = '';
+	}
+
 	unset($atts['main']);
 	unset($atts['desc']);
 	
@@ -99,7 +103,7 @@ function run($atts,$content,$shortcode){
 
 \aw2_library::add_service('collection.include','Used to include a module of a collection. Cannot be called directly',['func'=>'_include','namespace'=>__NAMESPACE__]);
 
-function _include($atts,$content=null,$shortcode){
+function _include($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -112,7 +116,7 @@ function _include($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('collection.include_raw','Used to include a module of a collection as a string. Cannot be called directly',['namespace'=>__NAMESPACE__]);
 
-function include_raw($atts,$content=null,$shortcode){
+function include_raw($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -125,7 +129,7 @@ function include_raw($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('collection.export_compare','Exports a collection for compare. Needs a post_type',['namespace'=>__NAMESPACE__]);
 
-function export_compare($atts,$content=null,$shortcode){
+function export_compare($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
@@ -160,7 +164,7 @@ function export_compare($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('collection.export','Exports a collection. Needs a post_type',['namespace'=>__NAMESPACE__]);
 
-function export($atts,$content=null,$shortcode){
+function export($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
@@ -200,7 +204,7 @@ function export($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('collection.import','Imports a collection. Needs a post_type',['namespace'=>__NAMESPACE__]);
 
-function import($atts,$content=null,$shortcode){
+function import($atts,$content=null,$shortcode = array()){
 	global $wbdb;
 	
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;

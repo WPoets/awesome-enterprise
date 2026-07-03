@@ -48,7 +48,7 @@ function set_cookie($atts, $content=null, $shortcode=null) {
 // Get cookie
 \aw2_library::add_service('cookie.get', 'Get cookie value', ['func'=>'get', 'namespace'=>__NAMESPACE__]);
 
-function get($atts, $content=null, $shortcode) {
+function get($atts, $content=null, $shortcode = array()) {
     extract(\aw2_library::shortcode_atts(array(
         'main' => null,
         'default' => '#_not_set_#'
@@ -115,7 +115,7 @@ function comp_equal($atts, $content=null, $shortcode=null) {
 // Dump cookies
 \aw2_library::add_service('cookie.dump', 'Dump cookie values', ['namespace'=>__NAMESPACE__]);
 
-function dump($atts, $content=null, $shortcode) {
+function dump($atts, $content=null, $shortcode = array()) {
     if(\aw2_library::pre_actions('all', $atts, $content) == false)
         return;
         
@@ -140,7 +140,7 @@ function dump($atts, $content=null, $shortcode) {
 // Echo cookies
 \aw2_library::add_service('cookie.echo', 'Echo cookie values', ['func'=>'_echo', 'namespace'=>__NAMESPACE__]);
 
-function _echo($atts, $content=null, $shortcode) {
+function _echo($atts, $content=null, $shortcode = array()) {
     if(\aw2_library::pre_actions('all', $atts, $content) == false)
         return;
         

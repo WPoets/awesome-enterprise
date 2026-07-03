@@ -403,11 +403,11 @@ class controllers{
 		
 		$filename=preg_replace('/\.\.\/+|\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
 		
-		header("Content-type: text/csv; charset=utf-8");
+		header("Content-type: application/csv");
 		header('Content-Disposition: attachment;filename="' . $filename);
 		
 		self::set_cache_header('no');
-		echo chr(0xEF) . chr(0xBB) . chr(0xBF);
+
 		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
 		
@@ -1093,13 +1093,12 @@ class controllers{
 	}
 	
 	static function module_parts(){
-		$module = (string)self::$module;
-		$t=strpos($module,'.');
+		$t=strpos(self::$module,'.');
 		if($t===false){
 			self::$template='';
 			return;	
 		}
-		$parts=explode ('.' , $module); 
+		$parts=explode ('.' , self::$module); 
 		
 		self::$module=$parts[0];
 		array_shift($parts);

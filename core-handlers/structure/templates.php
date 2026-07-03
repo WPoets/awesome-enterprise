@@ -35,12 +35,15 @@ function add($atts,$content=null,$shortcode=null){
 	), $atts) );
 	
 	$ref=&\aw2_library::get_array_ref('module','templates');
-	
+
+	if ($main === null) {
+		$main = '';
+	}
 	
 	$ref[$main]['code']=$content;
 	$ref[$main]['name']=$main;
 	$ref[$main]['template_type']=$template_type;
-	
+
 	$sc_exec=&\aw2_library::get_array_ref('@sc_exec');
 	if(isset($sc_exec['content_pos']))$ref[$main]['content_pos']=$sc_exec['content_pos'];
 	

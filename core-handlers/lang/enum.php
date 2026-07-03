@@ -5,7 +5,7 @@ namespace aw2\enum;
 // Main enum.define service
 \aw2_library::add_service('enum.define', 'Define an enum with key-value pairs', ['func'=>'define_enum', 'namespace'=>__NAMESPACE__]);
 
-function define_enum($atts, $content=null, $shortcode) {
+function define_enum($atts, $content=null, $shortcode = array()) {
     if(empty($atts['main']) || !is_string($atts['main']))
         throw new \Exception('Enum name is required and must be a string');
     
@@ -26,14 +26,14 @@ function define_enum($atts, $content=null, $shortcode) {
 
 namespace aw2\enum_context;
 
-function enum_context_handler($atts, $content=null, $shortcode) {
+function enum_context_handler($atts, $content=null, $shortcode = array()) {
     $service = 'enum_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     return \aw2_library::service_run($service, $atts, null);
 }
 
 \aw2_library::add_service('enum_context.keys', 'Get enum keys', ['namespace'=>__NAMESPACE__]);
-function keys($atts, $content=null, $shortcode) {
+function keys($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -49,7 +49,7 @@ function keys($atts, $content=null, $shortcode) {
 }
 
 \aw2_library::add_service('enum_context.list', 'Get full enum definition', ['func'=>'get_list', 'namespace'=>__NAMESPACE__]);
-function get_list($atts, $content=null, $shortcode) {
+function get_list($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -64,7 +64,7 @@ function get_list($atts, $content=null, $shortcode) {
 }
 
 \aw2_library::add_service('enum_context.validate', 'Validate enum value', ['namespace'=>__NAMESPACE__]);
-function validate($atts, $content=null, $shortcode) {
+function validate($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }

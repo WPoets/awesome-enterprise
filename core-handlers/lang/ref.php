@@ -3,7 +3,7 @@ namespace aw2\ref;
 
 \aw2_library::add_service('ref.add','Add a New Reference',['namespace'=>__NAMESPACE__]);
 
-function add($atts,$content=null,$shortcode){
+function add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,

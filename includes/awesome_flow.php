@@ -1,17 +1,17 @@
 <?php
-
+ 
 class awesome_flow{
 	
 	static function env_setup(){
+
+		$now = new DateTime();
+		$val = $now->format("m-d-Y H:i:s.u");
+		header('start:' . $val);
+
+		
 		if(function_exists('\aw2\live_debug\setup_cookie'))\aw2\live_debug\setup_cookie([]);	
 		self::setup_constants();
 		
-		if(defined('MYSQLI_CONNECTION')) {
-			$mysqli_db = \aw2\dbserver\connect(array('db_connection'=>MYSQLI_CONNECTION));
-			\aw2_library::set('connections.db.mysqli_db',$mysqli_db);
-			\aw2\dbconn\register(array('main'=>'mysqli','db_name'=>DB_NAME,'conn_path'=>'connections.db.mysqli_db','db_connection'=>MYSQLI_CONNECTION));
-
-		} 
 		
 		if(WP_DEBUG){
 			error_reporting(E_ALL);
@@ -97,6 +97,7 @@ class awesome_flow{
 		}
 		//clear_redis_cache= global,redis_db,connections as required
 
+		header('use_env_cache:' . USE_ENV_CACHE);
 		
 		if(USE_ENV_CACHE && aw2\global_cache\exists(["main"=>ENV_CACHE])){
 			header('awesome_cache: used');
@@ -116,6 +117,7 @@ class awesome_flow{
 			$ref=&aw2_library::get_array_ref();
 			
 			$handlers=aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"handlers"]);
+
 			$ref['handlers']=unserialize($handlers);
 			
 			$ref['apps']=unserialize(aw2\global_cache\hget(["main"=>ENV_CACHE,"field"=>"apps"]));
@@ -173,7 +175,6 @@ class awesome_flow{
 
 			self::run_core('less-variables');
 				
-
 			//self::run_core('config');
 			self::load_env_settings();
 			
@@ -188,7 +189,8 @@ class awesome_flow{
 				$debug_format['bgcolor']='#E7E0C9';
 				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 			}	
-			
+
+			header('set_env_cache:' . SET_ENV_CACHE);			
 			if(SET_ENV_CACHE){
 				$ref=aw2_library::get_array_ref();
 				$handlers=serialize($ref['handlers']);
@@ -226,15 +228,51 @@ class awesome_flow{
 		if(empty($time_zone) && defined('TIMEZONE'))$time_zone=TIMEZONE;
 		if(!empty($time_zone))date_default_timezone_set($time_zone);
 		
-		
 		//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 		//echo '/*' .  '::end initialize:' .$timeConsumed . '*/';
+		self::setup_libraries();
+
+
+		$now = new DateTime();
+		$val = $now->format("m-d-Y H:i:s.u");
+		header('env_setup:' . $val);	
 	}
 		catch(Throwable $e){
 			$reply=aw2_error_log::awesome_exception('env_setup',$e);
 		}	
 	}
 	
+
+	static function setup_libraries(){
+		// Get code connections from AW2 library stack
+		$connection_arr = \aw2_library::$stack['code_connections'];
+
+		// Loop through the connections array
+		foreach ($connection_arr as $connection_key => $connection_value) {
+			// Check if the current connection has a library_services child item
+			if (isset($connection_value['library_services'])) {
+				// Get the service value
+				$service = $connection_value['library_services'];
+				
+				// Set up defaults array
+				$defaults = array();
+				
+				// Set the connection key in defaults
+				$defaults['connection'] = $connection_key;
+				
+				// Add the service to the library
+				\aw2_library::add_service(
+					$service,              // Service name
+					'Unhandled repository services',  // Description
+					[
+						'func' => '_library',
+						'namespace' => 'aw2\library',
+						'#defaults' => $defaults
+					]
+				);
+			}
+		}
+	}
 
 	static function setup_constants(){
 		//develop_for_awesomeui
@@ -406,6 +444,10 @@ class awesome_flow{
 		
 	static function app_takeover($query){
 		try {
+
+		$now = new DateTime();
+		$val = $now->format("m-d-Y H:i:s.u");
+		header('app_takeover:' . $val);
 		
 		$request=$query->request;
 
@@ -420,8 +462,8 @@ class awesome_flow{
 		if(\aw2_library::endswith($request,'/'))
 			$request=substr($request, 0,-1);
 
-		if(empty($request) && defined('ROOT_APP')){
-			$request = ROOT_APP;
+		if(empty($request) && defined('DEFAULT_APP')){
+			$request = DEFAULT_APP;
 		}
 		else if(empty($request)){
 			self::initialize_root($query); // it is front page hence request is not set so setup root.
@@ -432,6 +474,9 @@ class awesome_flow{
 		
 		// do we own the app?
 		$app_slug= $pieces[0];
+
+
+
 		if($app_slug == 'wp-admin') return;
 
 
@@ -495,8 +540,8 @@ class awesome_flow{
 			\aw2_library::service_run('controllers.' . $name,['o'=>$o],null,'service'); // run the controller service, it is responsible for handling echo and exit.
 		}
 
-		if(!$app->exists($app_slug)  && defined('ROOT_APP')){
-			$app_slug = ROOT_APP;
+		if(!$app->exists($app_slug)  && defined('DEFAULT_APP')){
+			$app_slug = DEFAULT_APP;
 			//prepend to array $pieces the ROOT_APP
 			array_unshift($pieces,$app_slug);
 		}

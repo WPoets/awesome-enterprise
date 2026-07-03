@@ -4,7 +4,7 @@ namespace aw2\str;
 \aw2_library::add_service('str','String Functions',['namespace'=>__NAMESPACE__]);
 
 \aw2_library::add_service('str.get','Returns value as a String',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -21,7 +21,7 @@ function get($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('str.create','Create & return value as a String',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -49,7 +49,7 @@ function is_str($atts, $content=null, $shortcode=null) {
 function is_not_str($atts, $content=null, $shortcode=null) {
     
     extract(\aw2_library::shortcode_atts(array('main' => null), $atts, 'is_not_str'));
-    
+            
     return !is_string($main);
 }
 
@@ -180,7 +180,7 @@ function is_not_in($atts, $content=null, $shortcode=null) {
 
 // String append service
 \aw2_library::add_service('str.append', 'Append string to target string', ['func'=>'str_append', 'namespace'=>__NAMESPACE__]);
-function str_append($atts, $content=null, $shortcode) {
+function str_append($atts, $content=null, $shortcode = array()) {
     // Validate required attributes
     if(!isset($atts['main']) || !isset($atts['target'])) {
         throw new \Exception('str.append: main and target attributes are required');
@@ -208,7 +208,7 @@ function str_append($atts, $content=null, $shortcode) {
 
 // String prepend service
 \aw2_library::add_service('str.prepend', 'Prepend string to target string', ['func'=>'str_prepend', 'namespace'=>__NAMESPACE__]);
-function str_prepend($atts, $content=null, $shortcode) {
+function str_prepend($atts, $content=null, $shortcode = array()) {
     // Validate required attributes
     if(!isset($atts['main']) || !isset($atts['target'])) {
         throw new \Exception('str.prepend: main and target attributes are required');

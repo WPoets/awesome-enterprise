@@ -18,7 +18,7 @@ function is_not_bool($atts, $content=null, $shortcode=null) {
 }
 
 \aw2_library::add_service('bool.get','Returns value as a Boolean',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -34,7 +34,7 @@ function get($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('bool.create','Create & return value as a Boolean',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

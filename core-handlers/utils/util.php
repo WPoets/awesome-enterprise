@@ -4,10 +4,10 @@ namespace aw2\util;
 \aw2_library::add_service('util.otp','Generate a 6 digit OTP',['namespace'=>__NAMESPACE__]);
 
 
-function otp($atts,$content=null,$shortcode){
+function otp($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
-	$return_value=\mt_rand(100000,999999);
+	$return_value=mt_rand(100000,999999);
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;
 }
@@ -15,7 +15,7 @@ function otp($atts,$content=null,$shortcode){
 \aw2_library::add_service('util.form_data_array','Collect Form Data and return an array',['namespace'=>__NAMESPACE__]);
 
 
-function form_data_array($atts,$content=null,$shortcode){
+function form_data_array($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	foreach($_REQUEST as $key => $value){
@@ -29,7 +29,7 @@ function form_data_array($atts,$content=null,$shortcode){
 
 	
 \aw2_library::add_service('util.save_csv_page','Save CSV Page',['namespace'=>__NAMESPACE__]);
-function save_csv_page($atts,$content=null,$shortcode){
+function save_csv_page($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -45,10 +45,6 @@ function save_csv_page($atts,$content=null,$shortcode){
 
 	$buffer = fopen('php://memory','w');
 	foreach ($rows as $line) {
-		 if (is_string($line)) {
-       	 	$line = str_getcsv($line); 
-		 }
-
 		fputcsv($buffer, $line);
 	}
 	rewind($buffer);
@@ -64,7 +60,7 @@ function save_csv_page($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('util.async_url','Run async url',['namespace'=>__NAMESPACE__]);
-function async_url($atts,$content=null,$shortcode){
+function async_url($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -90,7 +86,7 @@ function async_url($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('util.nonce','creates nonce value for given string',['namespace'=>__NAMESPACE__]);
-function nonce($atts,$content=null,$shortcode){
+function nonce($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -107,7 +103,7 @@ function nonce($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('util.qs_parse','parse the query string and return back array',['namespace'=>__NAMESPACE__]);
-function qs_parse($atts,$content=null,$shortcode){
+function qs_parse($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -135,7 +131,7 @@ function qs_parse($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('util.constant','Returns an associative array with the names of all the constants and their values',['namespace'=>__NAMESPACE__]);
-function constant($atts,$content=null,$shortcode){
+function constant($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array('constant_key'=>'all'), $atts) );
 	
@@ -154,7 +150,7 @@ function constant($atts,$content=null,$shortcode){
 
 
 
-function search_new_ticket($atts,$content=null,$shortcode){
+function search_new_ticket($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -196,7 +192,7 @@ function search_new_ticket($atts,$content=null,$shortcode){
 
 \aw2_library::add_shortcode('search','set_ticket', 'search_set_ticket');
 
-function search_set_ticket($atts,$content=null,$shortcode){
+function search_set_ticket($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -225,7 +221,7 @@ function search_set_ticket($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_shortcode('search','get_ticket', 'search_get_ticket');
-function search_get_ticket($atts,$content=null,$shortcode){
+function search_get_ticket($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

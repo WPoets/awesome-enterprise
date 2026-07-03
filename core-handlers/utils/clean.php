@@ -6,7 +6,7 @@ namespace aw2\clean;
 
 
 // column_name: A-Z, a-z, 0-9, - _
-function column_name($atts,$content=null,$shortcode){
+function column_name($atts,$content=null,$shortcode = array()){
 
     extract(\aw2_library::shortcode_atts( array(
         'main' => ""
@@ -37,7 +37,7 @@ function column_name($atts,$content=null,$shortcode){
 
 
 // id: A-Z, a-z, 0-9, - _
-function id($atts,$content=null,$shortcode){
+function id($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -54,7 +54,7 @@ function id($atts,$content=null,$shortcode){
 \aw2_library::add_service('clean.int','clean the int',['namespace'=>__NAMESPACE__]);
 
 // 0-9 -
-function int($atts,$content=null,$shortcode){
+function int($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -69,7 +69,7 @@ function int($atts,$content=null,$shortcode){
 \aw2_library::add_service('clean.num','clean the num',['namespace'=>__NAMESPACE__]);
 
 // 0-9 - .
-function num($atts,$content=null,$shortcode){
+function num($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -84,7 +84,7 @@ function num($atts,$content=null,$shortcode){
 \aw2_library::add_service('clean.date','clean the date',['namespace'=>__NAMESPACE__]);
 
 // 0-9 (8 times)
-function date($atts,$content=null,$shortcode){
+function date($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -118,7 +118,7 @@ function safe($atts,$content=null,$shortcode=null){
 
 // [^\x09-\x0D\x20-\x7E]
 // Form Feed, Line Feed, Carriage Return, Tab and (space) - ~
-function printable($atts,$content=null,$shortcode){
+function printable($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(

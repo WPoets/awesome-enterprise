@@ -2,7 +2,7 @@
 namespace aw2\async_urls;
 
 \aw2_library::add_service('async_urls.run','Run async tickets',['namespace'=>__NAMESPACE__]);
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
  	extract(\aw2_library::shortcode_atts( array(
 		'tickets'=>null

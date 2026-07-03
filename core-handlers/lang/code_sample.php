@@ -4,7 +4,7 @@ namespace aw2\code\sample;
 
 \aw2_library::add_service('code.sample', 'Generate code samples with expected and actual output', ['func'=>'code_sample', 'namespace'=>__NAMESPACE__]);
 
-function code_sample($atts, $content=null, $shortcode) {
+function code_sample($atts, $content=null, $shortcode = array()) {
     if(!isset($shortcode['tags_left'][0])) {
         throw new \InvalidArgumentException('code.sample: You must specify a context name starting with @');
     }
@@ -602,7 +602,7 @@ AWESOME;
 
 namespace aw2\code_sample_context;
 
-function code_sample_context_handler($atts, $content=null, $shortcode) {
+function code_sample_context_handler($atts, $content=null, $shortcode = array()) {
     $service = 'code_sample_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     \aw2_library::service_run($service, $atts, $content);
@@ -610,7 +610,7 @@ function code_sample_context_handler($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('code_sample_context.data', 'Save the sample data', ['namespace'=>__NAMESPACE__]);
 
-function data($atts, $content=null, $shortcode) {
+function data($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -635,7 +635,7 @@ function data($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('code_sample_context.title', 'Save the sample title', ['namespace'=>__NAMESPACE__]);
 
-function title($atts, $content=null, $shortcode) {
+function title($atts, $content=null, $shortcode = array()) {
 
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
@@ -657,7 +657,7 @@ function title($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('code_sample_context.description', 'Save the sample description', ['func'=>'description', 'namespace'=>__NAMESPACE__]);
 
-function description($atts, $content=null, $shortcode) {
+function description($atts, $content=null, $shortcode = array()) {
 
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
@@ -675,7 +675,7 @@ function description($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('code_sample_context.code', 'Save the sample code', ['namespace'=>__NAMESPACE__]);
 
-function code($atts, $content=null, $shortcode) {
+function code($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -696,7 +696,7 @@ function code($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('code_sample_context.expected_result', 'Save the expected result', ['namespace'=>__NAMESPACE__]);
 
-function expected_result($atts, $content=null, $shortcode) {
+function expected_result($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }

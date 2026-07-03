@@ -3,7 +3,7 @@ namespace aw2\hashids;
 
 
 \aw2_library::add_service('hashids.set','Set the hashids in the Options table',['namespace'=>__NAMESPACE__]);
-function set($atts,$content=null,$shortcode){
+function set($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'value'=>null,
@@ -36,7 +36,7 @@ function set($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('hashids.get','Get the hashids in the Options table',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'hash'=>null,

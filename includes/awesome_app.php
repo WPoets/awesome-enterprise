@@ -29,7 +29,16 @@ class awesome_app{
 			$this->base_path=SITE_URL;
 			$this->path=SITE_URL;
 		}
+
 		
+		if(defined('DEFAULT_APP')){
+						//\util::var_dump($pieces);
+			//die();
+			$this->base_path=SITE_URL;
+			$this->path=SITE_URL;
+			
+		}
+
 		$this->safe_id=uniqid();
 		$this->slug=$slug;
 		$this->name=$registered_apps[$slug]['name'];
@@ -63,7 +72,7 @@ class awesome_app{
 	}
 	
 
-	
+
 	public function load_settings(){
 		$app=&aw2_library::get_array_ref('app');
 	
@@ -73,7 +82,7 @@ class awesome_app{
 		
 		//change to module_meta
 		$all_post_meta = aw2_library::get_module_meta($app['collection']['config'],'settings');
-		if (!empty($all_post_meta) && is_array($all_post_meta)) {
+		if(!empty($all_post_meta) && is_array($all_post_meta)){
 			foreach($all_post_meta as $key=>$meta){
 				
 				//ignore private keys
@@ -84,9 +93,10 @@ class awesome_app{
 
 			}
 		}
+		
 		\aw2_library::module_run($app['collection']['config'],'settings');
 
-	}	
+	}
 	
 	public function setup_collections(){
 		

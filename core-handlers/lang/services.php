@@ -3,13 +3,17 @@ namespace aw2\services;
 
 \aw2_library::add_service('services.add','Add a New Service',['namespace'=>__NAMESPACE__]);
 
-function add($atts,$content=null,$shortcode){
+function add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
 	'desc'=>null
 	), $atts) );
 	
+	if ($main === null) {
+		$main = '';
+	}
+
 	unset($atts['main']);
 	unset($atts['desc']);
 

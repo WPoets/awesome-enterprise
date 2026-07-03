@@ -43,7 +43,7 @@ function is_not_int($atts, $content=null, $shortcode=null) {
 
 
 \aw2_library::add_service('int.get','Returns value as an Integer',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -61,7 +61,7 @@ function get($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('int.create','Create & Return value as an Integer',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

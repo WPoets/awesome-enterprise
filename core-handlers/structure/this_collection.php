@@ -60,7 +60,7 @@ function aw2_this_collection_run($atts,$content,$shortcode){
 }
   
 
-function aw2_this_collection_include($atts,$content=null,$shortcode){
+function aw2_this_collection_include($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -75,7 +75,7 @@ function aw2_this_collection_include($atts,$content=null,$shortcode){
 }
 
 
-function aw2_this_collection_include_raw($atts,$content=null,$shortcode){
+function aw2_this_collection_include_raw($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,

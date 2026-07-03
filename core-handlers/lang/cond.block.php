@@ -4,7 +4,7 @@ namespace aw2\cond;
 
 // Main condition block handler
 \aw2_library::add_service('cond.block', 'Conditional block with context handling', ['func'=>'cond_block', 'namespace'=>__NAMESPACE__]);
-function cond_block($atts, $content=null, $shortcode) {
+function cond_block($atts, $content=null, $shortcode = array()) {
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
         throw new \InvalidArgumentException('cond.block: You must specify a context name starting with @');
@@ -45,7 +45,7 @@ function cond_block($atts, $content=null, $shortcode) {
 namespace aw2\cond_block_context;
 
 // Context handler
-function cond_block_context_handler($atts, $content=null, $shortcode){
+function cond_block_context_handler($atts, $content=null, $shortcode = array()){
     $service = 'cond_block_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     return \aw2_library::service_run($service, $atts, $content);
@@ -67,7 +67,7 @@ function validate_context($context) {
 
 // Then handler
 \aw2_library::add_service('cond_block_context.then', 'Execute if primary condition is true', ['namespace'=>__NAMESPACE__]);
-function then($atts, $content=null, $shortcode) {
+function then($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === true) {
@@ -79,7 +79,7 @@ function then($atts, $content=null, $shortcode) {
 
 // Then.and handler
 \aw2_library::add_service('cond_block_context.then.and', 'Execute if primary is true and secondary is true', ['func'=>'then_and', 'namespace'=>__NAMESPACE__]);
-function then_and($atts, $content=null, $shortcode) {
+function then_and($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === true) {
@@ -94,7 +94,7 @@ function then_and($atts, $content=null, $shortcode) {
 
 // Then.not handler
 \aw2_library::add_service('cond_block_context.then.not', 'Execute if primary is true and secondary is false', ['func'=>'then_not', 'namespace'=>__NAMESPACE__]);
-function then_not($atts, $content=null, $shortcode) {
+function then_not($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === true) {
@@ -109,7 +109,7 @@ function then_not($atts, $content=null, $shortcode) {
 
 // Else handler
 \aw2_library::add_service('cond_block_context.else', 'Execute if primary condition is false', ['func'=>'else_handler', 'namespace'=>__NAMESPACE__]);
-function else_handler($atts, $content=null, $shortcode) {
+function else_handler($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === false) {
@@ -121,7 +121,7 @@ function else_handler($atts, $content=null, $shortcode) {
 
 // Else.and handler
 \aw2_library::add_service('cond_block_context.else.and', 'Execute if primary is false and secondary is true', ['func'=>'else_and', 'namespace'=>__NAMESPACE__]);
-function else_and($atts, $content=null, $shortcode) {
+function else_and($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === false) {
@@ -136,7 +136,7 @@ function else_and($atts, $content=null, $shortcode) {
 
 // Else.not handler
 \aw2_library::add_service('cond_block_context.else.not', 'Execute if primary is false and secondary is false', ['func'=>'else_not', 'namespace'=>__NAMESPACE__]);
-function else_not($atts, $content=null, $shortcode) {
+function else_not($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === false) {
@@ -151,7 +151,7 @@ function else_not($atts, $content=null, $shortcode) {
 
 // Or handler
 \aw2_library::add_service('cond_block_context.or', 'Execute if either primary or secondary is true', ['func'=>'or_handler', 'namespace'=>__NAMESPACE__]);
-function or_handler($atts, $content=null, $shortcode) {
+function or_handler($atts, $content=null, $shortcode = array()) {
     $info = validate_context($atts['@context']);
     
     if($info['status'] === true) {

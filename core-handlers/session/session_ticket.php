@@ -36,7 +36,7 @@ function check($ticket,$otp_value,$validation){
 \aw2_library::add_service('session_ticket.create','Create a ticket',['namespace'=>__NAMESPACE__]);
 
 
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -107,7 +107,7 @@ function create($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.validate','Validate a ticket',['namespace'=>__NAMESPACE__]);
 
-function validate($atts,$content=null,$shortcode){
+function validate($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -255,7 +255,7 @@ function get($atts,$content=null,$shortcode=null){
 
 \aw2_library::add_service('session_ticket.query','Get all values of a query',['namespace'=>__NAMESPACE__]);
 
-function query($atts,$content=null,$shortcode){
+function query($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -271,7 +271,7 @@ function query($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.generate_token','Generate action token against ticket.',['namespace'=>__NAMESPACE__]);
 
-function generate_token($atts,$content=null,$shortcode){
+function generate_token($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -291,7 +291,7 @@ function generate_token($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('session_ticket.destroy','Destroy a ticket',['namespace'=>__NAMESPACE__]);
 
-function destroy($atts,$content=null,$shortcode){
+function destroy($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

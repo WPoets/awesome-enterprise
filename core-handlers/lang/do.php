@@ -4,7 +4,7 @@ namespace aw2\_do;
 
 \aw2_library::add_service('do','Do Library',['namespace'=>__NAMESPACE__]);
 
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	$pieces=$shortcode['tags'];
@@ -22,7 +22,7 @@ function unhandled($atts,$content=null,$shortcode){
 
 
 /*
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	$pieces=$shortcode['tags'];

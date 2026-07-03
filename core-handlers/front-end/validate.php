@@ -4,7 +4,7 @@ namespace aw2\validate;
 
 \aw2_library::add_service('validate.email','Checks email validation',['namespace'=>__NAMESPACE__]);
 
-function email($atts,$content=null,$shortcode){
+function email($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -25,7 +25,7 @@ function email($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.positive_int','Checks positive_int',['namespace'=>__NAMESPACE__]);
 
-function positive_int($atts,$content=null,$shortcode){
+function positive_int($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -56,7 +56,7 @@ function positive_int($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.zero_positive_int','Checks zero_positive_int',['namespace'=>__NAMESPACE__]);
 
-function zero_positive_int($atts,$content=null,$shortcode){
+function zero_positive_int($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -87,7 +87,7 @@ function zero_positive_int($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.zero_positive_float','Checks zero_positive_float',['namespace'=>__NAMESPACE__]);
 
-function zero_positive_float($atts,$content=null,$shortcode){
+function zero_positive_float($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
    extract(\aw2_library::shortcode_atts( array(
@@ -118,7 +118,7 @@ function zero_positive_float($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.name','Checks name validation',['namespace'=>__NAMESPACE__]);
 
-function name($atts,$content=null,$shortcode){
+function name($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -139,7 +139,7 @@ function name($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.pan_card','Checks pan_card validation',['namespace'=>__NAMESPACE__]);
 
-function pan_card($atts,$content=null,$shortcode){
+function pan_card($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -160,7 +160,7 @@ function pan_card($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.zip_code','Checks zip_code validation',['namespace'=>__NAMESPACE__]);
 
-function zip_code($atts,$content=null,$shortcode){
+function zip_code($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -181,7 +181,7 @@ function zip_code($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.mobile_number','Checks zip_code validation',['namespace'=>__NAMESPACE__]);
 
-function mobile_number($atts,$content=null,$shortcode){
+function mobile_number($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -202,7 +202,7 @@ function mobile_number($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('validate.printable','Checks printable validation',['namespace'=>__NAMESPACE__]);
 
-function printable($atts,$content=null,$shortcode){
+function printable($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(
@@ -223,7 +223,7 @@ function printable($atts,$content=null,$shortcode){
 
 // id: A-Z, a-z, 0-9, - _
 \aw2_library::add_service('validate.object_id','Checks object_id validation',['namespace'=>__NAMESPACE__]);
-function object_id($atts,$content=null,$shortcode){
+function object_id($atts,$content=null,$shortcode = array()){
     if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
     extract(\aw2_library::shortcode_atts( array(

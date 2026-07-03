@@ -6,7 +6,7 @@ namespace aw2\_file;
 
 
 \aw2_library::add_service('file.write','Write content to file',['namespace'=>__NAMESPACE__]);
-function awesome2_file_write($atts,$content=null,$shortcode){
+function awesome2_file_write($atts,$content=null,$shortcode = array()){
 	if(aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( \aw2_library::shortcode_atts( array(
@@ -38,7 +38,7 @@ function awesome2_file_write($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('file.file_put','Will put the content into defined path',['namespace'=>__NAMESPACE__]);
 
-function file_put($atts,$content=null,$shortcode){
+function file_put($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( \aw2_library::shortcode_atts( array(
@@ -59,7 +59,7 @@ function file_put($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('file.file_get','Will get the content from file',['namespace'=>__NAMESPACE__]);
-function file_get($atts,$content=null,$shortcode){
+function file_get($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	extract( \aw2_library::shortcode_atts(array(
@@ -78,7 +78,7 @@ function file_get($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('file.open_file','Will open the file',['namespace'=>__NAMESPACE__]);
-function open_file($atts,$content=null,$shortcode){
+function open_file($atts,$content=null,$shortcode = array()){
 	/*
 	This function takes a path to a file to output ($file),  the filename that the browser will see ($name) and  the MIME type of the file ($mime_type, optional).
 	*/
@@ -190,7 +190,7 @@ function open_file($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('file.log_reader_sql_error','Will read the content from file',['namespace'=>__NAMESPACE__]);
-function log_reader_sql_error($atts,$content=null,$shortcode){
+function log_reader_sql_error($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 	$response=array();
@@ -230,7 +230,7 @@ function log_reader_sql_error($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('file.read_deadlock','Will read the content from query',['namespace'=>__NAMESPACE__]);
-function read_deadlock($atts,$content=null,$shortcode){
+function read_deadlock($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	
 		$response=array();

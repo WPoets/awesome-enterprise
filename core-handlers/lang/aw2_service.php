@@ -47,7 +47,7 @@ function aw2_service_run($atts,$content,$shortcode){
 	return $return_value;
 }
 
-function aw2_service_include($atts,$content=null,$shortcode){
+function aw2_service_include($atts,$content=null,$shortcode = array()){
 	if(aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -68,6 +68,10 @@ function aw2_service_call($atts,$content=null){
 		'module'=>null
 	), $atts) );
 	if($main==null)return 'Module/Template must be provided';	
+
+	if ($service === null) {
+		$service = '';
+	}
 
 	$handlers=&aw2_library::get_array_ref('handlers');
 	$handler=$handlers[$service];

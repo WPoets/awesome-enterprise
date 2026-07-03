@@ -5,7 +5,7 @@ namespace aw2\_if;
 
 \aw2_library::add_service('if.equal','if lhs=rhs',['namespace'=>__NAMESPACE__]);
 
-function equal($atts,$content=null,$shortcode){
+function equal($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['equal']=$atts['rhs'];
@@ -17,7 +17,7 @@ function equal($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('if.not_equal','if lhs<>rhs',['namespace'=>__NAMESPACE__]);
 
-function not_equal($atts,$content=null,$shortcode){
+function not_equal($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['not_equal']=$atts['rhs'];
@@ -29,7 +29,7 @@ function not_equal($atts,$content=null,$shortcode){
 
 
 \aw2_library::add_service('if.greater_equal','if lhs>=rhs',['namespace'=>__NAMESPACE__]);
-function greater_equal($atts,$content=null,$shortcode){
+function greater_equal($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['greater_equal']=$atts['rhs'];
@@ -40,7 +40,7 @@ function greater_equal($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.greater_than','if lhs>rhs',['namespace'=>__NAMESPACE__]);
-function greater_than($atts,$content=null,$shortcode){
+function greater_than($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['greater_than']=$atts['rhs'];
@@ -51,7 +51,7 @@ function greater_than($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.less_equal','if lhs<=rhs',['namespace'=>__NAMESPACE__]);
-function less_equal($atts,$content=null,$shortcode){
+function less_equal($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['less_equal']=$atts['rhs'];
@@ -62,7 +62,7 @@ function less_equal($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.less_than','if lhs<rhs',['namespace'=>__NAMESPACE__]);
-function less_than($atts,$content=null,$shortcode){
+function less_than($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['cond']=$atts['lhs'];
 	$atts['less_than']=$atts['rhs'];
@@ -73,7 +73,7 @@ function less_than($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.else','else condition',['func'=>'_else','namespace'=>__NAMESPACE__]);
-function _else($atts,$content=null,$shortcode){
+function _else($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$stack_id=\aw2_library::last_child('if');
 	$call_stack=&\aw2_library::get_array_ref('call_stack',$stack_id);
@@ -90,7 +90,7 @@ function _else($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('if.and','and condition',['func'=>'_and','namespace'=>__NAMESPACE__]);
 
-function _and($atts,$content=null,$shortcode){
+function _and($atts,$content=null,$shortcode = array()){
 	\aw2_library::pre_actions('parse_attributes',$atts,$content,$shortcode);
 	extract(\aw2_library::shortcode_atts( array(
 		'main' => null
@@ -129,7 +129,7 @@ function _and($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.or','or condition',['func'=>'_or','namespace'=>__NAMESPACE__]);
-function _or($atts,$content=null,$shortcode){
+function _or($atts,$content=null,$shortcode = array()){
 	\aw2_library::pre_actions('parse_attributes',$atts,$content,$shortcode);
 	extract(\aw2_library::shortcode_atts( array(
 		'main' => null
@@ -170,7 +170,7 @@ function _or($atts,$content=null,$shortcode){
 
 }
 
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
@@ -294,7 +294,7 @@ function unhandled($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.contains','needle,haystack',['namespace'=>__NAMESPACE__]);
-function contains($atts,$content=null,$shortcode){
+function contains($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['contains']=$atts['needle'];
 	$atts['list']=$atts['haystack'];
@@ -305,7 +305,7 @@ function contains($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('if.not_contains','needle,haystack',['namespace'=>__NAMESPACE__]);
-function not_contains($atts,$content=null,$shortcode){
+function not_contains($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$atts['not_contains']=$atts['needle'];
 	$atts['list']=$atts['haystack'];
@@ -316,7 +316,7 @@ function not_contains($atts,$content=null,$shortcode){
 }
 
 
-function aw2_if_helper($atts,$content=null,$shortcode){
+function aw2_if_helper($atts,$content=null,$shortcode = array()){
 	$cond=\aw2_library::pre_actions('check_if',$atts,$content,$shortcode);
 	
 	$stack_id=\aw2_library::push_child('if','if');

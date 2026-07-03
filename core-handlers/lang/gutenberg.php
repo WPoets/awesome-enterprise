@@ -171,7 +171,7 @@ function resolve_value($value){
 
 \aw2_library::add_service('gb.register', 'Register a gutenberg block', ['func' => 'gb_register', 'namespace' => __NAMESPACE__]);
 
-function gb_register($atts, $content = null, $shortcode) {
+function gb_register($atts, $content = null, $shortcode = array()) {
     // Check if main attribute exists
     if (!isset($atts['main']) || empty($atts['main'])) {
         throw new \Exception('Main attribute is required for Gutenberg block registration');
@@ -202,7 +202,7 @@ function gb_register($atts, $content = null, $shortcode) {
 
 \aw2_library::add_service('gb.render.blocks', 'Register a gutenberg block', ['func' => 'render_blocks', 'namespace' => __NAMESPACE__]);
 
-function render_blocks($atts, $content = null, $shortcode) {
+function render_blocks($atts, $content = null, $shortcode = array()) {
     // Check if main attribute exists
     if (!isset($atts['main'])) {
         throw new \Exception('Main attribute is required for Gutenberg block registration');
@@ -227,3 +227,62 @@ function render_blocks($atts, $content = null, $shortcode) {
 }
 
 
+
+\aw2_library::add_service('gb.render.items', 'Process and collect items from children', ['func' => 'render_items', 'namespace' => __NAMESPACE__]);
+
+/**
+ * Processes blocks and collects items into an array
+ * 
+ * @param array $atts Service attributes
+ * @param string $content Service content
+ * @param object $shortcode Shortcode object
+ * @return array Collection of items
+ */
+function render_items($atts, $content = null, $shortcode = null) {
+    $items = array();
+    
+    // Check if main attribute exists
+    if (!isset($atts['main'])) {
+        return array('items' => $items);
+    }
+    
+    $blocks = $atts['main'];
+    
+ 
+    // Return early if empty
+    if (empty($blocks)) {
+        return array('items' => $items);
+    }
+    
+    // Iterate through blocks
+    foreach ($blocks as $block) {
+        $reply = render_block($block);
+   
+        // Try to decode the JSON string
+        $reply = json_decode($reply, true);
+
+        // Process the reply
+        if (is_array($reply)) {
+            // If it's a single item (associative array with non-numeric keys)
+            if (!empty($reply) && !isset($reply[0]) && count(array_filter(array_keys($reply), 'is_string')) > 0) {
+                $items[] = $reply;
+            } 
+            // If it's an array of items
+            elseif (isset($reply['items']) && is_array($reply['items'])) {
+                foreach ($reply['items'] as $item) {
+                    $items[] = $item;
+                }
+            }
+            // If it's a numerically indexed array (already an items array)
+            elseif (count($reply) > 0 && isset($reply[0])) {
+                foreach ($reply as $item) {
+                    $items[] = $item;
+                }
+            }
+            // Otherwise, discard
+        }
+        // Non-array replies are discarded
+    }
+    
+    return array('items' => $items);
+}

@@ -13,51 +13,78 @@ namespace aw2\func;
  * @return array Status array indicating success/failure
  * @throws \Exception If namespace or content is missing
  */
+
 function add($atts, $content=null, $shortcode=null) {
-	// Check required parameters
-	if(empty($atts['namespace'])) {
-		throw new \Exception('namespace is required in func.add');
-	}
-	
-	if(empty($content)) {
-		throw new \Exception('content is required in func.add');
-	}
-
-	// Get reference to function stack
-	$fstack = &\aw2_library::$funcstack;
-
-	// Ensure namespace exists
-	if(!isset($fstack[$atts['namespace']])) {
-		$fstack[$atts['namespace']] = [];
-	}
-
-	// Get main attribute (function path)
-	if(empty($atts['main'])) {
-		throw new \Exception('function path is required in func.add');
+    // Check if content is provided
+    if(empty($content)) {
+        throw new \Exception('content is required in func.add');
+    }
+    
+    // Get reference to function stack
+    $fstack = &\aw2_library::$funcstack;
+    
+    // Determine function name and namespace
+    $func_name = null;
+    $namespace = null;
+    
+	if(!empty(\aw2_library::get('namespace_build.info.namespace'))) {
+		$namespace = \aw2_library::get('namespace_build.info.namespace');
 	}
 
-	// Split function path into parts
-	$parts = explode('.', $atts['main']);
-	
-	// Reference to current level in fstack
-	$current = &$fstack[$atts['namespace']];
-	
-	// Navigate through parts to build nested structure
-	$last_part = array_pop($parts); // Remove and store last part
-	
-	foreach($parts as $part) {
-		if(!isset($current[$part])) {
-			$current[$part] = [];
-		}
-		$current = &$current[$part];
-	}
-	
-	// Set the function content at final level
-	$current[$last_part]['code'] = $content;
-
-	// Return success
-	return;
+    // Case 1: main attribute contains namespace:func format
+    if(!empty($atts['main']) && strpos($atts['main'], ':') !== false) {
+        $parts = explode(':', $atts['main'], 2);
+        $parts = explode(':', $atts['main'], 2);
+        $namespace = $parts[0];
+        $func_name = $parts[1];
+    }
+    // Case 2: main attribute contains just func name, namespace as separate attribute
+    else if(!empty($atts['main'])) {
+        $func_name = $atts['main'];
+        
+		if(empty($namespace)) {
+            if(empty($atts['namespace'])) {
+                throw new \Exception('namespace is required when main does not include namespace:func format');
+            }
+            
+            $namespace = $atts['namespace'];
+        }
+    }
+    // Handle missing main attribute
+    else {
+        throw new \Exception('main attribute is required in func.add');
+    }
+    
+    // Final validation
+    if(empty($namespace) || empty($func_name)) {
+        throw new \Exception('Both namespace and function name are required in func.add');
+    }
+    
+    // Ensure namespace exists
+    if(!isset($fstack[$namespace])) {
+        $fstack[$namespace] = [];
+    }
+    
+    // Store the function in the fstack
+    $fstack[$namespace][$func_name] = [
+        'code' => $content
+    ];
+    
+    // Add optional title if provided
+    if(!empty($atts['title'])) {
+        $fstack[$namespace][$func_name]['title'] = $atts['title'];
+    }
+    
+    // Add optional description if provided
+    if(!empty($atts['desc'])) {
+        $fstack[$namespace][$func_name]['desc'] = $atts['desc'];
+    }
+    
+    // Return success
+    return '';
 }
+ 
+
 
 
 
@@ -72,41 +99,62 @@ function add($atts, $content=null, $shortcode=null) {
  * @return array Status array indicating success/failure
  * @throws \Exception If required parameters are missing
  */
+
 function create($atts, $content=null, $shortcode=null) {
-        // Check required parameters
-        if(empty($atts['main'])) {
-            throw new \Exception('main (service name) is required in func.create');
-        }
-        
-        if(empty($atts['namespace'])) {
-            throw new \Exception('namespace is required in func.create');
-        }
-        
-        if(empty($atts['func'])) {
-            throw new \Exception('func is required in func.register');
-        }
-
-        // Set up settings array
-        $defaults = array(
-            'namespace' => $atts['namespace'],
-            'func' => $atts['func']
-        );
-
-        // Register the service with aw2_library
-        \aw2_library::add_service(
-            $atts['main'],
-            isset($atts['desc']) ? $atts['desc'] : '',
-            [
-                'func' => 'run',
-                'namespace' => __NAMESPACE__,
-                '$defaults' => $defaults
-            ]
-        );
-
-        // Return success
-        return;
+    // Check required parameters
+    if(empty($atts['main'])) {
+        throw new \Exception('main (service name) is required in func.service.create');
+    }
+    
+    $service_name = $atts['main'];
+    $func_name = null;
+    $namespace = null;
+    
+    // Option 1: Using func and namespace separate attributes
+    if(!empty($atts['func']) && !empty($atts['namespace'])) {
+        $func_name = $atts['func'];
+        $namespace = $atts['namespace'];
+    }
+    // Option 2: Using source attribute with namespace:func format
+    else if(!empty($atts['source']) && strpos($atts['source'], ':') !== false) {
+        $parts = explode(':', $atts['source'], 2);
+        $namespace = $parts[0];
+        $func_name = $parts[1];
+    }
+    // Final validation
+    else {
+        throw new \Exception('Both namespace and function name are required in func.service.create. Use either func/namespace attributes or source with namespace:func format.');
+    }
+    
+    // Get reference to function stack to verify function exists
+    $fstack = \aw2_library::$funcstack;
+    
+    if(!isset($fstack[$namespace]) || !isset($fstack[$namespace][$func_name])) {
+        throw new \Exception("Function '$func_name' in namespace '$namespace' not found");
+    }
+    
+    // Set up defaults array
+    $defaults = array(
+        'namespace' => $namespace,
+        'func' => $func_name
+    );
+    
+    // Get description if provided
+    $description = isset($atts['desc']) ? $atts['desc'] : '';
+    
+    // Register the service
+    \aw2_library::add_service(
+        $service_name,
+        $description,
+        [
+            'func' => 'run',
+            'namespace' => __NAMESPACE__,
+            '#defaults' => $defaults
+        ]
+    );
+    
+    return '';
 }
-
 
 // Register the service
 \aw2_library::add_service('call', 'Calls a function within the same namespace', ['func'=>'func_call', 'namespace'=>__NAMESPACE__]);
@@ -126,31 +174,24 @@ function func_call($atts, $content=null, $shortcode=null) {
         throw new \Exception('you must specify the function to call');
     }
 
-    // Get function parts
-    $func = $shortcode['tags_left'];
- 
     // Get current namespace
     $namespace = \aw2_library::get('namespace.info.namespace');
     if(empty($namespace)) {
         throw new \Exception('current namespace not found');
     }
 
+    // Get function parts
+    $func_name =implode('.', $shortcode['tags_left']);
+
     // Get reference to function stack
     $fstack = &\aw2_library::$funcstack;
     
     // Check if namespace exists
-    if(!isset($fstack[$namespace])) {
-        throw new \Exception("namespace $namespace not found in function stack");
+    if(!isset($fstack[$namespace][$func_name])) {
+        throw new \Exception("$func_name or namespace $namespace not found in function stack");
     }
 
-    // Navigate through function path to find code
-    $current = $fstack[$namespace];
-    foreach($func as $part) {
-        if(!isset($current[$part])) {
-            throw new \Exception("function part $part not found in namespace $namespace");
-        }
-        $current = $current[$part];
-    }
+	$code=$fstack[$namespace][$func_name]['code'];
 
 
     // Setup the context stack
@@ -164,7 +205,7 @@ function func_call($atts, $content=null, $shortcode=null) {
     $info['func'] = implode('.', $shortcode['tags_left']);
 
     // Parse and execute the function code
-    $reply = \aw2_library::parse_shortcode($current['code']);
+    $reply = \aw2_library::parse_shortcode($code);
     
     // Clean up stack
     \aw2\call_stack\pop_context($stack_id);
@@ -184,29 +225,35 @@ function func_call($atts, $content=null, $shortcode=null) {
  */
 function run($atts, $content=null, $shortcode=null) {
 	// Get settings from handler
-	$settings = $shortcode['handler']['$defaults'];
+	if(isset($shortcode['handler']['$defaults']))
+		$settings = $shortcode['handler']['$defaults'];
+
+	if(isset($shortcode['handler']['#defaults']))
+		$settings = $shortcode['handler']['#defaults'];
+	
+	//throw exception if not found	
 	$namespace = $settings['namespace'];
 	$func = $settings['func'];
 
+	$def=null;
+	//find the func
+	//step 1 check the stack
 	// Get reference to function stack
 	$fstack = &\aw2_library::$funcstack;
-	
 	// Check if namespace exists
-	if(!isset($fstack[$namespace])) {
-		throw new \Exception("namespace $namespace not found in function stack");
+	if(isset($fstack[$namespace][$func])) {
+		$def=$fstack[$namespace][$func];
 	}
-
-	// Navigate through function path to find code
-	$current = $fstack[$namespace];
 	
-	// Split function path on dots
-	$func_parts = explode('.', $func);
-	
-	foreach($func_parts as $part) {
-		if(!isset($current[$part])) {
-			throw new \Exception("function part $part not found in namespace $namespace");
-		}
-		$current = $current[$part];
+	//if not found then get from connection
+	if(is_null($def)){
+		// Create parameters for folder_conn.service.get
+		$params = array('namespace' => $namespace,'func' => $func, 'connection' => $settings['connection']);
+		
+		// Get the service definition
+		$def = \aw2\url_conn\func\get($params);
+		$fstack = &\aw2_library::$funcstack;
+		$fstack[$namespace][$func]=$def;
 	}
 
 	// Set up namespace context
@@ -224,9 +271,8 @@ function run($atts, $content=null, $shortcode=null) {
 	$func_info['namespace'] = $namespace;
 	$func_info['func'] = $func;
 
-   //\util::var_dump($current);
 	// Parse and execute the function code
-	$reply = \aw2_library::parse_shortcode($current['code']);
+	$reply = \aw2_library::parse_shortcode($def['code']);
 
 	$ref = &\aw2_library::get_array_ref('func');
 	if(isset($ref['_return'])){
@@ -234,28 +280,30 @@ function run($atts, $content=null, $shortcode=null) {
 		unset($r['_return']);
 		$reply=$ref['_return'];
 	}
-	//\util::var_dump($reply);	
+	
     \aw2\call_stack\pop_context($stack_id);
 	
 	return $reply;
 
 }
 
-
+/*
 \aw2_library::add_service('func.get','Get a func Value',['namespace'=>__NAMESPACE__]);
 
-function get($atts,$content=null,$shortcode){
+function get($atts,$content=null,$shortcode = array()){
 	
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
-	'default'=>''
+	'default'=>'#_not_set_#'
 	), $atts, 'aw2_get' ) );
 	
 	$main='func.' . $main;
 	$return_value=\aw2_library::get($main);
-	if(($return_value==='' || is_null($return_value)) && $default!=='##not_set##')$return_value=$default;
+	if(($return_value==='' || is_null($return_value)) && $default!=='#_not_set_#')$return_value=$default;
 	return $return_value;
 }
+*/
+
 
 // Register the service
 \aw2_library::add_service('func.set', 'Set a func Value', ['namespace'=>__NAMESPACE__]);
@@ -273,18 +321,14 @@ function get($atts,$content=null,$shortcode){
  * @return array Empty array as service always returns void
  * @throws \Exception If required parameters are missing or invalid
  */
+
+//deprecated
 function set($atts, $content=null, $shortcode=null) {
 	// Case 1: Simple key-value pair
 	// [func.set key=value /]
 	$initial='func';
 	if(isset($atts['key']) && isset($atts['value'])) {
 		\aw2_library::set($initial . '.' . $atts['key'], $atts['value']);
-	}
-
-	// Case 2: Path based content
-	// [func.set path='func path']content[/func.set]
-	if(isset($atts['path']) && $content !== null) {
-		\aw2_library::set($initial . '.' .$atts['path'], $content);
 		return;
 	}
 
@@ -292,6 +336,13 @@ function set($atts, $content=null, $shortcode=null) {
 	// [func.set main=value path='func path' /]
 	if(isset($atts['main']) && isset($atts['path'])) {
 		\aw2_library::set($initial . '.' .$atts['path'], $atts['main']);
+		return;
+	}
+	
+	// Case 2: Path based content
+	// [func.set path='func path']content[/func.set]
+	if(isset($atts['path'])) {
+		\aw2_library::set($initial . '.' .$atts['path'], $content);
 		return;
 	}
 
@@ -315,41 +366,9 @@ function set($atts, $content=null, $shortcode=null) {
 }
 
 
-\aw2_library::add_service('func.dump','Dump func Value',['namespace'=>__NAMESPACE__]);
-
-function dump($atts,$content=null,$shortcode){
-
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	), $atts, 'dump' ) );
-
-	$c='func';
-	if($main)$c.='.' . $main ;
-
-	$return_value=\aw2_library::get($c);
-	$return_value=\util::var_dump($return_value,true);
-	return $return_value;
-}
-
-\aw2_library::add_service('func.echo','Echo func Value',['func'=>'_echo','namespace'=>__NAMESPACE__]);
-
-function _echo($atts,$content=null,$shortcode){
-
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	), $atts, 'dump' ) );
-
-	$c='func';
-	if($main)$c.='.' . $main ;
-
-	$return_value=\aw2_library::get($c);
-	\util::var_dump($return_value);
-}
-
-
 \aw2_library::add_service('func.return','Return an active func',['func'=>'_return','namespace'=>__NAMESPACE__]);
 
-function _return($atts,$content=null,$shortcode){
+function _return($atts,$content=null,$shortcode = array()){
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null
 	), $atts) );
@@ -358,4 +377,63 @@ function _return($atts,$content=null,$shortcode){
 	\aw2_library::set('_return',true);	
 	\aw2_library::set('func._return',$return_value);
 	return;
+}
+
+
+// Register basic func services
+\aw2_library::add_service('func.get', 'Get a func Value', ['namespace' => __NAMESPACE__]);
+function get($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\get($atts);
+}
+
+// Register basic func services
+\aw2_library::add_service('func.exists', 'Check existence of a path', ['namespace' => __NAMESPACE__]);
+function exists($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\exists($atts);
+}
+
+
+\aw2_library::add_service('func.dump', 'Dump func Value', ['namespace' => __NAMESPACE__]);
+function dump($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\dump($atts);
+}
+
+\aw2_library::add_service('func.echo', 'Echo func Value', ['func' => '_echo', 'namespace' => __NAMESPACE__]);
+function _echo($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    \aw2\common\env_services\_echo($atts);
+}
+
+// Additional set services
+\aw2_library::add_service('func.set.path', 'Set func Value with Path', ['func' => 'set_path','namespace' => __NAMESPACE__]);
+function set_path($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\set_path($atts);
+}
+
+\aw2_library::add_service('func.set.paths', 'Set multiple func Values with Paths', ['func' => 'set_paths','namespace' => __NAMESPACE__]);
+function set_paths($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\set_paths($atts);
+}
+
+\aw2_library::add_service('func.set.value', 'Set func Value directly', ['func' => 'set_value','namespace' => __NAMESPACE__]);
+function set_value($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\set_value($atts);
+}
+
+\aw2_library::add_service('func.set.content', 'Set func Value from Content', ['func' => 'set_content','namespace' => __NAMESPACE__]);
+function set_content($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\set_content($atts, $content);
+}
+
+\aw2_library::add_service('func.set.raw', 'Set Raw unparsed Content to func', ['func' => 'set_raw','namespace' => __NAMESPACE__]);
+function set_raw($atts, $content = null, $shortcode = array()) {
+    $atts['start'] = 'func';
+    return \aw2\common\env_services\set_raw($atts, $content);
 }

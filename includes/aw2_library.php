@@ -52,8 +52,10 @@ static function load_handlers_from_path($handlers_path,...$paths){
 //this function is used to load all the handlers, this will load communication as well as all others like google
 static function load_all_extra_handlers(){
 	//php8OK
-	
-	$handler_path = AWESOME_PATH.'/extra-handlers';
+	if(defined(EXTRA_HANDLERS_PATH))
+		$handler_path =   EXTRA_HANDLERS_PATH; 
+	else
+		$handler_path =  AWESOME_PATH.'/extra-handlers';
         
 	if(!is_dir($handler_path ))
 		return;
@@ -444,13 +446,7 @@ static function get_default_db_conn(){
 	//get the mysql connection
 	$mysqli = self::get($mysqli_handler['conn_path']);
 	//set the db
-	//$mysqli->select_db($mysqli_handler['db_name']);
-	$db_connection=$mysqli_handler['db_connection'];
-	//$result=$mysqli->select_db($db_name);
-	$db_conections = DB_CONNECTIONS;
-
-	$result=$mysqli->change_user($db_conections[$db_connection]['user'], $db_conections[$db_connection]['password'], $db_name);
-
+	$mysqli->select_db($mysqli_handler['db_name']);
 	//return the obj
 	return $mysqli;
 	
@@ -713,7 +709,8 @@ static function parse_shortcode( $content, $ignore_html = false,$sc_exec_restore
 
 
 
-	$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+//	$content = preg_replace_callback( "/$pattern/s", 'self::shortcode_tag', $content,-1, $count ,PREG_OFFSET_CAPTURE );
+	$content = preg_replace_callback( "/$pattern/s", ['aw2_library', 'shortcode_tag'], $content,-1, $count ,PREG_OFFSET_CAPTURE );	
 
 
 	
@@ -962,6 +959,13 @@ static function process_handler($inputs){
 		}	
 
 		#for 4th level		
+		if(isset($sc['handler'][$next_tag])){
+			$service=array_shift($pieces);
+			$sc['handler']=$sc['handler'][$service];
+			$next_tag=null;
+			if(isset($pieces[0]))$next_tag=$pieces[0];	
+		}				
+		#for 5th level		
 		if(isset($sc['handler'][$next_tag])){
 			$service=array_shift($pieces);
 			$sc['handler']=$sc['handler'][$service];
@@ -2834,6 +2838,9 @@ static function set($key,$value,$content=null,$atts=null){
 static function set_cookie($key,$value,$overwrite='yes'){
 	//php8OK	
 	$flag=true;
+	if ($key === null) {
+		$key = '';
+	}
 	if (array_key_exists($key, $_COOKIE) && $overwrite=='no')$flag=false;
 	if (array_key_exists($key, $_COOKIE) && $_COOKIE[$key]!='' & $_COOKIE[$key]!=null & $overwrite=='empty')$flag=false;	
 	
@@ -2850,6 +2857,9 @@ static function set_cookie($key,$value,$overwrite='yes'){
 static function set_session($key,$value,$overwrite='yes'){
 	//php8OK	
 	$flag=true;
+	if ($key === null) {
+		$key = '';
+	}
 	if (!isset($_SESSION)) return;
 	if (array_key_exists($key, $_SESSION) && $overwrite=='no')$flag=false;
 	if (array_key_exists($key, $_SESSION) && $_SESSION[$key]!='' & $_SESSION[$key]!=null & $overwrite=='empty')$flag=false;
@@ -2859,6 +2869,9 @@ static function set_session($key,$value,$overwrite='yes'){
 
 static function set_option($key,$value,$overwrite='yes'){
 	//php8Amit	
+	if ($key === null) {
+		$key = '';
+	}
 	add_option( $key, $value, '', 'no' );
 }
 
@@ -3527,7 +3540,7 @@ static function get_shortcode($o){
 		$o->value='_error';
 		return;
 	}
-	$args=self::get_clean_args($o->content);
+	$args=self::get_clean_args($o->$content);
 	$sc=$o->pieces[0];
 	array_shift($o->pieces);
 
@@ -4458,7 +4471,7 @@ static function module_forced_run($collection,$module,$template,$content,$atts){
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
 		
-		return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
+		return "$module Module not found " . self::convert_name_value_string($collection);
 	}	
 
 	if(self::is_live_debug()){
@@ -4584,7 +4597,7 @@ static function module_run($collection,$module,$template=null,$content=null,$att
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
 	
-		return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
+		return "$module Module not found " . self::convert_name_value_string($collection);
 	}
 
 	if(self::is_live_debug()){
@@ -4749,8 +4762,7 @@ static function template_run($template,$content=null,$atts=array()){
 
 			\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 		}
-		//return 'Template not found - '.$template ;
-		return 'Template not found - ' . htmlspecialchars($template, ENT_QUOTES, 'UTF-8');
+		return 'Template not found - '.$template ;
 		
 	}
 	$template_ptr=self::$stack['module']['templates'][$template];
@@ -4908,7 +4920,7 @@ static function module_include($collection,$module){
 				$temp_debug['error_type']='missing_asset';
 				\aw2\live_debug\publish_event(['event'=>$temp_debug,'bgcolor'=>'#F0EBE3']);
 			}
-			return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
+			return "$module Module not found " . self::convert_name_value_string($collection);
 		}	
 		
 		//echo 'module::' . $module . 'collection:: ' . $collection['post_type'] . '<br />';
@@ -4953,7 +4965,7 @@ static function module_include_raw($collection,$module){
 
 	//php8ok	
 	$arr=self::get_module($collection,$module);
-		if(!$arr)return "$module Module not found " . htmlentities(self::convert_name_value_string($collection));
+		if(!$arr)return "$module Module not found " . self::convert_name_value_string($collection);
 	$return_value=$arr['code'];	
 	return $return_value;	
 }
@@ -5116,7 +5128,7 @@ public $is_api=false;
 	private function next_element(){
 		//$pattern = '/\s*\[([a-zA-Z].*?)(\/]|])/';
 		
-		$pattern = '/\s*\[([a-zA-Z0-9_\-@]*(?:(?:\s*)|(?:\s.*?)))(\/]|])/s';
+		$pattern = '/\s*\[([a-zA-Z0-9_\-@#]*(?:(?:\s*)|(?:\s.*?)))(\/]|])/s';
 		// <whitespace>[<atleast one character><any thing lazy>(optional /)] 
 		$reply=preg_match($pattern, $this->str, $match,PREG_OFFSET_CAPTURE);
 	
@@ -5139,7 +5151,7 @@ public $is_api=false;
 	private function new_node($text,$state){
 		//delhi name='Delhi' country='India' gets the full node including 
 		$atts=array();
-		$pattern = '/([-a-zA-Z0-9_.:@]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.:@]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.:@]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+		$pattern = '/([-a-zA-Z0-9_.:@#]+)\s*=\s*"([^"]*)"(?:\s|$)|([-a-zA-Z0-9_.:@#]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([-a-zA-Z0-9_.:@#]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
 		
 		$reply=preg_match_all($pattern, $text, $match, PREG_SET_ORDER);
 		if(!$reply){

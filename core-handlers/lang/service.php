@@ -52,7 +52,7 @@ function run($atts,$content=null,$shortcode=null){
  
 \aw2_library::add_service('service.template.add','Add a New Template',['func'=>'template_add','namespace'=>__NAMESPACE__]);
  
-function template_add($atts,$content=null,$shortcode){
+function template_add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,

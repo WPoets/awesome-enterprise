@@ -2,7 +2,7 @@
 namespace aw2;
 
 \aw2_library::add_service('aw2.upload','Upload',['namespace'=>__NAMESPACE__]);
-function upload($atts,$content=null,$shortcode){
+function upload($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -18,7 +18,14 @@ function upload($atts,$content=null,$shortcode){
 		'set_featured'=>false,
 		'woo_product_gal'=>false
 	), $atts, 'aw2_upload' ) );
-
+	// These files need to be included as dependencies when on the front end.
+	if ($upload_element_id === null) {
+		$upload_element_id = '';
+	}
+	require_once( ABSPATH . 'wp-admin/includes/image.php' );
+	require_once( ABSPATH . 'wp-admin/includes/file.php' );
+	require_once( ABSPATH . 'wp-admin/includes/media.php' );
+	
 	// Allow certain file formats
 	$allowed = array('gif', 'png' ,'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'csv');
 	
@@ -28,11 +35,6 @@ function upload($atts,$content=null,$shortcode){
 	}
 	
 	if($main=='attach_to_post'){
-		// These files need to be included as dependencies when on the front end.
-		require_once( ABSPATH . 'wp-admin/includes/image.php' );
-		require_once( ABSPATH . 'wp-admin/includes/file.php' );
-		require_once( ABSPATH . 'wp-admin/includes/media.php' );
-			
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];  
 			
@@ -146,16 +148,11 @@ function upload($atts,$content=null,$shortcode){
 					if($overwrite_file == 'no'){
 						// don't overwrite an existing file
 						$i = 0;
-						
-						$pathinfo = pathinfo($tmp_file_name);
-						$filename = isset($pathinfo['filename']) ? $pathinfo['filename'] : 'file';
-						$extension = isset($pathinfo['extension']) ? '.' . $pathinfo['extension'] : '';
-
+						$name = pathinfo($tmp_file_name);
 						while (file_exists($upload_dir . $tmp_file_name)) {
 							$i++;
-							$tmp_file_name = $filename . "-" . $i . $extension;
+							$tmp_file_name = $name["filename"] . "-" . $i . "." . $name["extension"];
 						}
-
 					}
 					
 					if (!file_exists($upload_dir)) {
@@ -223,7 +220,7 @@ function aw2_woo_set_prodcut_gallery($post_id,$attach_ids){
 }
 
 \aw2_library::add_service('aw2.sideload','Download a File from URL and attach to media',['namespace'=>__NAMESPACE__]);
-function sideload($atts,$content=null,$shortcode){
+function sideload($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(

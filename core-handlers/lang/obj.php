@@ -18,7 +18,7 @@ function is_not_obj($atts, $content=null, $shortcode=null) {
 
 
 \aw2_library::add_service('obj.set','Set a value in an array',['namespace'=>__NAMESPACE__]);
-function set($atts,$content=null,$shortcode){
+function set($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(
@@ -58,7 +58,7 @@ function create($atts,$content=null,$shortcode=null){
 }
 
 \aw2_library::add_service('obj.empty','Empty array',['func'=>'_empty','namespace'=>__NAMESPACE__]);
-function _empty($atts,$content=null,$shortcode){
+function _empty($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$return_value=new \stdClass();
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -66,7 +66,7 @@ function _empty($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('arr.search_deep','Allows you to search for a value in an array of arrays or an array of objects, and return the key of the value that matches the search criteria.',['namespace'=>__NAMESPACE__]);
-function search_deep($atts,$content=null,$shortcode){
+function search_deep($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	

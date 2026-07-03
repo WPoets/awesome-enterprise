@@ -1,0 +1,422 @@
+<?php
+/**
+ * MySQL Cache Connector
+ * Provides services to interact with MySQL for caching, mimicking Redis functionality
+ * 
+ * Required database table structure:
+ * CREATE TABLE `cache_items` (
+ *   `cache_db` INT NOT NULL,
+ *   `cache_key` VARCHAR(255) NOT NULL,
+ *   `cache_field` VARCHAR(255) NOT NULL DEFAULT '',
+ *   `cache_value` LONGTEXT NOT NULL,
+ *   `expiry` TIMESTAMP NULL DEFAULT NULL,
+ *   PRIMARY KEY (`cache_db`, `cache_key`, `cache_field`),
+ *   INDEX `idx_expiry` (`expiry`)
+ * )
+ */
+namespace aw2\cache\mysql;
+
+/**
+ * Set value in MySQL cache
+ * @param array $atts Attributes including key, ttl, db, value
+ * @return mixed Empty string on success, error message on failure
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.set', 'Set value in MySQL cache', ['namespace' => __NAMESPACE__]);
+function set($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'key' => null,
+        'ttl' => 300, // Time to live in minutes
+        'db' => null,
+        'value' => '#_notset_#',
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.set: db parameter is required');
+    }
+    
+    if (!$key) {
+        throw new \InvalidArgumentException('mysql.cache.set: key parameter is required');
+    }
+    
+    if ($value === '#_notset_#') {
+        throw new \InvalidArgumentException('mysql.cache.set: value parameter is required');
+    }
+    
+    try {
+        // Calculate expiry timestamp
+        $expiry = date('Y-m-d H:i:s', time() + ($ttl * 60));
+        
+        // Prepare MySQL query
+        $sql = "INSERT INTO cache_items (cache_db, cache_key, cache_field, cache_value, expiry) 
+                VALUES ([esc.int db /], [esc.str key /], '', [esc.str value /], [esc.str expiry /])
+                ON DUPLICATE KEY UPDATE 
+                cache_value = [esc.str value /], 
+                expiry = [esc.str expiry /]";
+        
+        // Execute query
+        [mysqli.cud connection="{connection}"]
+            {$sql}
+        [/mysqli.cud]
+        
+        return '';
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Set field value in MySQL cache (hash equivalent)
+ * @param array $atts Attributes including main (hash name), field, ttl, db, value
+ * @return mixed Empty string on success, error message on failure
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.hset', 'Set field value in MySQL cache', ['namespace' => __NAMESPACE__]);
+function hset($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'main' => null,    // Hash name
+        'field' => null,   // Field name within hash
+        'value' => '#_notset_#',
+        'ttl' => 300,      // Time to live in minutes
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.hset: db parameter is required');
+    }
+    
+    if (!$main) {
+        throw new \InvalidArgumentException('mysql.cache.hset: main parameter is required');
+    }
+    
+    if (!$field) {
+        throw new \InvalidArgumentException('mysql.cache.hset: field parameter is required');
+    }
+    
+    if ($value === '#_notset_#') {
+        throw new \InvalidArgumentException('mysql.cache.hset: value parameter is required');
+    }
+    
+    try {
+        // Calculate expiry timestamp
+        $expiry = date('Y-m-d H:i:s', time() + ($ttl * 60));
+        
+        // Prepare MySQL query
+        $sql = "INSERT INTO cache_items (cache_db, cache_key, cache_field, cache_value, expiry) 
+                VALUES ([esc.int db /], [esc.str main /], [esc.str field /], [esc.str value /], [esc.str expiry /])
+                ON DUPLICATE KEY UPDATE 
+                cache_value = [esc.str value /], 
+                expiry = [esc.str expiry /]";
+        
+        // Execute query
+        [mysqli.cud connection="{connection}"]
+            {$sql}
+        [/mysqli.cud]
+        
+        return '';
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Get value from MySQL cache
+ * @param array $atts Attributes including main (key), db
+ * @return mixed Value from cache or error message
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.get', 'Get value from MySQL cache', ['namespace' => __NAMESPACE__]);
+function get($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'main' => null,    // Key name
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.get: db parameter is required');
+    }
+    
+    if (!$main) {
+        throw new \InvalidArgumentException('mysql.cache.get: main parameter is required');
+    }
+    
+    try {
+        // Prepare MySQL query
+        $sql = "SELECT cache_value FROM cache_items 
+                WHERE cache_db = [esc.int db /]
+                AND cache_key = [esc.str main /]
+                AND cache_field = '' 
+                AND (expiry > NOW() OR expiry IS NULL)";
+        
+        // Execute query
+        [mysqli.fetch.scalar connection="{connection}" out:@set=return_value]
+            {$sql}
+        [/mysqli.fetch.scalar]
+        
+        // Return empty string if no value found
+        if (!isset($return_value) || $return_value === null) {
+            return '';
+        }
+        
+        return $return_value;
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Get field value from MySQL cache (hash equivalent)
+ * @param array $atts Attributes including main (hash name), field, db
+ * @return mixed Field value from hash or error message
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.hget', 'Get field value from MySQL cache', ['namespace' => __NAMESPACE__]);
+function hget($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'main' => null,    // Hash name
+        'field' => null,   // Field name within hash
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.hget: db parameter is required');
+    }
+    
+    if (!$main) {
+        throw new \InvalidArgumentException('mysql.cache.hget: main parameter is required');
+    }
+    
+    if (!$field) {
+        throw new \InvalidArgumentException('mysql.cache.hget: field parameter is required');
+    }
+    
+    try {
+        // Prepare MySQL query
+        $sql = "SELECT cache_value FROM cache_items 
+                WHERE cache_db = [esc.int db /]
+                AND cache_key = [esc.str main /]
+                AND cache_field = [esc.str field /]
+                AND (expiry > NOW() OR expiry IS NULL)";
+        
+        // Execute query
+        [mysqli.fetch.scalar connection="{connection}" out:@set=return_value]
+            {$sql}
+        [/mysqli.fetch.scalar]
+        
+        // Return empty string if no value found
+        if (!isset($return_value) || $return_value === null) {
+            return '';
+        }
+        
+        return $return_value;
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Check if key exists in MySQL cache
+ * @param array $atts Attributes including main (key), db
+ * @return boolean True if key exists, false otherwise
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.exists', 'Check if key exists in MySQL cache', ['namespace' => __NAMESPACE__]);
+function exists($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'main' => null,    // Key name
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.exists: db parameter is required');
+    }
+    
+    if (!$main) {
+        throw new \InvalidArgumentException('mysql.cache.exists: main parameter is required');
+    }
+    
+    try {
+        // Prepare MySQL query
+        $sql = "SELECT 1 FROM cache_items 
+                WHERE cache_db = [esc.int db /]
+                AND cache_key = [esc.str main /]
+                AND cache_field = ''
+                AND (expiry > NOW() OR expiry IS NULL)
+                LIMIT 1";
+        
+        // Execute query
+        [mysqli.fetch.scalar connection="{connection}" out:@set=result]
+            {$sql}
+        [/mysqli.fetch.scalar]
+        
+        // Return boolean based on result
+        return (!empty($result)) ? true : false;
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Flush entire MySQL cache db
+ * @param array $atts Attributes including db
+ * @return mixed Empty string on success, error message on failure
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.flush', 'Flush MySQL cache database', ['namespace' => __NAMESPACE__]);
+function flush($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.flush: db parameter is required');
+    }
+    
+    if (empty($db) || !is_numeric($db)) {
+        throw new \InvalidArgumentException('mysql.cache.flush: db must be a valid integer.');
+    }
+    
+    try {
+        // Prepare MySQL query - delete only entries for specific db
+        $sql = "DELETE FROM cache_items WHERE cache_db = [esc.int db /]";
+        
+        // Execute query
+        [mysqli.cud connection="{connection}"]
+            {$sql}
+        [/mysqli.cud]
+        
+        return '';
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Delete key from MySQL cache
+ * @param array $atts Attributes including main (key), db
+ * @return mixed Empty string on success, error message on failure
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.del', 'Delete key from MySQL cache', ['namespace' => __NAMESPACE__]);
+function del($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'main' => null,    // Key name
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.del: db parameter is required');
+    }
+    
+    if (!$main) {
+        throw new \InvalidArgumentException('mysql.cache.del: main parameter is required');
+    }
+    
+    try {
+        // Prepare MySQL query
+        $sql = "DELETE FROM cache_items 
+                WHERE cache_db = [esc.int db /]
+                AND cache_key = [esc.str main /]";
+        
+        // Execute query
+        [mysqli.cud connection="{connection}"]
+            {$sql}
+        [/mysqli.cud]
+        
+        return '';
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Clean expired items from MySQL cache
+ * @param array $atts Attributes including connection
+ * @return mixed Empty string on success, error message on failure
+ */
+\aw2_library::add_service('mysql.cache.clean', 'Remove expired items from MySQL cache', ['namespace' => __NAMESPACE__]);
+function clean($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'connection' => 'default'
+    ], $atts));
+    
+    try {
+        // Prepare MySQL query
+        $sql = "DELETE FROM cache_items WHERE expiry <= NOW()";
+        
+        // Execute query
+        [mysqli.cud connection="{connection}"]
+            {$sql}
+        [/mysqli.cud]
+        
+        return '';
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+/**
+ * Get all keys matching a pattern
+ * @param array $atts Attributes including pattern, db
+ * @return array Array of matching keys
+ * @throws \InvalidArgumentException If required parameters are missing
+ */
+\aw2_library::add_service('mysql.cache.keys', 'Get all keys matching a pattern', ['namespace' => __NAMESPACE__]);
+function keys($atts, $content = null, $shortcode = null) {
+    extract(\aw2_library::shortcode_atts([
+        'pattern' => '*',
+        'db' => null,
+        'connection' => 'default'
+    ], $atts));
+    
+    // Validate required parameters
+    if (!isset($db)) {
+        throw new \InvalidArgumentException('mysql.cache.keys: db parameter is required');
+    }
+    
+    try {
+        // Convert Redis-style pattern to SQL LIKE pattern
+        $sql_pattern = str_replace('*', '%', $pattern);
+        
+        // Prepare MySQL query
+        $sql = "SELECT DISTINCT cache_key FROM cache_items 
+                WHERE cache_db = [esc.int db /]
+                AND cache_key LIKE [esc.str sql_pattern /]
+                AND (expiry > NOW() OR expiry IS NULL)
+                ORDER BY cache_key";
+        
+        // Execute query
+        [mysqli.fetch.col connection="{connection}" out:@set=keys]
+            {$sql}
+        [/mysqli.fetch.col]
+        
+        return $keys ?: [];
+    } catch (\Exception $e) {
+        return 'MySQL Cache Error: ' . $e->getMessage();
+    }
+}
+
+
+CREATE TABLE `awesome_code_cache` (
+  `cache_db` INT NOT NULL,
+  `cache_key` VARCHAR(255) NOT NULL,
+  `cache_field` VARCHAR(255) NOT NULL DEFAULT '',
+  `cache_value` LONGTEXT NOT NULL,
+  `expiry` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`cache_db`, `cache_key`, `cache_field`),
+  INDEX `idx_expiry` (`expiry`)
+)

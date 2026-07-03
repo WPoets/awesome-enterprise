@@ -3,7 +3,7 @@ namespace aw2\_if;
 
 \aw2_library::add_service('if.user_can_access','Returns if user can access particular url',['namespace'=>__NAMESPACE__]);
 
-function user_can_access($atts,$content=null,$shortcode){
+function user_can_access($atts,$content=null,$shortcode = array()){
     if(isset($atts['link'])){
         $res = check_access($atts['link']);
     }else{

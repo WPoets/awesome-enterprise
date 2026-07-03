@@ -4,7 +4,7 @@ namespace aw2\php;
 
 \aw2_library::add_service('php','PHP Library',['namespace'=>__NAMESPACE__]);
 
-function unhandled($atts,$content=null,$shortcode){
+function unhandled($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$pieces=$shortcode['tags'];
 	if(count($pieces)!=2)return 'error:You must have exactly two parts to the php shortcode';
@@ -33,7 +33,7 @@ function unhandled($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('php.site_url','Return the site url constant',['namespace'=>__NAMESPACE__]);
 
-function site_url($atts,$content=null,$shortcode){
+function site_url($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	$return_value=SITE_URL;
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
@@ -43,7 +43,7 @@ function site_url($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('php.die','Return the site url constant',['func'=>'_die','namespace'=>__NAMESPACE__]);
 
-function _die($atts,$content='No Message',$shortcode){
+function _die($atts,$content='No Message',$shortcode = array()){
 	extract(\aw2_library::shortcode_atts( array(
 	'msg'=>'No Message'
 	), $atts) );

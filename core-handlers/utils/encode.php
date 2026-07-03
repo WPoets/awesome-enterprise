@@ -3,7 +3,7 @@
 namespace aw2\encode;
 
 \aw2_library::add_service('encode.src','URL encode the input and return',['namespace'=>__NAMESPACE__]);
-function src($atts,$content=null,$shortcode){
+function src($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -20,7 +20,7 @@ function src($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.class','Encode the input and return class',['func'=>'_class','namespace'=>__NAMESPACE__]);
-function _class($atts,$content=null,$shortcode){
+function _class($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -37,7 +37,7 @@ function _class($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.id','Encode the input and return id',['namespace'=>__NAMESPACE__]);
-function id($atts,$content=null,$shortcode){
+function id($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -57,7 +57,7 @@ function id($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.atts','Loop through the atts and return appended string',['namespace'=>__NAMESPACE__]);
-function atts($atts,$content=null,$shortcode){
+function atts($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -76,7 +76,7 @@ function atts($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.value','Encode Value',['namespace'=>__NAMESPACE__]);
-function value($atts,$content=null,$shortcode){
+function value($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -90,7 +90,7 @@ function value($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.str','Purify the HTML and return',['namespace'=>__NAMESPACE__]);
-function str($atts,$content=null,$shortcode){
+function str($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""
@@ -113,7 +113,7 @@ function str($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('encode.options','',['namespace'=>__NAMESPACE__]);
-function options($atts,$content=null,$shortcode){
+function options($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 		'main'  	  => ""

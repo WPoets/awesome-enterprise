@@ -3,7 +3,7 @@ namespace aw2\redis_db;
 
 \aw2_library::add_service('redis_db.stream_add','Run the Code Library',['namespace'=>__NAMESPACE__]);
 
-function stream_add($atts,$content=null,$shortcode){
+function stream_add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -38,7 +38,7 @@ function stream_add($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('redis_db.stream_last','Run the Code Library',['namespace'=>__NAMESPACE__]);
 
-function stream_last($atts,$content=null,$shortcode){
+function stream_last($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -69,7 +69,7 @@ function stream_last($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('redis_db.stream_fetch_all','Run the Code Library',['namespace'=>__NAMESPACE__]);
 
-function stream_fetch_all($atts,$content=null,$shortcode){
+function stream_fetch_all($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract( \aw2_library::shortcode_atts( array(
@@ -100,7 +100,7 @@ function stream_fetch_all($atts,$content=null,$shortcode){
 
 \aw2_library::add_service('redis_db.stream_fetch_usage','Run the Code Library',['namespace'=>__NAMESPACE__]);
 
-function stream_fetch_usage($atts,$content=null,$shortcode){
+function stream_fetch_usage($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract( \aw2_library::shortcode_atts( array(

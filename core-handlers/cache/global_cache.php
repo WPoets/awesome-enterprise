@@ -19,7 +19,7 @@ function route_cache_operation($operation, $atts, $content = null, $shortcode = 
 	// Extract backend from attributes, default to redis 
     $backend = 'redis';
 
-	//define( 'CACHE_CONNECTOR', 'mysql/redis' );
+	//define( 'CACHE_CONNECTOR', 'mysqli/redis' );
 	if(defined('CACHE_CONNECTOR')){
 		$backend = CACHE_CONNECTOR;
 	}

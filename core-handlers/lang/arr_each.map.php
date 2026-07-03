@@ -6,7 +6,7 @@ namespace aw2\arr;
 // Service definition
 \aw2_library::add_service('arr_each.map', 'Maps over an array using the provided context and content', ['func'=>'arr_each_map', 'namespace'=>__NAMESPACE__]);
 
-function arr_each_map($atts, $content=null, $shortcode) {
+function arr_each_map($atts, $content=null, $shortcode = array()) {
     
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
@@ -67,7 +67,7 @@ function arr_each_map($atts, $content=null, $shortcode) {
 namespace aw2\arr_map_context;
 
 
-function arr_map_context_handler($atts, $content=null, $shortcode){
+function arr_map_context_handler($atts, $content=null, $shortcode = array()){
 
 
     $service='arr_map_context.' . implode('.',$shortcode['tags_left']);
@@ -78,7 +78,7 @@ function arr_map_context_handler($atts, $content=null, $shortcode){
 
 \aw2_library::add_service('arr_map_context._modify', 'Modify array item during array mapping', ['namespace'=>__NAMESPACE__]);
 
-function modify($atts, $content=null, $shortcode) {
+function modify($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -108,7 +108,7 @@ function modify($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('arr_map_context.discard', 'Discard Item during array mapping', ['namespace'=>__NAMESPACE__]);
 
-function discard($atts, $content=null, $shortcode) {
+function discard($atts, $content=null, $shortcode = array()) {
     // Extract attributes with defaults
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
@@ -126,7 +126,7 @@ function discard($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('arr_map_context.map', 'Map Item during array mapping', ['namespace'=>__NAMESPACE__]);
 
-function map($atts, $content=null, $shortcode) {
+function map($atts, $content=null, $shortcode = array()) {
     // Extract attributes with defaults
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');

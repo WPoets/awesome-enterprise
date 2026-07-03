@@ -96,7 +96,11 @@ class aw2_error_log{
 			$flag=false;
 		}
 		if(!isset($error_msg))$error_msg ='Developer:Something is wrong ('.$error_id.')';	
-
+		if($flag===true && isset($_COOKIE['debug_now'])){
+			\util::var_dump($atts);
+			\util::var_dump('wp_debug:'.WP_DEBUG);
+			\util::var_dump('log_exceptions:'.LOG_EXCEPTIONS);
+		}
 		if(\aw2_library::is_live_debug()){
 			$live_debug_event=array();
 			$live_debug_event['flow']='exception';
@@ -115,6 +119,7 @@ class aw2_error_log{
 		
 		
 		$atts['error_db_id'] =$error_id;
+
 		self::log_error($atts);
 		return $error_msg;
 		

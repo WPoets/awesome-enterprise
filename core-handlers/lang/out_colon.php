@@ -2,7 +2,7 @@
 namespace aw2\out_colon;
 
 
-function out_run($atts = array(),$reply) {
+function out_run($atts,$reply) {
 
     if (isset($atts['@destroy'])) {
         return;

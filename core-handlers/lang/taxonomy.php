@@ -5,7 +5,7 @@ namespace aw2\taxonomy;
 // Main taxonomy.define service
 \aw2_library::add_service('taxonomy.define', 'Define a taxonomy with hierarchical terms and metadata', ['func'=>'define_taxonomy', 'namespace'=>__NAMESPACE__]);
 
-function define_taxonomy($atts, $content=null, $shortcode) {
+function define_taxonomy($atts, $content=null, $shortcode = array()) {
     if(empty($atts['main']) || !is_string($atts['main']))
         throw new \Exception('Taxonomy name is required and must be a string');
     
@@ -27,7 +27,7 @@ function define_taxonomy($atts, $content=null, $shortcode) {
 
 namespace aw2\taxonomy_context;
 
-function taxonomy_context_handler($atts, $content=null, $shortcode) {
+function taxonomy_context_handler($atts, $content=null, $shortcode = array()) {
     $service = 'taxonomy_context.' . implode('.', $shortcode['tags_left']);
     $atts['@context'] = $shortcode['tags'][0];
     return \aw2_library::service_run($service, $atts, $content);
@@ -61,7 +61,7 @@ function find_term($taxonomy, $term_path) {
 }
 // Get complete list
 \aw2_library::add_service('taxonomy_context.list', 'Get full taxonomy definition', ['func'=>'get_list', 'namespace'=>__NAMESPACE__]);
-function get_list($atts, $content=null, $shortcode) {
+function get_list($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -79,7 +79,7 @@ function get_list($atts, $content=null, $shortcode) {
 
 // Get terms under a specific path 
 \aw2_library::add_service('taxonomy_context.get_terms', 'Get terms under specified path', ['namespace'=>__NAMESPACE__]);
-function get_terms($atts, $content=null, $shortcode) {
+function get_terms($atts, $content=null, $shortcode = array()) {
     if(empty($atts['@context'])) {
         throw new \InvalidArgumentException('@context is empty or missing');
     }
@@ -110,7 +110,7 @@ function get_terms($atts, $content=null, $shortcode) {
 
 // Get a specific term with its meta and children
 \aw2_library::add_service('taxonomy_context.get_term', 'Get specific term with meta and children', ['namespace'=>__NAMESPACE__]);
-function get_term($atts, $content=null, $shortcode) {
+function get_term($atts, $content=null, $shortcode = array()) {
     if(empty($atts['@context'])) {
         throw new \InvalidArgumentException('@context is empty or missing');
     }
@@ -137,7 +137,7 @@ function get_term($atts, $content=null, $shortcode) {
 
 // Get term metadata
 \aw2_library::add_service('taxonomy_context.get_meta', 'Get term metadata', ['namespace'=>__NAMESPACE__]);
-function get_meta($atts, $content=null, $shortcode) {
+function get_meta($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -163,7 +163,7 @@ function get_meta($atts, $content=null, $shortcode) {
 
 // Check if a term exists
 \aw2_library::add_service('taxonomy_context.exists', 'Check if term exists', ['namespace'=>__NAMESPACE__]);
-function exists($atts, $content=null, $shortcode) {
+function exists($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -184,7 +184,7 @@ function exists($atts, $content=null, $shortcode) {
 
 // Add multiple terms at once
 \aw2_library::add_service('taxonomy_context.add_terms', 'Add multiple terms at once', ['namespace'=>__NAMESPACE__]);
-function add_terms($atts, $content=null, $shortcode) {
+function add_terms($atts, $content=null, $shortcode = array()) {
     if(empty($atts['@context'])) {
         throw new \InvalidArgumentException('@context is empty or missing');
     }

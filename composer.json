@@ -1,10 +1,10 @@
 {
-    "name": "wpoets/awesome-enterprise",
+    "name": "wpoets/awesome-enterprise-core",
     "license": "GPL-3.0-or-later",
     "type": "project",
-    "description": "The Awesome Enterprise Framework for low code development in PHP",
+    "description": "The Awesome Enterprise Core Framework for low code development in PHP",
 	"keywords": ["WordPress", "Low Code"," Awesome Enterprise","Shortcode"],
-	"homepage": "https://getawesomestudio.com/",
+	"homepage": "https://awxdocs.com/",
 	"authors": [
          {
             "name": "Vikas Kumar",
@@ -17,7 +17,7 @@
        
     ],
 	 "support": {
-        "docs": "https://www.getawesomestudio.com/enterprise-tutorial/"
+        "docs": "https://awxdocs.com/tutorials/"
     },
 	"repositories": [
         {
@@ -26,15 +26,23 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "clue/buzz-react": "^2.9",
-        "ezyang/htmlpurifier": "^4.13",
+        "ezyang/htmlpurifier": "^4.15",
+        "google/apiclient": "^2.16",
         "hashids/hashids": "^4.0",
         "matthiasmullie/minify": "^1.3",
-        "mobiledetect/mobiledetectlib": "^2.8",
-        "wikimedia/less.php": "^5.0",
+        "mobiledetect/mobiledetectlib": "^4.8",
+        "wikimedia/less.php": "^4.2.1",
+        "wpoets/communication-handler": "1.0.7.2",
+        "wpoets/curl-handler": "^1.0",
         "wpoets/debug-handler": ">=1.0",
-        "wpoets/simple-mysqli": ">=1.5.6"
+        "wpoets/excel-handler": "^1.0",
+        "wpoets/google-handler": "^1.0",
+        "wpoets/jwt-handler": "^1.2",
+        "wpoets/pdf-handler": "^1.0",
+        "wpoets/simple-mysqli": ">=1.5.6",
+        "yahnis-elsts/plugin-update-checker": "^5.0"
     },
 	"extra": {
         "installer-types": ["awesome-handler"],
@@ -44,7 +52,11 @@
     },
     "config": {
 		"process-timeout": 600,
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
     },
 	 "suggest": {
         "wpoets/communication-handler": "Email, SMS and Push notification API Integration handler for Awesome enterprise",

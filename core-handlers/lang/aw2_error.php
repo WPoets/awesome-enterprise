@@ -3,7 +3,7 @@
 namespace aw2\aw2_error;
 
 \aw2_library::add_service('aw2_error.create','Create a new error',['namespace'=>__NAMESPACE__]);
-function create($atts,$content=null,$shortcode){
+function create($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 
 	extract(\aw2_library::shortcode_atts( array(

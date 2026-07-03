@@ -4,7 +4,7 @@ namespace aw2\arr;
 
 \aw2_library::add_service('arr_each.reduce', 'Reduces array to a single value using the provided context and content', ['func'=>'arr_each_reduce', 'namespace'=>__NAMESPACE__]);
 
-function arr_each_reduce($atts, $content=null, $shortcode) {
+function arr_each_reduce($atts, $content=null, $shortcode = array()) {
     
     // Validate context name is provided
     if(!isset($shortcode['tags_left'][0])) {
@@ -64,7 +64,7 @@ function arr_each_reduce($atts, $content=null, $shortcode) {
 
 namespace aw2\arr_reduce_context;
 
-function arr_reduce_context_handler($atts, $content=null, $shortcode){
+function arr_reduce_context_handler($atts, $content=null, $shortcode = array()){
     $service='arr_reduce_context.' . implode('.',$shortcode['tags_left']);
     $atts['@context']=$shortcode['tags'][0];
     \aw2_library::service_run($service,$atts,null);
@@ -72,7 +72,7 @@ function arr_reduce_context_handler($atts, $content=null, $shortcode){
 
 \aw2_library::add_service('arr_reduce_context._modify', 'Modify array item during array reducing', ['namespace'=>__NAMESPACE__]);
 
-function modify($atts, $content=null, $shortcode) {
+function modify($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }
@@ -97,7 +97,7 @@ function modify($atts, $content=null, $shortcode) {
 
 \aw2_library::add_service('arr_reduce_context.reduce', 'Reduce and accumulate during array reduction', ['namespace'=>__NAMESPACE__]);
 
-function reduce($atts, $content=null, $shortcode) {
+function reduce($atts, $content=null, $shortcode = array()) {
     if(!isset($atts['@context'])) {
         throw new \InvalidArgumentException('@context is missing');
     }

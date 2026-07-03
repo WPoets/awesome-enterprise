@@ -2,7 +2,7 @@
 namespace aw2\content_types;
 
 \aw2_library::add_service('content_types.add','Add a New Content Type',['namespace'=>'aw2\content_types']);
-function add($atts,$content=null,$shortcode){
+function add($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	extract(\aw2_library::shortcode_atts( array(
 	'main'=>null,
@@ -16,6 +16,9 @@ function add($atts,$content=null,$shortcode){
 	unset($atts['desc']);
 	
 	$content_types=&\aw2_library::get_array_ref('content_types');
+	if ($main === null) {
+		$main = '';
+	}
 	$content_types[$main]=array();
 	$atts['content_type_def']=true;
 	$atts['content_type']=$main;

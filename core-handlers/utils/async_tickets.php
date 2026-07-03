@@ -2,7 +2,7 @@
 namespace aw2\async_tickets;
 
 \aw2_library::add_service('async_tickets.run','Run async tickets',['namespace'=>__NAMESPACE__]);
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode = array()){
 	
 
 	$GLOBALS['curTime'] = microtime(true);

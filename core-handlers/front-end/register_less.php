@@ -3,7 +3,7 @@ namespace aw2\register;
 
 \aw2_library::add_service('register.less_variables','Handles the registration of ctp, less variables etc.',['namespace'=>__NAMESPACE__]);
 
-function less_variables($atts,$content=null,$shortcode){
+function less_variables($atts,$content=null,$shortcode = array()){
 		
 		$less_variables=\aw2_library::get('css.less_variables');
 		

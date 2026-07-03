@@ -17,7 +17,7 @@ function validate_email($email) {
 }
 
 \aw2_library::add_service('email_id.create','Create & validate an email address',['func'=>'email_id_create','namespace'=>__NAMESPACE__]);
-function email_id_create($atts,$content=null,$shortcode){
+function email_id_create($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null,
     'display_name'=>''
@@ -37,7 +37,7 @@ function email_id_create($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.get','Get email from environment',['func'=>'email_id_get','namespace'=>__NAMESPACE__]);
-function email_id_get($atts,$content=null,$shortcode){
+function email_id_get($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.get' ) );
@@ -73,7 +73,7 @@ function email_id_get($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.is.valid','Check if email is valid',['func'=>'email_id_is_valid','namespace'=>__NAMESPACE__]);
-function email_id_is_valid($atts,$content=null,$shortcode){
+function email_id_is_valid($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.is.valid' ) );
@@ -85,7 +85,7 @@ function email_id_is_valid($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.normalize','Normalize email address',['func'=>'email_id_normalize','namespace'=>__NAMESPACE__]);
-function email_id_normalize($atts,$content=null,$shortcode){
+function email_id_normalize($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.normalize' ) );
@@ -94,7 +94,7 @@ function email_id_normalize($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.part.domain','Get domain part of email',['func'=>'email_id_part_domain','namespace'=>__NAMESPACE__]);
-function email_id_part_domain($atts,$content=null,$shortcode){
+function email_id_part_domain($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.part.domain' ) );
@@ -104,7 +104,7 @@ function email_id_part_domain($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.part.user','Get user part of email',['func'=>'email_id_part_user','namespace'=>__NAMESPACE__]);
-function email_id_part_user($atts,$content=null,$shortcode){
+function email_id_part_user($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.part.user' ) );
@@ -114,7 +114,7 @@ function email_id_part_user($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.mask','Mask email address',['func'=>'email_id_mask','namespace'=>__NAMESPACE__]);
-function email_id_mask($atts,$content=null,$shortcode){
+function email_id_mask($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.mask' ) );
@@ -132,7 +132,7 @@ function email_id_mask($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.comp.eq','Compare two emails',['func'=>'email_id_comp_eq','namespace'=>__NAMESPACE__]);
-function email_id_comp_eq($atts,$content=null,$shortcode){
+function email_id_comp_eq($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null,
     'with'=>null
@@ -145,7 +145,7 @@ function email_id_comp_eq($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.is.disposable','Check if email is from disposable domain',['func'=>'email_id_is_disposable','namespace'=>__NAMESPACE__]);
-function email_id_is_disposable($atts,$content=null,$shortcode){
+function email_id_is_disposable($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.is.disposable' ) );
@@ -163,7 +163,7 @@ function email_id_is_disposable($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.is.role','Check if email is a role account',['func'=>'email_id_is_role','namespace'=>__NAMESPACE__]);
-function email_id_is_role($atts,$content=null,$shortcode){
+function email_id_is_role($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.is.role' ) );
@@ -180,7 +180,7 @@ function email_id_is_role($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.mailto_link','Create mailto link',['func'=>'email_id_mailto_link','namespace'=>__NAMESPACE__]);
-function email_id_mailto_link($atts,$content=null,$shortcode){
+function email_id_mailto_link($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null,
     'subject'=>'',
@@ -201,7 +201,7 @@ function email_id_mailto_link($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.extract.email','Extract email from text',['func'=>'email_id_extract_from_text','namespace'=>__NAMESPACE__]);
-function email_id_extract_from_text($atts,$content=null,$shortcode){
+function email_id_extract_from_text($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.extract_from_text' ) );
@@ -217,7 +217,7 @@ function email_id_extract_from_text($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.has_mx','Check if email domain has MX record',['func'=>'email_id_has_mx','namespace'=>__NAMESPACE__]);
-function email_id_has_mx($atts,$content=null,$shortcode){
+function email_id_has_mx($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.has_mx' ) );
@@ -229,7 +229,7 @@ function email_id_has_mx($atts,$content=null,$shortcode){
 }
 
 \aw2_library::add_service('email_id.decompose','Decompose email string into components',['func'=>'email_id_decompose','namespace'=>__NAMESPACE__]);
-function email_id_decompose($atts,$content=null,$shortcode){
+function email_id_decompose($atts,$content=null,$shortcode = array()){
     extract(\aw2_library::shortcode_atts( array(
     'main'=>null
     ), $atts, 'email_id.decompose' ) );

@@ -4,7 +4,7 @@ namespace aw2\package;
 \aw2_library::add_service('package.require','Require a Library',['func'=>'_require' ,'namespace'=>__NAMESPACE__]);
 
 
-function _require($atts,$content=null,$shortcode){
+function _require($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(
@@ -36,7 +36,7 @@ function _require($atts,$content=null,$shortcode){
 \aw2_library::add_service('package.run','Run a Library',['namespace'=>__NAMESPACE__]);
 
 
-function run($atts,$content=null,$shortcode){
+function run($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
 	
 	extract(\aw2_library::shortcode_atts( array(

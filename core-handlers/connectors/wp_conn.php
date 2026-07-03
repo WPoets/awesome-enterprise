@@ -105,7 +105,7 @@ function get($atts,$content=null,$shortcode=null){
 	}
 
 	if(!$return_value){
-		$sql="select post_content,post_type,ID,post_name,post_title from wp_posts where post_type='" . $post_type . "' and post_name='" . $module . "'";
+		//$sql="select post_content,post_type,ID,post_name,post_title from wp_posts where post_type='" . $post_type . "' and post_name='" . $module . "'";
 		
 		$sql="select post_content,post_type,ID,post_name,post_title from ".$posts_table." where post_type='" . $post_type . "' and post_name='" . $module . "'";
 		
@@ -392,3 +392,4 @@ function _list($atts,$content=null,$shortcode=null){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
+
