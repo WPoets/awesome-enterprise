@@ -100,3 +100,23 @@ function run_on_activity($atts,$content=null,$shortcode){
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
 	return $return_value;	
 }
+
+
+
+\aw2_library::add_service('js.on_user_activity','Load scripts and runs the JS code on first user interation',['namespace'=>__NAMESPACE__]);
+
+function run_on_activity($atts,$content=null,$shortcode){
+	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+	
+	extract(\aw2_library::shortcode_atts( array(
+	'src'=>null
+	), $atts) );
+	
+	if(empty($src) && empty($content)) return;
+    if(!empty($content))
+        $content = \aw2_library::parse_shortcode($content);
+
+    
+	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
+	return $return_value;	
+}

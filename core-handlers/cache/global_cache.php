@@ -3,183 +3,298 @@ namespace aw2\global_cache;
 
 \aw2_library::add_service('global_cache','Global Cache Library',['namespace'=>__NAMESPACE__]);
 
+/**
+ * Route cache operations to the appropriate backend (Redis or MySQL)
+ * @param string $operation Operation name (set, get, hset, etc.)
+ * @param array $atts Attributes for the operation
+ * @param string|null $content Content to use as value if applicable
+ * @param string|null $shortcode The shortcode that was used
+ * @return mixed Result of the operation
+ */
+function route_cache_operation($operation, $atts, $content = null, $shortcode = null) {
+    // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
+	// Extract backend from attributes, default to redis 
+    $backend = 'redis';
+
+	//define( 'CACHE_CONNECTOR', 'mysql/redis' );
+	if(defined('CACHE_CONNECTOR')){
+		$backend = CACHE_CONNECTOR;
+	}
+
+    if (isset($atts['backend'])) {
+        $backend = $atts['backend'];
+        // Remove backend from attributes to avoid passing it to connectors
+        unset($atts['backend']);
+    }
+    
+    // Route to the appropriate backend
+    try {
+        if ($backend === 'mysql') {
+            // Call the MySQL cache connector
+            $function = "\\aw2\\cache\\mysql\\$operation";
+            if (function_exists($function)) {
+                return $function($atts, $content, $shortcode);
+            }
+        } else {
+            // Default to Redis connector
+            $function = "\\aw2\\cache\\redis\\$operation";
+            if (function_exists($function)) {
+                return $function($atts, $content, $shortcode);
+            }
+        }
+        
+        // If we reach here, the function doesn't exist in the selected connector
+        return "Error: Operation '$operation' not supported by backend '$backend'";
+    } catch (\Exception $e) {
+        return "Cache Error: " . $e->getMessage();
+    }
+}
+
 \aw2_library::add_service('global_cache.set','Set the Global Cache',['namespace'=>__NAMESPACE__]);
+function set($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+     // Ensure $atts is an array
+	 if (!is_array($atts)) {
+        $atts = [];
+    }
 
-function set($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
-	extract(\aw2_library::shortcode_atts( array(
-	'key'=>null,
-	'prefix'=>'',
-	'ttl' => 300,
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
-	
-	if(!isset($atts['value']))$value=$content;
-	else
-	$value=$atts['value'];	
-	$redis = \aw2_library::redis_connect($db);
-	
-	if(!$key)return 'Invalid Key';		
-	if($prefix)$key=$prefix . $key;
-	
-	$redis->set($key, $value);
-	$redis->expire($key, $ttl*60);
-	return;
+    // Ensure value is properly extracted from content if not provided in atts
+    if(!isset($atts['value'])) {
+        $atts['value'] = $content;
+    }
+    
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'ttl' => 300,
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Apply prefix to key if specified
+    if(!empty($atts['prefix']) && isset($atts['key'])) {
+        $atts['key'] = $atts['prefix'] . $atts['key'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('set', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
 }
 
-\aw2_library::add_service('global_cache.hset','Set the Global Cache',['namespace'=>__NAMESPACE__]);
-function hset($atts,$content=null,$shortcode=null){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'field'=>null,
-	'prefix'=>'',
-	'ttl' => 300,
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
-	
-	if(!isset($atts['value']))$value=$content;
-	else
-	$value=$atts['value'];	
-	$redis = \aw2_library::redis_connect($db);
-	
-	$key=$main;
-	if(!$key)return 'Invalid key';		
-	if($prefix)$key=$prefix . $key;
-	
-	if(!$field)return 'Invalid field';		
-	
-	$redis->hset($key, $field,$value);
-	$redis->expire($key, $ttl*60);
-	return;
+\aw2_library::add_service('global_cache.hset','Set field in the Global Cache hash',['namespace'=>__NAMESPACE__]);
+function hset($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+     // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
+
+    // Ensure value is properly extracted from content if not provided in atts
+    if(!isset($atts['value'])) {
+        $atts['value'] = $content;
+    }
+    
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'ttl' => 300,
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Apply prefix to main (hash key) if specified
+    if(!empty($atts['prefix']) && isset($atts['main'])) {
+        $atts['main'] = $atts['prefix'] . $atts['main'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('hset', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
 }
 
+\aw2_library::add_service('global_cache.get','Get from the Global Cache',['namespace'=>__NAMESPACE__]);
+function get($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+     // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
 
-\aw2_library::add_service('global_cache.get','Get the Global Cache',['namespace'=>__NAMESPACE__]);
-function get($atts,$content=null,$shortcode=null){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'prefix'=>'',
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
-	
-	if(!$main)return 'Main must be set';		
-	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect($db);
-		
-	$return_value='';
-	if($redis->exists($main))$return_value = $redis->get($main);
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	return $return_value;
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Check for required main attribute
+    if(!isset($atts['main'])) {
+        return 'Main must be set';
+    }
+    
+    // Apply prefix to main (key) if specified
+    if(!empty($atts['prefix'])) {
+        $atts['main'] = $atts['prefix'] . $atts['main'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('get', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
 }
 
-\aw2_library::add_service('global_cache.hget','Get the Global Cache',['namespace'=>__NAMESPACE__]);
-function hget($atts,$content=null,$shortcode=null){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'field'=>null,
-	'prefix'=>'',
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
-	
-	if(!$main)return 'Main must be set';		
-	if(!$field)return 'Invalid field';
-	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect($db);
-		
-	$return_value='';
-	if($redis->exists($main))$return_value = $redis->hget($main,$field);
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	return $return_value;
+\aw2_library::add_service('global_cache.hget','Get field from the Global Cache hash',['namespace'=>__NAMESPACE__]);
+function hget($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+     // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
+
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Check for required attributes
+    if(!isset($atts['main'])) {
+        return 'Main must be set';
+    }
+    
+    if(!isset($atts['field'])) {
+        return 'Invalid field';
+    }
+    
+    // Apply prefix to main (hash key) if specified
+    if(!empty($atts['prefix'])) {
+        $atts['main'] = $atts['prefix'] . $atts['main'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('hget', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
 }
 
+\aw2_library::add_service('global_cache.exists','Check if key exists in the Global Cache',['namespace'=>__NAMESPACE__]);
+function exists($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+     // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
 
-\aw2_library::add_service('global_cache.exists','if exists in the global cache',['namespace'=>__NAMESPACE__]);
-function exists($atts,$content=null,$shortcode=null){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
-	
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'prefix'=>'',
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
-	
-	if(!$main)return 'Main must be set';		
-	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect($db);
-		
-	$return_value=false;
-	if($redis->exists($main))$return_value = true;
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	return $return_value;
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Check for required main attribute
+    if(!isset($atts['main'])) {
+        return 'Main must be set';
+    }
+    
+    // Apply prefix to main (key) if specified
+    if(!empty($atts['prefix'])) {
+        $atts['main'] = $atts['prefix'] . $atts['main'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('exists', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
 }
-
 
 \aw2_library::add_service('global_cache.flush','Flush the Global Cache',['namespace'=>__NAMESPACE__]);
-
-function flush($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-
-	extract(\aw2_library::shortcode_atts( array(
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );	
-	if(empty($db))
-		throw new \InvalidArgumentException('global_cache.flush: db is empty must be an integer.');
-		
-		$db=intval($db);
-		$redis = \aw2_library::redis_connect($db);
-	$redis->flushdb() ;
-}
-
-
-\aw2_library::add_service('global_cache.del','Delete a Key',['namespace'=>__NAMESPACE__]);
-
-function del($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'prefix'=>'',
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );	
-	if(!$main)return 'Main must be set';		
-	if($prefix)$main=$prefix . $main;
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect($db);
-	if($redis->exists($main))$redis->del($main);
-	return;	
-}
-
-
-\aw2_library::add_service('global_cache.run','Set the Global Cache',['namespace'=>__NAMESPACE__]);
-
-function run($atts,$content=null,$shortcode){
-	if(\aw2_library::pre_actions('all',$atts,$content)==false)return;
+function flush($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content, $shortcode) == false) return;
 	
-	extract(\aw2_library::shortcode_atts( array(
-	'main'=>null,
-	'ttl' => 30,
-	'db'=>REDIS_DATABASE_GLOBAL_CACHE
-	), $atts) );
+	 // Ensure $atts is an array
+	 if (!is_array($atts)) {
+        $atts = [];
+    }
 
-	//Connect to Redis and store the data
-	$redis = \aw2_library::redis_connect($db);
-		
-	if($main && $redis->exists($main)){
-		$return_value = $redis->get($main);
-	}
-	else{
-		$return_value=\aw2_library::parse_shortcode($content) ;
-	}
-		
-	$return_value=\aw2_library::post_actions('all',$return_value,$atts);
-	return $return_value;
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Validate db parameter
+    if(empty($atts['db'])) {
+        throw new \InvalidArgumentException('global_cache.flush: db is empty must be an integer.');
+    }
+    
+    $result = route_cache_operation('flush', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
+}
+
+\aw2_library::add_service('global_cache.del','Delete a Key from the Global Cache',['namespace'=>__NAMESPACE__]);
+function del($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content, $shortcode) == false) return;
+     // Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }
+
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'prefix' => '',
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0
+    ], $atts);
+    
+    // Check for required main attribute
+    if(!isset($atts['main'])) {
+        return 'Main must be set';
+    }
+    
+    // Apply prefix to main (key) if specified
+    if(!empty($atts['prefix'])) {
+        $atts['main'] = $atts['prefix'] . $atts['main'];
+        unset($atts['prefix']);
+    }
+    
+    $result = route_cache_operation('del', $atts, $content, $shortcode);
+    return \aw2_library::post_actions('all', $result, $atts);
+}
+
+\aw2_library::add_service('global_cache.run','Run with caching',['namespace'=>__NAMESPACE__]);
+function run($atts, $content = null, $shortcode = null) {
+    if(\aw2_library::pre_actions('all', $atts, $content) == false) return;
+ 	// Ensure $atts is an array
+    if (!is_array($atts)) {
+        $atts = [];
+    }    
+    // Set default attributes if not provided
+    $atts = array_merge([
+        'ttl' => 30,
+        'db' => defined('REDIS_DATABASE_GLOBAL_CACHE') ? REDIS_DATABASE_GLOBAL_CACHE : 0,
+        'backend' => 'redis' // Default to redis for backward compatibility
+    ], $atts);
+    
+    // Check for required main attribute
+    if(!isset($atts['main'])) {
+        return 'Main key must be set';
+    }
+    
+    // First try to get cached value
+    $cached = route_cache_operation('get', $atts, null, $shortcode);
+    
+    if (!empty($cached)) {
+        return \aw2_library::post_actions('all', $cached, $atts);
+    }
+    
+    // If no cached value, execute content
+    $result = \aw2_library::parse_shortcode($content);
+    
+    // Cache the result
+    $set_atts = [
+        'key' => $atts['main'],
+        'value' => $result,
+        'ttl' => $atts['ttl'],
+        'db' => $atts['db'],
+        'backend' => $atts['backend']
+    ];
+    
+    route_cache_operation('set', $set_atts, null, $shortcode);
+    
+    return \aw2_library::post_actions('all', $result, $atts);
 }
