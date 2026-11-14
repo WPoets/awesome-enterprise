@@ -29,6 +29,12 @@ If you don't find your issue already listed, do [create an issue](https://github
 
 ### Changelog 
 
+
+##### 3.6.2
+
+* Improved: Added support for hierarchical posts in app
+* Improved: PHP 8.5 compatibility and security enhancements
+
 ##### 3.6.1
 
 * Fixed: changed request2 function for better support for 8.3
