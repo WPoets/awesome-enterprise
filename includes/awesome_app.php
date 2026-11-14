@@ -340,13 +340,13 @@ class awesome_app{
 	public function get_app_ticket($ticket){
 		$json=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'ticket_activity'],null,null);
 		if(!$json){
-			echo 'Ticket is invalid in get_app_ticket: ' . $ticket;
+			echo 'Ticket is invalid in get_app_ticket: ' . esc_html($ticket);
 			exit();			
 		}
 		$ticket_activity=json_decode($json,true);
 		
 		if(!isset($ticket_activity['app'])){
-			echo 'App is not set in ticket: ' . $ticket;
+			echo 'App is not set in ticket: ' . esc_html($ticket);
 			exit();			
 		}
 		return $ticket_activity['app'];
@@ -354,7 +354,7 @@ class awesome_app{
 	public function get_app_ts($ticket){
 		$slug=\aw2\session_ticket\get(["main"=>$ticket,"field"=>'app'],null,null);
 		if(!$slug){
-			echo 'Ts App is not set in ticket: ' . $ticket;
+			echo 'Ts App is not set in ticket: ' . esc_html($ticket);
 			exit();			
 		}
 		return $slug;

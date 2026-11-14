@@ -76,7 +76,7 @@ function async_url($atts,$content=null,$shortcode = array()){
 	);
 	
 	if(defined('HTTP_AUTH')){
-		$cron_request['args']['headers'] = array('Authorization' => 'Basic ' . base64_encode( HTTP_AUTH )); // HTTP_AUTH='easyengine:q5jgE6'
+		$cron_request['args']['headers'] = array('Authorization' => 'Basic ' . base64_encode( HTTP_AUTH ));
 	}
 	
 	
@@ -130,15 +130,26 @@ function qs_parse($atts,$content=null,$shortcode = array()){
 	return $return_value;
 }
 
+/**
+ * Secrets that shortcode code must never be able to read: sync tokens and
+ * credentials, database password, WordPress keys and salts.
+ */
+function constant_is_protected($name){
+	return (bool)preg_match('/^(AWX_SYNC_|DB_PASSWORD$|HTTP_AUTH$|(SECURE_)?AUTH_KEY$|LOGGED_IN_KEY$|NONCE_KEY$|(SECURE_)?AUTH_SALT$|LOGGED_IN_SALT$|NONCE_SALT$|.*_SECRET$|.*_TOKEN$|.*PASSWORD$)/i',(string)$name);
+}
+
 \aw2_library::add_service('util.constant','Returns an associative array with the names of all the constants and their values',['namespace'=>__NAMESPACE__]);
 function constant($atts,$content=null,$shortcode = array()){
 	if(\aw2_library::pre_actions('all',$atts,$content,$shortcode)==false)return;
 	extract(\aw2_library::shortcode_atts( array('constant_key'=>'all'), $atts) );
 	
 	if($constant_key=='all'){
-		$return_value=\get_defined_constants();  
+		$return_value=\get_defined_constants();
+		foreach(array_keys($return_value) as $name){
+			if(constant_is_protected($name))unset($return_value[$name]);
+		}
 	}else{
-		$return_value=\constant($constant_key);  
+		$return_value=constant_is_protected($constant_key)?null:\constant($constant_key);
 	}
 
 	$return_value=\aw2_library::post_actions('all',$return_value,$atts);

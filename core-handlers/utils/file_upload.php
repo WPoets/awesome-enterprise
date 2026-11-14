@@ -33,6 +33,7 @@ function upload($atts,$content=null,$shortcode = array()){
 		$allowed_ext = explode(',', $allowed_file_types);
 		$allowed = $allowed_ext;
 	}
+	$allowed = array_map('strtolower', array_map('trim', $allowed));
 	
 	if($main=='attach_to_post'){
 		if ( $_FILES ) { 
@@ -69,8 +70,8 @@ function upload($atts,$content=null,$shortcode = array()){
 	else if($main == 'upload_to_path'){
 		if ( $_FILES ) { 
 			$files = $_FILES[$upload_element_id];
-			$filePathInfo = pathinfo($files['name']);
-			$FileType = $filePathInfo['extension'];
+			$filePathInfo = pathinfo(sanitize_file_name($files['name']));
+			$FileType = isset($filePathInfo['extension']) ? $filePathInfo['extension'] : '';
 
 			$FileType = $FileType ? $FileType : $default_extension;
 			
@@ -79,8 +80,13 @@ function upload($atts,$content=null,$shortcode = array()){
 				$return_value['error'] = "An error occurred.";
 			}
 			
-			if(!in_array($FileType,$allowed) ) {
-				$return_value['error'] = "Sorry, only JPG, JPEG, PNG, GIF & PDF files are allowed.";
+			if(!in_array(strtolower((string)$FileType),$allowed,true) ) {
+				$return_value['error'] = "Sorry, this file type is not allowed.";
+			}
+
+			// stop here on any error: the file must not be saved
+			if(isset($return_value['error'])){
+				return \aw2_library::post_actions('all',$return_value,$atts);
 			}
 
 			$file_name = $file_name ? $file_name.'.'.$FileType : $filePathInfo['filename'].'.'.$FileType;
@@ -97,7 +103,7 @@ function upload($atts,$content=null,$shortcode = array()){
 			}
 			
 			if (!file_exists($upload_dir)) {
-				mkdir($upload_dir, 0777, true);
+				mkdir($upload_dir, 0755, true);
 			}
 						
 			// preserve file from temporary directory
@@ -137,12 +143,17 @@ function upload($atts,$content=null,$shortcode = array()){
 						$return_value[$key]['error'] = "An error occurred.";
 					}
 					
-					if(!in_array($FileType,$allowed) ) {
-						$return_value[$key]['error'] = "Sorry, only JPG, JPEG, PNG, GIF & PDF files are allowed.";
+					if(!in_array(strtolower((string)$FileType),$allowed,true) ) {
+						$return_value[$key]['error'] = "Sorry, this file type is not allowed.";
+					}
+
+					// skip this file on any error: it must not be saved
+					if(isset($return_value[$key]['error'])){
+						continue;
 					}
 					$tmp_file_name = $file_name.$key.'.'.$FileType;
 					
-					$tmp_file_name = $file_name ? $file_name.$key.'.'.$FileType : $files['name'][$key];
+					$tmp_file_name = $file_name ? $file_name.$key.'.'.$FileType : sanitize_file_name($files['name'][$key]);
 					$original_file_name = $tmp_file_name;
 
 					if($overwrite_file == 'no'){
@@ -156,7 +167,7 @@ function upload($atts,$content=null,$shortcode = array()){
 					}
 					
 					if (!file_exists($upload_dir)) {
-						mkdir($upload_dir, 0777, true);
+						mkdir($upload_dir, 0755, true);
 					}
 					// preserve file from temporary directory
 					$success = move_uploaded_file($files["tmp_name"][$key],$upload_dir . $tmp_file_name);

@@ -155,121 +155,8 @@ class aw2_error_log{
 	}
 
 	static function log_datatype_mismatch($arr){
+		// Staged for deletion. This method previously contained transaction-based logic that caused database deadlocks.
 		return;
-		if(!WP_DEBUG){
-			return;
-		}
-		
-		$template=aw2_library::get('template.name');
-		$post_type= aw2_library::get('env.@sc_exec.collection.post_type');
-		$source= aw2_library::get('env.@sc_exec.collection.source');
-		$module= aw2_library::get('env.@sc_exec.module');
-		$app_name= aw2_library::get('env.app.name');
-		$sc= addslashes(aw2_library::get('env.@sc_exec.sc'));/* */
-		$url= isset($_SERVER['REQUEST_URI'])?addslashes($_SERVER['REQUEST_URI']):'';
-		
-		$pos = aw2_library::get('env.@sc_exec.pos');
-		$position= empty($pos)?"-1":$pos;
-		unset($pos);
-		
-		$link = aw2_library::get('env.@sc_exec.link');
-		
-		
-		$conditional= isset($arr['condition'])?$arr['condition']:'';
-		if(isset($arr['php7result'])){
-			$php7_result = $arr['php7result']?'true':'false';
-		}
-		$module_slug='';
-		$invalid_lhs_dt='no';
-		$invalid_rhs_dt='no';
-		$invalid_match='no';
-
-		$lhs_datatype='lhs';
-		$rhs_datatype='rhs';
-		
-		$flag=false;
-	
-		
-
-		
-		$lhs=isset($arr['lhs'])?$arr['lhs']:'_xxx_';
-		
-		if($lhs!=='_xxx_')$lhs_datatype=gettype($lhs);
-		if($lhs_datatype === 'string' && empty($lhs)){
-			$lhs='_empty_';
-		}
-		
-		$lhs_dt=isset($arr['lhs_dt'])?$arr['lhs_dt']:'';
-		$valid = self::datatype_test($lhs,$lhs_dt);
-		if($valid === false ){
-			$flag=true;
-			$invalid_lhs_dt='yes';
-
-		}
-
-
-		$rhs=isset($arr['rhs'])?$arr['rhs']:'_xxx_';
-		if($rhs!=='_xxx_')$rhs_datatype=gettype($rhs);
-		if($rhs_datatype === 'string' && empty($rhs)){
-			$rhs='_empty_';
-		}
-		
-		$rhs_dt=isset($arr['rhs_dt'])?$arr['rhs_dt']:'';
-		$valid = self::datatype_test($rhs,$rhs_dt);
-		if($valid === false ){
-			$flag=true;
-			$invalid_rhs_dt='yes';
-
-		}
-
-		$must_match=isset($arr['must_match'])?$arr['must_match']:'no';
-		
-		if($must_match === 'yes'){
-			if($lhs_datatype!==$rhs_datatype){
-				$flag=true;
-				$invalid_match='yes';			
-			}
-		}
-			
-		if($flag===false)return;
-		
-		
-		if(is_object($lhs)|| is_array($lhs)){
-			$lhs=serialize($lhs);
-		}
-		
-		if(is_object($rhs)|| is_array($rhs)){
-			$rhs=serialize($rhs);
-		}
-		
-		if(!defined('AWESOME_LOG_DB'))
-			define('AWESOME_LOG_DB', DB_NAME);
-		
-
-		//**Instantiate the DB Connection**//
-		if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
-		
-		$sql = "
-		start TRANSACTION;
-		set @post_type='".$post_type."';
-		set @source='".addslashes($source)."';
-		set @module='".$module."';
-		set @pos='".$position."';
-		set @template='".$template."';
-		
-		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.datatype_mismatch WHERE post_type=@post_type and source=@source and module_slug=@module and position=@pos and template_name=@template ;
-	
-		IF @id is null THEN
-			
-			INSERT INTO `".AWESOME_LOG_DB."`.`datatype_mismatch` (`app_name`,`module_slug`,`source`,`post_type`,`template_name`,`sc`,`position`,`request_url`,`conditional`,`php7_result`,`lhs_value`,`lhs_datatype`,`rhs_value`,`rhs_datatype`,`invalid_lhs_dt`,`invalid_rhs_dt`,`invalid_match`,`link`) VALUES ( '".$app_name."','".$module."','".$source."','".$post_type."','".$template."','".$sc."','".$position."','".$url."','".$conditional."','".$php7_result."','".$lhs."','".$lhs_datatype."','".$rhs."','".$rhs_datatype."','".$invalid_lhs_dt."','".$invalid_rhs_dt."','".$invalid_match."','".$link."');
-			
-		END IF;
-			
-		COMMIT;
-		";
-				
-		$obj = \aw2_library::$mysqli->multi_query($sql);
-
 	}
 
 	static function datatype_test($val, $data_type){
@@ -305,140 +192,250 @@ class aw2_error_log{
 		
 	}
 
-	static function save($atts){
-		//**Instantiate the DB Connection**//
-		if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
-		
-		
-		//NULL, current_timestamp(), current_timestamp(),
-		if(!is_array($atts)) return;
+	private static function safe_truncate($val, $length) {
+		if (is_null($val)) {
+			return '';
+		}
+		$val = (string)$val;
+		if (strlen($val) > $length) {
+			return substr($val, 0, $length);
+		}
+		return $val;
+	}
 
-		$location=isset($atts['location'])?$atts['location']:'';
-		$post_type=isset($atts['post_type'])?$atts['post_type']:'';
-		$source=isset($atts['source'])?$atts['source']:'';
-		$module=isset($atts['module'])?$atts['module']:'';
-		$app_name=isset($atts['app_name'])?addslashes($atts['app_name']):'';
-		$sc=isset($atts['sc'])?addslashes($atts['sc']):'';
-		$position=isset($atts['position'])?$atts['position']:'';
-		$link=isset($atts['link'])?addslashes($atts['link']):'';
-		$message=isset($atts['message'])?addslashes($atts['message']):'';
-		$errno=isset($atts['errno'])?$atts['errno']:'';
-		$errfile=isset($atts['errfile'])?addslashes($atts['errfile']):'';
-		$errline=isset($atts['errline'])?$atts['errline']:'';
-		$trace=isset($atts['trace'])?addslashes($atts['trace']):'';
-		$status=isset($atts['status'])?addslashes($atts['status']):'active';
-		$exception_type=isset($atts['exception_type'])?addslashes($atts['exception_type']):'';
-		$sql_query = isset($atts['sql_query'])?addslashes($atts['sql_query']):'';
-		$user = isset($atts['user'])?$atts['user']:'';
-		$url = isset($atts['url'])?$atts['url']:'';
-		$request = isset($atts['request'])?addslashes($atts['request']):'';
-		$header_value = isset($atts['header_value'])?addslashes($atts['header_value']):'';
-		$call_stack = isset($atts['call_stack'])?$atts['call_stack']:'';
-				
-		if(!defined('AWESOME_LOG_DB'))
-			define('AWESOME_LOG_DB', DB_NAME);
-	/** 	
-		$sql = "
-		start TRANSACTION;
-		set @post_type='".$post_type."';
-		set @source='".$source."';
-		set @module='".$module."';
-		set @pos='".$position."';
-		set @errno='".$errno."';
-		set @errfile='".$errfile."';
-		set @errline='".$errline."';
-	
-		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.`awesome_exceptions` WHERE post_type=@post_type and source=@source and module=@module and position=@pos and errno=@errno and errfile=@errfile and errline=@errline;
-	
-		IF @id is not null THEN
-			UPDATE `".AWESOME_LOG_DB."`.`awesome_exceptions` SET no_of_times = no_of_times + 1,  status ='active' WHERE ID=@id;
-			SELECT @id;
-		ELSE
-			INSERT INTO `".AWESOME_LOG_DB."`.`awesome_exceptions` (`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`,`user`, `header_data`,`request_data`,`sql_query`,`request_url`,`message`, `errno`, `errfile`, `errline`, `call_stack`,`trace`, `no_of_times`, `status`) VALUES ( '".$exception_type."', '".$post_type."', '".$source."', '".$module."', '".$location."', '".$app_name."', '".$sc."', '".$position."', '".$link."','".$user."', ' ".$header_value."','".$request."','".$sql_query."','".$url."','".$message."', '".$errno."', '".$errfile."', '".$errline."', '".$call_stack."','".$trace."', '1', '".$status."');
-		
-			SELECT LAST_INSERT_ID();
-		END IF;
-			
-		
-		COMMIT;
-		";
-*/
-		//echo $sql;
+	private static function get_mysql_errno($mysqli, $e) {
+		if (class_exists('ReflectionProperty')) {
+			try {
+				$ref = new ReflectionProperty($mysqli, 'mysqli');
+				$ref->setAccessible(true);
+				$conn = $ref->getValue($mysqli);
+				if ($conn instanceof mysqli) {
+					return $conn->errno;
+				}
+			} catch (Throwable $t) {
+				// Fall back to message parsing
+			}
+		}
+		return 0;
+	}
 
-		$sql ="
-		START TRANSACTION;
-		set @post_type='".$post_type."';
-		set @source='".$source."';
-		set @module='".$module."';
-		set @pos='".$position."';
-		set @errno='".$errno."';
-		set @errfile='".$errfile."';
-		set @errline='".$errline."';
-
-		INSERT INTO `".AWESOME_LOG_DB."`.`awesome_exceptions`
-		(`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`, `user`, `header_data`, `request_data`, `sql_query`, `request_url`, `message`, `errno`, `errfile`, `errline`, `call_stack`, `trace`, `no_of_times`, `status`) SELECT 
-		'".$exception_type."' exception_type,
-		  '".$post_type."' post_type,
-		  '".$source."' source,
-		  '".$module."' module,
-		  '".$location."' location, 
-		  '".$app_name."' app_name, 
-		  '".$sc."' sc, 
-		  '".$position."' position, 
-		  '".$link."' link,
-		  '".$user."' user, 
-		  '".$header_value."' header_data,
-		  '".$request."' request_data,
-		  '".$sql_query."' sql_query,
-		  '".$url."' request_url,
-		  '".$message."' message, 
-		  '".$errno."' errno, 
-		  '".$errfile."' errfile, 
-		  '".$errline."' errline, 
-		  '".$call_stack."' call_stack,
-		  '".$trace."' trace,
-		   '0' no_of_times, 
-		   'active' status
-	FROM DUAL
-	WHERE NOT EXISTS (
-	  SELECT 1
-	  FROM `".AWESOME_LOG_DB."`.`awesome_exceptions`
-	  WHERE 
-		 post_type = @post_type
-	  AND source = @source
-	  AND module = @module
-	  AND position = @pos
-	  AND errno = @errno
-	  AND errfile = @errfile
-	  AND errline = @errline
-	  LIMIT 1
-	);
-
-		SELECT @id:=ID FROM `".AWESOME_LOG_DB."`.`awesome_exceptions` WHERE post_type = @post_type AND source = @source AND module = @module AND position = @pos AND errno = @errno AND errfile = @errfile AND errline = @errline LIMIT 1;
- 
-
-		UPDATE `".AWESOME_LOG_DB."`.`awesome_exceptions`
-		SET no_of_times = no_of_times + 1
-		WHERE ID = @id;
-
-		SELECT @id;
-		COMMIT;
-		";
-		
-		$obj = \aw2_library::$mysqli->multi_query($sql);
-		
-	
+	private static function migrate_database_schema($mysqli, $db_name) {
 		try {
-			$result = $obj->fetchAll("col");
-		} catch (Exception $e) {} 
-		//this is added to handle the situation where for some reason above code fails and $result is not set.
+			$lock_res = $mysqli->query("SELECT GET_LOCK('awesome_exceptions_migrate', 0) as get_lock")->fetchAll("col");
+			if (empty($lock_res) || (int)$lock_res[0] !== 1) {
+				return false;
+			}
+		} catch (Throwable $t) {
+			return false;
+		}
 
-		$last_insert_id='';
+		$migrated = false;
+		try {
+			$columns_list = $mysqli->query("SHOW COLUMNS FROM `$db_name`.`awesome_exceptions`")->fetchAll("assoc");
+			$existing_cols = [];
+			$id_col_type = '';
+			foreach ($columns_list as $col) {
+				$existing_cols[$col['Field']] = $col;
+				if ($col['Field'] === 'ID') {
+					$id_col_type = strtolower($col['Type']);
+				}
+			}
 
-		if(is_array($result) &&!empty($result))
-			$last_insert_id=$result[0];
-				
-		return $last_insert_id;
+			$alters = [];
+			if (strpos($id_col_type, 'unsigned') === false || strpos($id_col_type, 'bigint') === false) {
+				$alters[] = "MODIFY `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT";
+			}
+
+			if (!isset($existing_cols['last_seen'])) {
+				$alters[] = "ADD COLUMN `last_seen` TIMESTAMP NULL DEFAULT NULL";
+			}
+
+			if (!isset($existing_cols['exception_hash'])) {
+				$alters[] = "ADD COLUMN `exception_hash` CHAR(32) CHARACTER SET ascii GENERATED ALWAYS AS (
+					MD5(CONCAT_WS('|',
+						IFNULL(`post_type`, ''), IFNULL(`source`, ''), IFNULL(`module`, ''),
+						IFNULL(`position`, '-1'),  IFNULL(`errno`, ''),  IFNULL(`errfile`, ''),
+						IFNULL(`errline`, '')
+					))
+				) STORED";
+			}
+
+			if (!empty($alters)) {
+				$mysqli->query("ALTER TABLE `$db_name`.`awesome_exceptions` " . implode(", ", $alters));
+			}
+
+			$indexes = $mysqli->query("SHOW INDEX FROM `$db_name`.`awesome_exceptions`")->fetchAll("assoc");
+			$has_unique_hash_index = false;
+			foreach ($indexes as $index) {
+				if ($index['Key_name'] === 'uk_exception_hash') {
+					$has_unique_hash_index = true;
+					break;
+				}
+			}
+
+			if (!$has_unique_hash_index) {
+				$duplicates = $mysqli->query("SELECT `exception_hash`, MIN(`ID`) AS `keep_id`, SUM(IFNULL(`no_of_times`, 1)) AS `total_times`, MAX(CASE WHEN `status` = 'active' THEN 1 ELSE 0 END) AS `has_active`
+					FROM `$db_name`.`awesome_exceptions`
+					GROUP BY `exception_hash`
+					HAVING COUNT(*) > 1")->fetchAll("assoc");
+
+				if (!empty($duplicates)) {
+					foreach ($duplicates as $dup) {
+						$hash = $dup['exception_hash'];
+						$keep_id = $dup['keep_id'];
+						$total_times = $dup['total_times'];
+						$status = $dup['has_active'] ? 'active' : 'inactive';
+
+						$mysqli->query("UPDATE `$db_name`.`awesome_exceptions` SET `no_of_times` = ?, `status` = ? WHERE `ID` = ?", [$total_times, $status, $keep_id], "isi");
+						$mysqli->query("DELETE FROM `$db_name`.`awesome_exceptions` WHERE `exception_hash` = ? AND `ID` != ?", [$hash, $keep_id], "si");
+					}
+				}
+
+				$mysqli->query("ALTER TABLE `$db_name`.`awesome_exceptions` ADD UNIQUE KEY `uk_exception_hash` (`exception_hash`)");
+			}
+			$migrated = true;
+		} catch (Throwable $e) {
+			error_log("aw2_error_log::migrate_database_schema failed: " . $e->getMessage());
+			$migrated = false;
+		} finally {
+			try {
+				$mysqli->query("SELECT RELEASE_LOCK('awesome_exceptions_migrate')");
+			} catch (Throwable $t) {}
+		}
+
+		return $migrated;
+	}
+
+	static function save($atts){
+		try {
+			if(!\aw2_library::$mysqli)\aw2_library::$mysqli = \aw2_library::new_mysqli();
+			$mysqli = \aw2_library::$mysqli;
+
+			if(!defined('AWESOME_LOG_DB'))
+				define('AWESOME_LOG_DB', DB_NAME);
+			$db_name = AWESOME_LOG_DB;
+
+			if(!is_array($atts)) return 'Not Logged';
+
+			$post_type = isset($atts['post_type']) ? trim((string)$atts['post_type']) : '';
+			$source = isset($atts['source']) ? trim((string)$atts['source']) : '';
+			$module = isset($atts['module']) ? trim((string)$atts['module']) : '';
+			
+			$pos_val = isset($atts['position']) ? $atts['position'] : '';
+			$position = empty($pos_val) ? '-1' : trim((string)$pos_val);
+			
+			$errno = isset($atts['errno']) ? trim((string)$atts['errno']) : '';
+			$errfile = isset($atts['errfile']) ? trim((string)$atts['errfile']) : '';
+			$errline = isset($atts['errline']) ? trim((string)$atts['errline']) : '';
+
+			$exception_type = isset($atts['exception_type']) ? (string)$atts['exception_type'] : '';
+			$location = isset($atts['location']) ? (string)$atts['location'] : '';
+			$app_name = isset($atts['app_name']) ? (string)$atts['app_name'] : '';
+			$sc = isset($atts['sc']) ? (string)$atts['sc'] : '';
+			$link = isset($atts['link']) ? (string)$atts['link'] : '';
+			$user = isset($atts['user']) ? (string)$atts['user'] : '';
+			$header_value = isset($atts['header_value']) ? (string)$atts['header_value'] : '';
+			$request = isset($atts['request']) ? (string)$atts['request'] : '';
+			$sql_query = isset($atts['sql_query']) ? (string)$atts['sql_query'] : '';
+			$url = isset($atts['url']) ? (string)$atts['url'] : '';
+			$call_stack = isset($atts['call_stack']) ? (string)$atts['call_stack'] : '';
+			$trace = isset($atts['trace']) ? (string)$atts['trace'] : '';
+			$message = isset($atts['message']) ? (string)$atts['message'] : '';
+			$status = isset($atts['status']) ? (string)$atts['status'] : 'active';
+
+			$post_type = self::safe_truncate($post_type, 50);
+			$source = self::safe_truncate($source, 255);
+			$module = self::safe_truncate($module, 100);
+			$errno = self::safe_truncate($errno, 20);
+			$errfile = self::safe_truncate($errfile, 255);
+			$errline = self::safe_truncate($errline, 100);
+			
+			$exception_type = self::safe_truncate($exception_type, 100);
+			$location = self::safe_truncate($location, 50);
+			$app_name = self::safe_truncate($app_name, 50);
+			$link = self::safe_truncate($link, 500);
+			$user = self::safe_truncate($user, 500);
+			$url = self::safe_truncate($url, 255);
+			$status = self::safe_truncate($status, 20);
+
+			$sc = self::safe_truncate($sc, 250000);
+			$header_value = self::safe_truncate($header_value, 250000);
+			$request = self::safe_truncate($request, 250000);
+			$sql_query = self::safe_truncate($sql_query, 60000);
+			$call_stack = self::safe_truncate($call_stack, 250000);
+			$trace = self::safe_truncate($trace, 250000);
+			$message = self::safe_truncate($message, 250000);
+
+			$max_retries = 3;
+			$retry_count = 0;
+			$use_fallback_insert = false;
+
+			while (true) {
+				try {
+					if ($use_fallback_insert) {
+						$sql = "INSERT INTO `$db_name`.`awesome_exceptions` (
+							`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`, `user`, `header_data`, `request_data`, `sql_query`, `request_url`, `message`, `errno`, `errfile`, `errline`, `call_stack`, `trace`, `no_of_times`, `status`
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
+						
+						$values = [
+							$exception_type, $post_type, $source, $module, $location, $app_name, $sc, $position, $link, $user, $header_value, $request, $sql_query, $url, $message, $errno, $errfile, $errline, $call_stack, $trace, $status
+						];
+						$types = "sssssssisssssssssssss";
+						
+						$mysqli->query($sql, $values, $types);
+						return $mysqli->insertId();
+					}
+
+					$sql = "INSERT INTO `$db_name`.`awesome_exceptions` (
+						`exception_type`, `post_type`, `source`, `module`, `location`, `app_name`, `sc`, `position`, `link`, `user`, `header_data`, `request_data`, `sql_query`, `request_url`, `message`, `errno`, `errfile`, `errline`, `call_stack`, `trace`, `no_of_times`, `status`
+					) VALUES (
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
+					)
+					ON DUPLICATE KEY UPDATE 
+						`ID` = LAST_INSERT_ID(`ID`),
+						`no_of_times` = `no_of_times` + 1,
+						`status` = 'active',
+						`last_seen` = CURRENT_TIMESTAMP,
+						`request_url` = VALUES(`request_url`),
+						`user` = VALUES(`user`),
+						`message` = VALUES(`message`),
+						`link` = VALUES(`link`)";
+
+					$values = [
+						$exception_type, $post_type, $source, $module, $location, $app_name, $sc, $position, $link, $user, $header_value, $request, $sql_query, $url, $message, $errno, $errfile, $errline, $call_stack, $trace, $status
+					];
+					$types = "sssssssisssssssssssss";
+
+					$mysqli->query($sql, $values, $types);
+					return $mysqli->insertId();
+
+				} catch (Throwable $e) {
+					$mysql_errno = self::get_mysql_errno($mysqli, $e);
+
+					if (($mysql_errno === 1213 || $mysql_errno === 1205 || strpos($e->getMessage(), 'Deadlock found') !== false || strpos($e->getMessage(), 'Lock wait timeout') !== false) && $retry_count < $max_retries) {
+						$retry_count++;
+						usleep(50000 + random_int(0, 25000));
+						continue;
+					}
+
+					if ($mysql_errno === 1054 || strpos($e->getMessage(), 'Unknown column') !== false || strpos($e->getMessage(), 'exception_hash') !== false) {
+						$migrated = self::migrate_database_schema($mysqli, $db_name);
+						if ($migrated) {
+							continue;
+						} else {
+							$use_fallback_insert = true;
+							continue;
+						}
+					}
+
+					throw $e;
+				}
+			}
+
+		} catch (Throwable $e) {
+			error_log("aw2_error_log::save exception failed: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+			return 'Not Logged';
+		}
 	}
 
 }

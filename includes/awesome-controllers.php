@@ -1,110 +1,105 @@
 <?php
-class controllers
-{
+class controllers{
 	static $module;
 	static $template;
-
-	static function set_index_header()
-	{
-		$app =& aw2_library::get_array_ref('app');
-		if (!isset($app['collection']['config']))
-			return false;
-
+	
+	static function set_index_header(){
+		$app=&aw2_library::get_array_ref('app');
+		if(!isset($app['collection']['config'])) return false;
+		
 		$no_index = aw2_library::get('app.settings.no_index');
-
-		if ($no_index !== 'yes')
-			return false;
-
+				
+		if($no_index !== 'yes')  return false;
+		
 		header("X-Robots-Tag: noindex", true);
-
+		
 	}
-
-	static function set_cache_header($cache)
-	{
-
+	
+	static function set_cache_header($cache){
+		
 		// skip cache false
 		//logged in user
 		// app enables cache
-		$c =& aw2_library::get_array_ref('cache');
-
-		if ($cache === 'yes' && $c['enable'] === 'yes') {
+		$c=&aw2_library::get_array_ref('cache');
+		
+		if($cache==='yes' && $c['enable']==='yes'){
 			header("Cache-Control: max-age=31536000, public");
 			header("Pragma: public");
-		} else {
+		}	
+		else{
 			header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.		
 			header("Pragma: no-cache"); // HTTP 1.0.
 			header("Expires: 0"); // Proxies.
 		}
 	}
+	
+	static function resolve_route($pieces,$query){
 
-	static function resolve_route($pieces, $query)
-	{
+		$ajax=false;
+		$app=&aw2_library::get_array_ref('app');
+				
+		$app['active']=array('controller'=>'','collection'=>'','module'=>'','template'=>'');
+		
+		$o=new stdClass();
+		$o->pieces=$pieces;
+		
+		if(empty($o->pieces))
+			$o->pieces=array('home');
+		
+		$controller = $o->pieces[0];	
 
-		$ajax = false;
-		$app =& aw2_library::get_array_ref('app');
+		if(\aw2_library::is_live_debug()){
+			$debug_format=array();
+			$debug_format['bgcolor']='#E7E0C9';
+			
+			$live_debug_event=array();
+			$live_debug_event['flow']='app';
+			$live_debug_event['stream']='app_routing';
+			$live_debug_event['action']='app.routing.start';
+			$live_debug_event['app']=$app;
+			$live_debug_event['pieces']=implode('.',$o->pieces);
+			$live_debug_event['route']=$controller;
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
 
-		$app['active'] = array('controller' => '', 'collection' => '', 'module' => '', 'template' => '');
-
-		$o = new stdClass();
-		$o->pieces = $pieces;
-
-		if (empty($o->pieces))
-			$o->pieces = array('home');
-
-		$controller = $o->pieces[0];
-
-		if (\aw2_library::is_live_debug()) {
-			$debug_format = array();
-			$debug_format['bgcolor'] = '#E7E0C9';
-
-			$live_debug_event = array();
-			$live_debug_event['flow'] = 'app';
-			$live_debug_event['stream'] = 'app_routing';
-			$live_debug_event['action'] = 'app.routing.start';
-			$live_debug_event['app'] = $app;
-			$live_debug_event['pieces'] = implode('.', $o->pieces);
-			$live_debug_event['route'] = $controller;
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-		}
-
-
-		if ($controller == "ajax") {
+		
+		if($controller == "ajax"){
 			array_shift($o->pieces);
-			$controller = $o->pieces[0];
+			$controller = $o->pieces[0]; 
 			$ajax = true;
 		}
-
-		if (is_callable(array('controllers', 'controller_' . $controller))) {
+	
+		if(is_callable(array('controllers', 'controller_'.$controller))){
 			array_shift($o->pieces);
-
+			
 			$app['active']['controller'] = $controller;
 			$app['active']['collection'] = $app['collection']['modules'];
 
 
-			if (\aw2_library::is_live_debug()) {
-				$live_debug_event['action'] = 'app.route.found';
-				$live_debug_event['route'] = $controller;
-				$debug_format['bgcolor'] = '#E7E0C9';
-				\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.route.found';
+				$live_debug_event['route']=$controller;
+				$debug_format['bgcolor']='#E7E0C9';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
 
-				\aw2_library::set('@live_debug.app_debug_event', $live_debug_event);
-				\aw2_library::set('@live_debug.app_debug_format', $debug_format);
-
-			}
-
-			call_user_func(array('controllers', 'controller_' . $controller), $o, $query);
+				\aw2_library::set('@live_debug.app_debug_event',$live_debug_event);
+				\aw2_library::set('@live_debug.app_debug_format',$debug_format);
+				
+			}	
+			
+			call_user_func(array('controllers', 'controller_'.$controller),$o, $query);
 		}
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event['action'] = 'app.route.guess';
-			$debug_format['bgcolor'] = '#E7E0C9';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-			\aw2_library::set('@live_debug.app_debug_event', $live_debug_event);
-			\aw2_library::set('@live_debug.app_debug_format', $debug_format);
-
-		}
-
-		if ($ajax != true) {
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.guess';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			\aw2_library::set('@live_debug.app_debug_event',$live_debug_event);
+			\aw2_library::set('@live_debug.app_debug_format',$debug_format);
+			
+		}	
+		
+		if($ajax != true){
 			self::controller_pages($o, $query);
 			self::controller_posts($o, $query);
 			self::controller_taxonomy($o, $query);
@@ -113,767 +108,767 @@ class controllers
 
 		self::controller_modules($o);
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event['action'] = 'app.route.not_found';
-			$live_debug_event['reason'] = 'Going for 404';
-			$debug_format['bgcolor'] = '#E7E0C9';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-		}
-
-		self::controller_404($o);
-
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.not_found';
+			$live_debug_event['reason']='Going for 404';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+		
+		self:: controller_404($o);
+		
 	}
-
-	static function controller_css($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$app =& aw2_library::get_array_ref('app');
+	
+	static function controller_css($o){
+		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
 		self::module_parts();
 		self::set_qs($o);
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
-		$result = aw2_library::module_run($app['active']['collection'], self::$module, self::$template);
+		
+		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
 
 
 		header("Content-type: text/css");
-		$c =& aw2_library::get_array_ref('cache');
-		$c['enable'] = 'yes';
+		$c=&aw2_library::get_array_ref('cache');
+		$c['enable']='yes';
 		self::set_cache_header('yes');
-		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 365))); // 1 year
+		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
 		aw2_library::cleanup();
-		exit();
-	}
+		exit();	
+	}	
+	
+	static function controller_js($o){	
+		self::$module=array_shift($o->pieces);
 
-	static function controller_js($o)
-	{
-		self::$module = array_shift($o->pieces);
-
-		$app =& aw2_library::get_array_ref('app');
+		$app=&aw2_library::get_array_ref('app');
 		self::module_parts();
 		self::set_qs($o);
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
-		$result = aw2_library::module_run($app['active']['collection'], self::$module, self::$template);
-
+		
+		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
+		
 		header("Content-type: application/javascript");
 		header("Service-Worker-Allowed: /");
-		$c =& aw2_library::get_array_ref('cache');
-		$c['enable'] = 'yes';
+		$c=&aw2_library::get_array_ref('cache');
+		$c['enable']='yes';
 		self::set_cache_header('yes');
-		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 365))); // 1 year
+		header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60*24*365))); // 1 year
 		echo $result;
 		aw2_library::cleanup();
-		exit();
+		exit();	
+	}
+	
+	static $allowed_download_ext = array('pdf','xls','xlsx','excel','csv','png','jpg','jpeg','gif','txt');
+
+	/** Normalise a user supplied relative path: no NULs, no "..", no leading slash. */
+	static function safe_relative_path($name){
+		$name = str_replace(array("\0","\\"), array('','/'), (string)$name);
+		if (preg_match('#(^|/)\.\.(/|$)#', $name)) return '';
+		return ltrim($name, '/');
 	}
 
-	static function controller_file($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$app =& aw2_library::get_array_ref('app');
+	/** File name that is safe to place in a Content-Disposition header. */
+	static function safe_download_name($name){
+		return sanitize_file_name( wp_basename( (string)$name ) );
+	}
+
+	/** True when $path (already realpath'ed) is a regular file inside $folder. */
+	static function path_in_folder($path,$folder){
+		$base = realpath($folder);
+		if ($base === false || $path === false) return false;
+		return is_file($path) && strpos($path, rtrim($base, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) === 0;
+	}
+
+	static function controller_file($o){
+		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
 		self::module_parts();
 		self::set_qs($o);
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
-		$filename = preg_replace('/\.\.\/+|\.\/+/', '', $_REQUEST['filename']);
-		$file_extension = explode('.', $filename);
-		$extension = end($file_extension);
-
-		$folder = aw2_library::get('realpath.app_folder');
-		$path = realpath($folder . $filename);
-		if ($path === false)
-			exit;
-
+		
+		$filename=self::safe_relative_path(isset($_REQUEST['filename']) ? $_REQUEST['filename'] : ''); 
+		$file_extension=explode('.',$filename);
+		$extension=end($file_extension);
+		
+		$folder=aw2_library::get('realpath.app_folder');
+		$path=realpath($folder . $filename);
+		if(!self::path_in_folder($path,$folder)) exit;
+		if(!in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::$allowed_download_ext, true)) exit;
+		
 		switch ($extension) {
 			case 'excel':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-				break;
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
+				break;				
 			case 'xls':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
 				break;
 			case 'xlsx':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
 				break;
 			case 'pdf':
-				header('Content-Type: application/pdf');
+				header('Content-Type: application/pdf');	
 				break;
 		}
-
-		header('Content-Disposition: attachment;filename="' . $filename . '"');
+		
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($filename) . '"');
 		self::set_cache_header('no');
 		self::set_index_header();
-
-		$result = file_get_contents($path);
+		
+		$result=file_get_contents($path);	
 		echo $result;
 		aw2_library::cleanup();
-		exit();
+		exit();	
 	}
-
-	static function controller_fileviewer($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$app =& aw2_library::get_array_ref('app');
+	
+	static function controller_fileviewer($o){
+		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
 		self::module_parts();
 		self::set_qs($o);
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
-		$filename = preg_replace('/\.\.\/+|\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
-		$file_extension = explode('.', $filename);
-		$extension = end($file_extension);
-
-		$folder = aw2_library::get('realpath.app_folder');
-		$path = realpath($folder . $filename);
-		if ($path === false)
-			exit;
-
+		
+		$filename=self::safe_relative_path(isset($_REQUEST['filename']) ? $_REQUEST['filename'] : ''); //$_REQUEST['filename'];
+		$file_extension=explode('.',$filename);
+		$extension=end($file_extension);
+		
+		$folder=aw2_library::get('realpath.app_folder');
+		$path=realpath($folder . $filename);
+		if(!self::path_in_folder($path,$folder)) exit;
+		if(!in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::$allowed_download_ext, true)) exit;
+	
 		switch ($extension) {
 			case 'excel':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-				break;
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
+				break;				
 			case 'xls':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
 				break;
 			case 'xlsx':
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');	
 				break;
 			case 'pdf':
-				header('Content-Type: application/pdf');
+				header('Content-Type: application/pdf');	
 				break;
 			default:
-				header('Content-Type: ' . mime_content_type($filename));
-				break;
-		}
-
+				$aw_mime = wp_check_filetype($path); header('Content-Type: '.(!empty($aw_mime['type']) ? $aw_mime['type'] : 'application/octet-stream')); header('X-Content-Type-Options: nosniff');
+				break;	
+		}			
+		
 		header("Cache-Control: max-age=2792000,public");
 		header("Pragma: public");
-
-		$result = file_get_contents($path);
+		
+		$result=file_get_contents($path);	
 		echo $result;
-		exit();
+		exit();	
 	}
 
-	static function controller_excel($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$app =& aw2_library::get_array_ref('app');
+	static function controller_excel($o){
+		self::$module=array_shift($o->pieces);
+		$app=&aw2_library::get_array_ref('app');
 		self::module_parts();
 		self::set_qs($o);
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
-		$filename = self::$module;
-		$folder = aw2_library::get('realpath.app_folder');
-		$path = realpath($folder . $filename);
-		if ($path === false)
-			exit;
+		
+		$filename=self::$module;	
+		$folder=aw2_library::get('realpath.app_folder');
+		$path=realpath($folder . $filename);
+		if(!self::path_in_folder($path,$folder)) exit;
+		if(!in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::$allowed_download_ext, true)) exit;
 
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header('Content-Disposition: attachment;filename="' . $filename . '"');
-
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($filename) . '"');
+		
 		self::set_cache_header('no');
 		self::set_index_header();
-
-		$result = file_get_contents($path);
+		
+		$result=file_get_contents($path);	
 		echo $result;
-		exit();
+		exit();	
 	}
-
-	static function controller_z($o)
-	{
+	
+	static function controller_z($o){
 		//not cached since only admin has rights
-		if (!current_user_can("develop_for_awesomeui"))
-			exit;
-
-		self::$module = '';
-		if (count($o->pieces) == 1) {
-			self::$module = array_shift($o->pieces);
+		if(!current_user_can("develop_for_awesomeui")) exit;
+		
+		self::$module='';	
+		if(count($o->pieces)==1 ){
+			self::$module=array_shift($o->pieces);	
 		}
-
-		$app =& aw2_library::get_array_ref('app');
-
-		if (empty(self::$module)) {
+		
+		$app=&aw2_library::get_array_ref('app');
+		
+		if(empty(self::$module) ){
 			//show list of modules
-
+			
 			$connection = '#default';
-			if (isset($app['collection']['modules']['connection']))
+			if(isset($app['collection']['modules']['connection'])) 
 				$connection = $app['collection']['modules']['connection'];
-
+			
 			self::set_cache_header('no');
 			self::set_index_header();
 
-			$my_posts = array();
-			if ($connection === '#default') {
-				$args = array(
+			$my_posts=array();
+			if($connection === '#default'){
+				$args=array(
 					'post_type' => $app['collection']['modules']['post_type'],
-					'post_status' => 'publish',
-					'posts_per_page' => 500,
+					'post_status'=>'publish',
+					'posts_per_page'=>500,
 					'no_found_rows' => true, // counts posts, remove if pagination required
 					'update_post_term_cache' => false, // grabs terms, remove if terms required (category, tag...)
 					'update_post_meta_cache' => false, // grabs post meta, remove if post meta required	
-					'orderby' => 'title',
-					'order' => 'ASC'
+					'orderby'=>'title',
+					'order'=>'ASC'
 				);
-				$results = new WP_Query($args);
-				$my_posts = $results->posts;
-				foreach ($my_posts as $obj) {
-					echo ('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID . "&action=edit") . '">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
+				$results = new WP_Query( $args );
+				$my_posts=$results->posts;
+				foreach ($my_posts as $obj){
+					echo('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $obj->ID  . "&action=edit") .'">' . $obj->post_title . '(' . $obj->ID . ')</a>' . '<br>');
 				}
-				echo ('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) . '">Add New</a><br>');
+					echo('<br><a target=_blank href="' . site_url("wp-admin/post-new.php?post_type=" . $app['active']['collection']['post_type']) .'">Add New</a><br>');
 
 			} else {
-				$connection_arr = \aw2_library::$stack['code_connections'][$connection];
-				$connection_service = '\\aw2\\' . $connection_arr['connection_service'] . '\\collection\\get';
-
-				$atts['connection'] = $connection;
-				$atts['post_type'] = $app['collection']['modules']['post_type'];
-
-				$results = call_user_func($connection_service, $atts);
-				echo ' <ol>';
-				foreach ($results as $obj) {
-					echo ('<li><strong>' . $obj['title'] . '</strong> (<em>' . $obj['id'] . '</em>) </li>');
+				$connection_arr= \aw2_library::$stack['code_connections'][$connection];
+				$connection_service = '\\aw2\\'.$connection_arr['connection_service'].'\\collection\\get';
+	
+				$atts['connection']=$connection;
+				$atts['post_type']=$app['collection']['modules']['post_type'];
+				
+				$results = call_user_func($connection_service,$atts);
+				echo' <ol>';
+				foreach ($results as $obj){
+					echo( '<li><strong>'.$obj['title'] . '</strong> (<em>' . $obj['id'] . '</em>) </li>' );
 				}
 				echo '</ol>';
 			}
-
-
-
+			
+			
+			
 		} else {
-			aw2_library::get_post_from_slug(self::$module, $app['active']['collection']['post_type'], $post);
-			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID . "&action=edit"));
-		}
-		aw2_library::cleanup();
-		exit();
+			aw2_library::get_post_from_slug(self::$module,$app['active']['collection']['post_type'],$post);
+			header("Location: " . site_url("wp-admin/post.php?post=" . $post->ID  . "&action=edit"));
+		}	
+		aw2_library::cleanup();		
+		exit();	
 	}
-	static function controller_s($o)
-	{
+	static function controller_s($o){
 		global $wpdb;
-
-		if (!current_user_can("develop_for_awesomeui"))
-			return;
-
-		self::$module = array_shift($o->pieces);
-		$app =& aw2_library::get_array_ref('app');
-
-		$post_type = $app['active']['collection']['post_type'];
-		echo '<h3>Searching for:' . urldecode(self::$module) . '</h3>';
-		$sql = "Select * from  " . $wpdb->posts . "  where post_status='publish' and post_content like '%" . urldecode(self::$module) . "%' and post_type='" . $post_type . "'";
+		
+		if(!current_user_can("develop_for_awesomeui")) return;
+		
+		self::$module=array_shift($o->pieces);	
+		$app=&aw2_library::get_array_ref('app');
+		
+		$post_type=$app['active']['collection']['post_type'];
+		$search_term = urldecode(self::$module);
+		echo '<h3>Searching for:' . esc_html($search_term) . '</h3>';
+		$sql=$wpdb->prepare("Select * from  ".$wpdb->posts."  where post_status='publish' and post_content like %s and post_type=%s", '%' . $wpdb->esc_like($search_term) . '%', $post_type);
 		global $wpdb;
-		$results = $wpdb->get_results($sql, ARRAY_A);
-		foreach ($results as $result) {
-			echo ('<a target=_blank href="' . site_url("wp-admin/post.php?post=" . $result['ID'] . "&action=edit") . '">' . $result['post_title'] . '(' . $result['ID'] . ')</a>' . '<br>');
+		$results = $wpdb->get_results($sql,ARRAY_A);
+		foreach ($results as $result){
+			echo('<a target=_blank href="' . esc_url(site_url("wp-admin/post.php?post=" . absint($result['ID'])  . "&action=edit")) .'">' . esc_html($result['post_title']) . '(' . absint($result['ID']) . ')</a>' . '<br>');
 		}
-		aw2_library::cleanup();
-		exit();
-	}
-
-	static function controller_search($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$pieces = explode('.', self::$module);
+		aw2_library::cleanup();		
+		exit();	
+	}	
+	
+	static function controller_search($o){
+		self::$module=array_shift($o->pieces);
+		$pieces=explode('.',self::$module);
 		self::set_qs($o);
-
-		$token = $pieces[0];
-		$nonce = $pieces[1];
-
+		
+		$token=$pieces[0];
+		$nonce=$pieces[1];
+		
 		//verify that nonce is valid
-		if (wp_create_nonce($token) != $nonce) {
+		if(!hash_equals(wp_create_nonce($token),(string)$nonce)){
 			echo 'Error E1:The Data Submitted is not valid. Check with Administrator';
-			exit();
+			exit();		
 		}
-		$collection = aw2_library::get('services.search_service');
-		echo aw2_library::module_run($collection, 'search-submit', null, null, ["ticket" => self::$module]);
+		$collection=aw2_library::get('services.search_service');
+		echo aw2_library::module_run($collection,'search-submit',null,null,["ticket"=>self::$module]);
 		aw2_library::cleanup();
-		exit();
+		exit();	
 	}
-
-	static function controller_callback($o)
-	{
-		self::$module = array_shift($o->pieces);
-		$pieces = explode('.', self::$module);
+	
+	static function controller_callback($o){
+		self::$module=array_shift($o->pieces);
+		$pieces=explode('.',self::$module);
 		self::set_qs($o);
-
-		$token = $pieces[0];
-		$nonce = $pieces[1];
-
+		
+		$token=$pieces[0];
+		$nonce=$pieces[1];
+		
 		//verify that nonce is valid
-		if (wp_create_nonce($token) != $nonce) {
+		if(!hash_equals(wp_create_nonce($token),(string)$nonce)){
 			echo 'Error E1:The Data Submitted is not valid. Check with Administrator';
-			exit();
+			exit();		
 		}
 
-		$json = \aw2_library::get_option($token);
-		if (empty($json)) {
+		$json=\aw2_library::get_option($token);
+		if(empty($json)){
 			echo 'Error E2:The Data Submitted is not valid. Check with Administrator';
-			exit();
-		}
+			exit();		
+		}				
 		echo aw2_library::call_api($json);
 		aw2_library::cleanup();
-		exit();
+		exit();	
 	}
+	
+	static function controller_csv_download($o){
 
-	static function controller_csv_download($o)
-	{
-
-		$csv_ticket = array_shift($o->pieces);
+		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
-
-		$filename = preg_replace('/\.\.\/+|\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
-
+		
+		$filename=self::safe_relative_path(isset($_REQUEST['filename']) ? $_REQUEST['filename'] : ''); //$_REQUEST['filename'];
+		
 		header("Content-type: application/csv");
-		header('Content-Disposition: attachment;filename="' . $filename);
-
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($filename) . '"');
+		
 		self::set_cache_header('no');
 
-
+		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
-
-		if ($redis->exists($csv_ticket)) {
+		
+		if($redis->exists($csv_ticket)){
 			$result = $redis->zRange($csv_ticket, 0, -1);
-			$output = implode('', $result);
+			$output=implode('',$result);
 			echo $output;
 		}
 		aw2_library::cleanup();
-		exit();
+		exit();	
 	}
+	
+	static function controller_send_mail($o){
 
-	static function controller_send_mail($o)
-	{
-
-		$csv_ticket = array_shift($o->pieces);
+		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
-
-		$filename = preg_replace('/\.\.\/+|\.\/+/', '', $_REQUEST['filename']); //$_REQUEST['filename'];
-
+		
+		$filename=self::safe_relative_path(isset($_REQUEST['filename']) ? $_REQUEST['filename'] : ''); //$_REQUEST['filename'];
+		
 		header("Content-type: application/csv");
-		header('Content-Disposition: attachment;filename="' . $filename);
-
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($filename) . '"');
+		
 		self::set_cache_header('no');
 
-
+		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
-
-		if ($redis->exists($csv_ticket)) {
+		
+		if($redis->exists($csv_ticket)){
 			$result = $redis->zRange($csv_ticket, 0, -1);
-			$output = implode('', $result);
+			$output=implode('',$result);
 			echo $output;
 		}
 		aw2_library::cleanup();
-		exit();
+		exit();	
 	}
+	
+	static function controller_report_csv($o){
 
-	static function controller_report_csv($o)
-	{
-
-		$csv_ticket = array_shift($o->pieces);
+		$csv_ticket=array_shift($o->pieces);
 		self::set_qs($o);
-
+		
 		header("Content-type: text/csv");
 		self::set_cache_header('no');
-		header('Content-Disposition: attachment;filename="' . $csv_ticket . '.csv');
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($csv_ticket . '.csv') . '"');		
 
-		$sql = \aw2\session_ticket\get(["main" => $csv_ticket, "field" => 'sql'], null, null);
-		if (empty($sql)) {
-			echo 'Ticket is invalid: ' . $csv_ticket;
-			exit();
+		$sql=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'sql'],null,null);
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . esc_html($csv_ticket);
+			exit();			
 		}
-
+		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+			if(mysqli_multi_query($conn,$sql)){
+					do{
+						if ($result=mysqli_store_result($conn)) {
 
-		$conn = new \mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-		if (mysqli_multi_query($conn, $sql)) {
-			do {
-				if ($result = mysqli_store_result($conn)) {
+							$buffer = fopen('php://memory','w');
+							
+							$first_row=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'first_row'],null,null);
+							if($first_row){
+								$data = trim($first_row) . PHP_EOL;
+								fwrite($buffer, $data );
+							}
+						
+							for($i = 0; $row = mysqli_fetch_assoc($result); $i++){
+									fputcsv($buffer, $row);
+							}
+							rewind($buffer);
+							$csv = stream_get_contents($buffer);
+							echo $csv;
+			
+						}
+						} while(mysqli_more_results($conn) && mysqli_next_result($conn));
+			}	
+		exit();	
+	}		
 
-					$buffer = fopen('php://memory', 'w');
+	static function controller_report_raw($o){
 
-					$first_row = \aw2\session_ticket\get(["main" => $csv_ticket, "field" => 'first_row'], null, null);
-					if ($first_row) {
-						$data = trim($first_row) . PHP_EOL;
-						fwrite($buffer, $data);
-					}
-
-					for ($i = 0; $row = mysqli_fetch_assoc($result); $i++) {
-						fputcsv($buffer, $row);
-					}
-					rewind($buffer);
-					$csv = stream_get_contents($buffer);
-					echo $csv;
-
-				}
-			} while (mysqli_more_results($conn) && mysqli_next_result($conn));
+		$csv_ticket=array_shift($o->pieces);
+		
+		$sql=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'sql'],null,null);
+		
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . esc_html($csv_ticket);
+			exit();			
 		}
-		exit();
-	}
-
-	static function controller_report_raw($o)
-	{
-
-		$csv_ticket = array_shift($o->pieces);
-
-		$sql = \aw2\session_ticket\get(["main" => $csv_ticket, "field" => 'sql'], null, null);
-
-		if (empty($sql)) {
-			echo 'Ticket is invalid: ' . $csv_ticket;
-			exit();
-		}
-
+		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
-
-		$conn = new \mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-
-		if (mysqli_multi_query($conn, $sql)) {
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
+		
+		if(mysqli_multi_query($conn,$sql)){
 			echo "<table border='1' cellpadding='0' cellspacing='0'>";
-			do {
-				if ($result = mysqli_store_result($conn)) {
+			do{
+				if ($result=mysqli_store_result($conn)) {
 
-					$first_row = \aw2\session_ticket\get(["main" => $csv_ticket, "field" => 'first_row'], null, null);
-					if ($first_row) {
-						$th_data = explode(",", $first_row);
-						foreach ($th_data as $th) {
-							echo "<th align='left'>" . str_replace('"', "", $th) . "</th>";
+					$first_row=\aw2\session_ticket\get(["main"=>$csv_ticket,"field"=>'first_row'],null,null);
+					if($first_row){
+						$th_data = explode(",",$first_row);
+						foreach($th_data as $th){
+							echo "<th align='left'>".str_replace('"',"",$th)."</th>";
 						}
 					}
-
-					for ($i = 0; $row = mysqli_fetch_assoc($result); $i++) {
+					
+					for($i = 0; $row = mysqli_fetch_assoc($result); $i++){
 						echo "<tr>";
-						foreach ($row as $td) {
-							echo "<td>" . $td . "</td>";
+						foreach($row as $td){
+							echo "<td>".$td."</td>";
 						}
 						echo "</tr>";
 					}
-
+	
 				}
-			} while (mysqli_more_results($conn) && mysqli_next_result($conn));
+			} while(mysqli_more_results($conn) && mysqli_next_result($conn));
 			echo "</table>";
 		}
-
-		exit();
+		
+		exit();	
 	}
 
-
-	static function controller_pages($o, $query)
-	{
-		if (empty($o->pieces))
-			return;
+	
+	static function controller_pages($o, $query){
+		if(empty($o->pieces))return;
 
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event = \aw2_library::get('@live_debug.app_debug_event');
-			$debug_format = \aw2_library::get('@live_debug.app_debug_format');
-
-			$debug_format['bgcolor'] = '#E7E0C9';
-
-			$live_debug_event['action'] = 'app.route.guess';
-			$live_debug_event['stream'] = 'page';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-		}
-
-		$app =& aw2_library::get_array_ref('app');
-
-		if (isset($app['settings']['enable_cache'])) {
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$debug_format=\aw2_library::get('@live_debug.app_debug_format');
+			
+			$debug_format['bgcolor']='#E7E0C9';
+			
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='page';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+		
+		$app=&aw2_library::get_array_ref('app');
+		
+		if(isset($app['settings']['enable_cache'])){
 			self::set_cache_header($app['settings']['enable_cache']);
-		} else
-			self::set_cache_header('no'); // HTTP 1.1.
-
+		}
+		else	
+				self::set_cache_header('no'); // HTTP 1.1.
+		
 		self::set_index_header();
-		$slug = $o->pieces[0];
+		$slug= $o->pieces[0];
 		$final_page_slug = $slug;
-
-		if (isset($app['collection']['pages'])) {
-			if (count($o->pieces) > 1) {
+			
+		if(isset($app['collection']['pages'])){
+			if(count($o->pieces) > 1){
 
 				// Loop through pieces in reverse order
 				for ($i = count($o->pieces) - 1; $i >= 0; $i--) {
 					$currentPiece = $o->pieces[$i];
-
+					
 					// Check if module exists
 					if (aw2_library::module_exists_in_collection($app['collection']['pages'], $currentPiece)) {
 						// Build path string with existing pieces
 						$path = array_slice($o->pieces, 0, $i + 1);
-						$o->pieces = array_slice($o->pieces, $i + 1);
-						$slug = $currentPiece;
+						$o->pieces = array_slice($o->pieces,$i + 1);
+						$slug = $currentPiece;	
 						$final_page_slug = implode("/", $path);
 					}
 				}
 
-			}
-			if (aw2_library::module_exists_in_collection($app['collection']['pages'], $slug)) {
+			}				
+			if(aw2_library::module_exists_in_collection($app['collection']['pages'],$slug)){
 				self::set_qs($o);
 				$app['active']['collection'] = $app['collection']['pages'];
 				$app['active']['module'] = $slug;
 				$app['active']['controller'] = 'page';
 
-				if (\aw2_library::is_live_debug()) {
-					$live_debug_event['action'] = 'app.route.found';
-					$live_debug_event['stream'] = 'page';
-					$live_debug_event['app'] = \aw2_library::get('app');
-					$live_debug_event['qs'] = \aw2_library::get('qs');
-					$debug_format['bgcolor'] = '#E7E0C9';
+				if(\aw2_library::is_live_debug()){
+					$live_debug_event['action']='app.route.found';
+					$live_debug_event['stream']='page';
+					$live_debug_event['app']=\aw2_library::get('app');
+					$live_debug_event['qs']=\aw2_library::get('qs');
+					$debug_format['bgcolor']='#E7E0C9';
+					
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+				}	
+				
+				$output = self::run_layout($app, 'pages', $final_page_slug,$query);
+			
+				if($output !== false){
+					echo $output; 
 
-					\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-				}
-
-				$output = self::run_layout($app, 'pages', $final_page_slug, $query);
-
-				if ($output !== false) {
-					echo $output;
-
-					if (\aw2_library::is_live_debug()) {
-						$live_debug_event['action'] = 'app.done';
-						$debug_format['bgcolor'] = '#E7E0C9';
-						\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-					}
-
+					if(\aw2_library::is_live_debug()){
+						$live_debug_event['action']='app.done';
+						$debug_format['bgcolor']='#E7E0C9';
+						\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+					}	
+					
 					aw2_library::cleanup();
 					exit();
 				}
-
-
+				
+				
 				return;
 			}
 		}
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event['action'] = 'app.route.guess';
-			$live_debug_event['stream'] = 'module';
-			$debug_format['bgcolor'] = '#E7E0C9';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-		}
-
-		if (isset($app['collection']['modules'])) {
-
-			if (aw2_library::module_exists_in_collection($app['collection']['modules'], $slug)) {
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='module';
+			$debug_format['bgcolor']='#E7E0C9';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
+	
+		if(isset($app['collection']['modules'])){
+		
+			if(aw2_library::module_exists_in_collection($app['collection']['modules'],$slug)){
 
 				array_shift($o->pieces);
 				self::set_qs($o);
-
+				
 				$app['active']['collection'] = $app['collection']['modules'];
 				$app['active']['module'] = $slug;
 				$app['active']['controller'] = 'module';
-
+				
 				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 				//echo '/*' .  '::before layout:' .$timeConsumed . '*/';
 
-				if (\aw2_library::is_live_debug()) {
-					$live_debug_event['action'] = 'app.route.found';
-					$live_debug_event['stream'] = 'module';
-					$live_debug_event['app'] = \aw2_library::get('app');
-					$live_debug_event['module'] = $slug;
-					$live_debug_event['qs'] = \aw2_library::get('qs');
-					$debug_format['bgcolor'] = '#E7E0C9';
-					\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-				}
-
-				$output = self::run_layout($app, 'modules', $slug, $query);
-				if ($output !== false) {
+				if(\aw2_library::is_live_debug()){
+					$live_debug_event['action']='app.route.found';
+					$live_debug_event['stream']='module';
+					$live_debug_event['app']=\aw2_library::get('app');
+					$live_debug_event['module']=$slug;
+					$live_debug_event['qs']=\aw2_library::get('qs');
+					$debug_format['bgcolor']='#E7E0C9';
+					\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+				}	
+				
+				$output = self::run_layout($app, 'modules', $slug,$query);
+				if($output !== false){
 					echo $output;
 
-					if (\aw2_library::is_live_debug()) {
-						$live_debug_event['action'] = 'app.done';
-						\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-					}
+					if(\aw2_library::is_live_debug()){
+						$live_debug_event['action']='app.done';
+						\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+					}	
 
-					//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
-					//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
+				//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
+				//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
 					aw2_library::cleanup();
 					exit();
 				}
-
+				
 				return;
-
+				
 			}
-		}
-
-
+		}	
+		
+		
 		return;
 	}
+	
+	static function controller_modules($o){ 
 
-	static function controller_modules($o)
-	{
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$debug_format=\aw2_library::get('@live_debug.app_debug_format');
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event = \aw2_library::get('@live_debug.app_debug_event');
-			$debug_format = \aw2_library::get('@live_debug.app_debug_format');
-
-			$live_debug_event['action'] = 'app.route.guess';
-			$live_debug_event['stream'] = 'module';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-		}
-
-
-		if (empty($o->pieces))
-			return;
+			$live_debug_event['action']='app.route.guess';
+			$live_debug_event['stream']='module';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+		}	
 
 
+		if(empty($o->pieces))return;
+
+		
 		self::set_cache_header('no'); // HTTP 1.1.
 		self::set_index_header();
-
-		$app =& aw2_library::get_array_ref('app');
-		self::$module = $o->pieces[0];
+		
+		$app=&aw2_library::get_array_ref('app');
+		self::$module= $o->pieces[0];
 		self::module_parts();
-
-		if (aw2_library::module_exists_in_collection($app['collection']['modules'], self::$module)) {
+		
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],self::$module)){
 			array_shift($o->pieces);
 
 			$app['active']['collection'] = $app['collection']['modules'];
 			$app['active']['controller'] = 'modules';
-
+			
 			self::set_qs($o);
 			$app['active']['module'] = self::$module;
 			$app['active']['template'] = self::$template;
 
 
-			if (\aw2_library::is_live_debug()) {
-				$live_debug_event['action'] = 'app.route.found';
-				$live_debug_event['stream'] = 'module';
-				$live_debug_event['app'] = \aw2_library::get('app');
-				$live_debug_event['module'] = self::$module;
-				$live_debug_event['template'] = self::$template;
-
-				$live_debug_event['qs'] = \aw2_library::get('qs');
-				\aw2\live_debug\publish_event(['event' => $live_debug_event, 'format' => $debug_format]);
-			}
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.route.found';
+				$live_debug_event['stream']='module';
+				$live_debug_event['app']=\aw2_library::get('app');
+				$live_debug_event['module']=self::$module;
+				$live_debug_event['template']=self::$template;
+				
+				$live_debug_event['qs']=\aw2_library::get('qs');
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'format'=>$debug_format]);
+			}	
 
 			//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 			//echo '/*' .  '::before module:' .$timeConsumed . '*/';			
-			$result = aw2_library::module_run($app['active']['collection'], self::$module, self::$template);
+			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
 
 			//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 			//echo '/*' .  '::after module:' .$timeConsumed . '*/';				
 			echo $result;
 
-			if (\aw2_library::is_live_debug()) {
-				$live_debug_event['action'] = 'app.done';
-				\aw2\live_debug\publish_event(['event' => $live_debug_event, 'bgcolor' => '#E7E0C9']);
-			}
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.done';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+			}	
 
-
+			
 			aw2_library::cleanup();
-			exit();
+			exit();	
 		}
 	}
 
-	static function controller_t($o)
-	{
-		if (empty($o->pieces))
-			return;
+	static function controller_t($o){ 
+		if(empty($o->pieces))return;
 
 		self::set_cache_header('no'); // HTTP 1.1.
-
-		$app =& aw2_library::get_array_ref('app');
-		$ticket = array_shift($o->pieces);
-		$hash = \aw2\session_ticket\get(["main" => $ticket], null, null);
-		if (!$hash || !$hash['ticket_activity']) {
+		
+		$app=&aw2_library::get_array_ref('app');
+		$ticket=array_shift($o->pieces);
+		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
+		if(!$hash || !$hash['ticket_activity']){
 			header("HTTP/1.1 404 Not Found");
-			echo 'Ticket is invalid: ' . $ticket;
-			exit();
+			echo 'Ticket is invalid: ' . esc_html($ticket);
+			exit();			
 		}
-		$ticket_activity = json_decode($hash['ticket_activity'], true);
-
-
+		$ticket_activity=json_decode($hash['ticket_activity'],true);
+		
+		
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
 
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event = \aw2_library::get('@live_debug.app_debug_event');
-			$live_debug_format = \aw2_library::get('@live_debug.app_debug_format');
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event=\aw2_library::get('@live_debug.app_debug_event');
+			$live_debug_format=\aw2_library::get('@live_debug.app_debug_format');
 
-			$live_debug_event['action'] = 'app.route.found';
-			$live_debug_event['stream'] = 'ticket';
-			$live_debug_event['ticket'] = $ticket;
-			$live_debug_event['qs'] = \aw2_library::get('qs');
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'bgcolor' => '#E7E0C9']);
-		}
-
-		if (isset($ticket_activity['service'])) {
+			$live_debug_event['action']='app.route.found';
+			$live_debug_event['stream']='ticket';
+			$live_debug_event['ticket']=$ticket;
+			$live_debug_event['qs']=\aw2_library::get('qs');
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+		}	
+		
+		if(isset($ticket_activity['service'])){
 			//$hash['main']=$ticket_activity['service'];
-			$hash['service'] = $ticket_activity['service'];
-			$result = \aw2\service\run($hash, null, []);
+			$hash['service']=$ticket_activity['service'];
+			$result=\aw2\service\run($hash,null,[]);
 			echo $result;
 			//render debug bar if needs to be rendered	
-			if (\aw2_library::is_live_debug()) {
-				$live_debug_event['action'] = 'app.done';
-				\aw2\live_debug\publish_event(['event' => $live_debug_event, 'bgcolor' => '#E7E0C9']);
-			}
+			if(\aw2_library::is_live_debug()){
+				$live_debug_event['action']='app.done';
+				\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+			}	
 			aw2_library::cleanup();
-			exit();
+			exit();	
 		}
-
-		if (!isset($ticket_activity['module'])) {
-			echo 'Ticket is invalid for module: ' . $ticket;
-			exit();
-		}
-
-
-		self::$module = $ticket_activity['module'];
+		
+		if(!isset($ticket_activity['module'])){
+			echo 'Ticket is invalid for module: ' . esc_html($ticket);
+			exit();			
+		}		
+		
+		
+		self::$module= $ticket_activity['module'];
 		self::module_parts();
 
-		if (isset($ticket_activity['collection']))
+		if(isset($ticket_activity['collection']))
 			$app['active']['collection'] = $ticket_activity['collection'];
 		else
 			$app['active']['collection'] = $app['collection']['modules'];
-
+			
 		$app['active']['module'] = self::$module;
 		$app['active']['template'] = self::$template;
-
+		
 		//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 		//echo '/*' .  '::before layout:' .$timeConsumed . '*/';
+		
 
-
-		$result = aw2_library::module_run($app['active']['collection'], self::$module, self::$template, null, $hash);
+		$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template,null,$hash);
 
 		//$timeConsumed = round(microtime(true) - $GLOBALS['curTime'],3)*1000; 
 		//echo '/*' .  '::before exit:' .$timeConsumed . '*/';
 
 		echo $result;
-		if (\aw2_library::is_live_debug()) {
-			$live_debug_event['action'] = 'app.done';
-			\aw2\live_debug\publish_event(['event' => $live_debug_event, 'bgcolor' => '#E7E0C9']);
-		}
-
-		aw2_library::cleanup();
-		exit();
+		if(\aw2_library::is_live_debug()){
+			$live_debug_event['action']='app.done';
+			\aw2\live_debug\publish_event(['event'=>$live_debug_event,'bgcolor'=>'#E7E0C9']);
+		}	
+		
+		aw2_library::cleanup();		
+		exit();	
 	}
 
-	static function controller_ts($o)
-	{
-		if (empty($o->pieces))
-			return;
+	static function controller_ts($o){ 
+		if(empty($o->pieces))return;
 
 		self::set_cache_header('no'); // HTTP 1.1.
+		
+		$app=&aw2_library::get_array_ref('app');
+		$ticket=array_shift($o->pieces);
+		
 
-		$app =& aw2_library::get_array_ref('app');
-		$ticket = array_shift($o->pieces);
-
-
-		$hash = \aw2\session_ticket\get(["main" => $ticket], null, null);
-		if (!$hash || !$hash['payload']) {
-			echo 'Ticket is invalid: ' . $ticket;
-			exit();
+		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
+		if(!$hash || !$hash['payload']){
+			echo 'Ticket is invalid: ' . esc_html($ticket);
+			exit();			
 		}
-		$payload = json_decode($hash['payload'], true);
+		$payload=json_decode($hash['payload'],true);
 		//\util::var_dump($payload);
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
-		$result = array();
-
+		$result=array();
+						
 		foreach ($payload as $one) {
-			$arr = isset($one['data']) ? $one['data'] : array();
-			$arr['service'] = $one['service'];
-			$result[] = \aw2\service\run($arr, null, []);
+			$arr=isset($one['data'])?$one['data']:array();
+			$arr['service']=$one['service'];
+			$result[]=\aw2\service\run($arr,null,[]);
 		}
-		echo implode('', $result);
+		echo implode('',$result);
 		//render debug bar if needs to be rendered	
 		aw2_library::cleanup();
-		exit();
-	}
-
+		exit();	
+	}	
+	
 	static function controller_posts($o, $query)
 	{
 
@@ -988,40 +983,36 @@ class controllers
 
 		return;
 	}
-
-	static function controller_taxonomy($o, $query)
-	{
-		if (empty($o->pieces))
-			return;
-
+	
+	static function controller_taxonomy($o, $query) {
+		if (empty($o->pieces)) return;
+	
 		$app = &aw2_library::get_array_ref('app');
-
+	
 		// Set cache and index headers
 		self::set_cache_header($app['settings']['enable_cache'] ?? 'no');
 		self::set_index_header();
-
+	
 		// Validate the default taxonomy setting
 		$taxonomy = $app['settings']['default_taxonomy'] ?? null;
-		if (!$taxonomy || !is_array($o->pieces))
-			return;
-
+		if (!$taxonomy || !is_array($o->pieces)) return;
+	
 		// Filter valid terms and identify slug
 		$valid_terms = array_filter($o->pieces, fn($piece) => term_exists($piece, $taxonomy));
 		$first_non_term_index = count($valid_terms);
-
+	
 		// If valid terms found, set the slug as the last valid term
 		$slug = !empty($valid_terms) ? end($valid_terms) : null;
-		if (!$slug)
-			return;
-
+		if (!$slug) return;
+	
 		// Update $o->pieces and query variables
 		$o->pieces = array_slice($o->pieces, $first_non_term_index);
 		self::set_qs($o);
-
+	
 		// Set taxonomy and post type in query variables
 		$query->query_vars[$taxonomy] = $slug;
 		$query->query_vars['post_type'] = $app['collection']['posts']['post_type'] ?? '';
-
+		
 		// Unset unnecessary query vars
 		unset(
 			$query->query_vars['attachment'],
@@ -1030,149 +1021,143 @@ class controllers
 		);
 		return;
 	}
-
-	static function controller_404($o)
-	{
-		if (empty($o->pieces))
-			return;
-
-		$app =& aw2_library::get_array_ref('app');
-
-		if (isset($app['settings']['enable_cache'])) {
+	
+	static function controller_404($o){
+		if(empty($o->pieces))return;
+		
+		$app=&aw2_library::get_array_ref('app');
+		
+		if(isset($app['settings']['enable_cache'])){
 			self::set_cache_header($app['settings']['enable_cache']);
-		} else
-			self::set_cache_header('no'); // HTTP 1.1.
+		}
+		else	
+				self::set_cache_header('no'); // HTTP 1.1.
 		self::set_index_header();
-
+		
 		$post_type = $app['collection']['modules']['post_type'];
-
-		if (isset($app['settings']['unhandled_module'])) {
-			self::$module = $app['settings']['unhandled_module'];
+		
+		if(isset($app['settings']['unhandled_module'])){
+			self::$module=$app['settings']['unhandled_module'];
 
 			$app['active']['collection'] = $app['collection']['modules'];
 			$app['active']['controller'] = 'unhandled_module';
-
+		
 			self::module_parts();
 			self::set_qs($o);
-
+			
 			$app['active']['module'] = self::$module;
 			$app['active']['template'] = self::$template;
-
-			$result = aw2_library::module_run($app['active']['collection'], self::$module, self::$template);
+			
+			$result=aw2_library::module_run($app['active']['collection'],self::$module,self::$template);
 
 			echo $result;
 			aw2_library::cleanup();
-			exit();
+			exit();	
 		}
-
-		if (aw2_library::module_exists_in_collection($app['collection']['modules'], '404-page')) {
+		
+		if(aw2_library::module_exists_in_collection($app['collection']['modules'],'404-page')){
 			array_shift($o->pieces);
-			$this->action = '404';
-
-			$query->query_vars['post_type'] = $post_type;
-			$query->query_vars['pagename'] = '404-page';
+			$this->action='404';
+			
+			$query->query_vars['post_type']=$post_type;
+			$query->query_vars['pagename']='404-page';
 			return;
-		}
+		}	
 	}
-
-
-	static function controller_mreports_csv($o)
-	{
-
-		$app =& aw2_library::get_array_ref('app');
-		$ticket = \aw2\request2\get(['main' => 'ticket_id']);
-
+	
+	
+	static function controller_mreports_csv($o){
+		
+		$app=&aw2_library::get_array_ref('app');
+		$ticket=\aw2\request2\get(['main'=>'ticket_id']);
+		
 		header("Content-type: text/csv");
 		self::set_cache_header('no');
-		header('Content-Disposition: attachment;filename="' . $ticket . '.csv');
+		header('Content-Disposition: attachment;filename="' . self::safe_download_name($ticket . '.csv') . '"');		
 
 
-		$hash = \aw2\session_ticket\get(["main" => $ticket], null, null);
-		if (!$hash || !$hash['ticket_activity']) {
-			echo 'Ticket is invalid: ' . $ticket;
-			exit();
+		$hash=\aw2\session_ticket\get(["main"=>$ticket],null,null);
+		if(!$hash || !$hash['ticket_activity']){
+			echo 'Ticket is invalid: ' . esc_html($ticket);
+			exit();			
 		}
-		$ticket_activity = json_decode($hash['ticket_activity'], true);
-
-
+		$ticket_activity=json_decode($hash['ticket_activity'],true);
+		
+		
 		self::set_qs($o);
 		$app['active']['controller'] = 'ticket';
 		$app['active']['ticket'] = $ticket;
 		$app['ticket']['data'] = $hash;
-
-		if (isset($ticket_activity['service'])) {
-			$hash['service'] = $ticket_activity['service'];
-			$result = \aw2\service\run($hash, null, []);
-			$buffer = fopen('php://memory', 'w');
-
-			$first_row = isset($app['first_row']) ? $app['first_row'] : null;
-			if ($first_row) {
+		
+		if(isset($ticket_activity['service'])){
+			$hash['service']=$ticket_activity['service'];
+			$result=\aw2\service\run($hash,null,[]);
+			$buffer = fopen('php://memory','w');
+			
+			$first_row=isset($app['first_row']) ? $app['first_row'] : null;
+			if($first_row){
 				$data = trim($first_row) . PHP_EOL;
-				fwrite($buffer, $data);
+				fwrite($buffer, $data );
 			}
-
-			foreach ($app['result'] as $row) {
-				fputcsv($buffer, $row);
+		
+			foreach($app['result'] as $row){
+					fputcsv($buffer, $row);
 			}
 			rewind($buffer);
 			$csv = stream_get_contents($buffer);
 			echo $csv;
-			exit();
+			exit();	
 		}
-		exit();
-	}
+		exit();	
+	}			
+	
+	static function run_layout($app, $collection, $slug,$query){
+		
+		if(isset($app['collection']['config'])){
+			$layout='';
+			$app_config=$app['collection']['config'];
+			
+			$exists=aw2_library::module_exists_in_collection($app_config,'layout');
+			if($exists)$layout='layout';
 
-	static function run_layout($app, $collection, $slug, $query)
-	{
+			$exists=aw2_library::module_exists_in_collection($app_config,$collection.'-layout');
+			if($exists)$layout=$collection.'-layout';
 
-		if (isset($app['collection']['config'])) {
-			$layout = '';
-			$app_config = $app['collection']['config'];
-
-			$exists = aw2_library::module_exists_in_collection($app_config, 'layout');
-			if ($exists)
-				$layout = 'layout';
-
-			$exists = aw2_library::module_exists_in_collection($app_config, $collection . '-layout');
-			if ($exists)
-				$layout = $collection . '-layout';
-
-			if (!empty($layout)) {
-				return aw2_library::module_run($app_config, $layout, null, null);
+			if(!empty($layout)){
+				return aw2_library::module_run($app_config,$layout,null,null);
 			}
 		}
-
-		if ($collection == 'modules') {
-			return $result = aw2_library::module_run($app['active']['collection'], $slug, '');
+				
+		if($collection == 'modules'){
+			return 	$result=aw2_library::module_run($app['active']['collection'],$slug,'');
 
 		}
-
+		
 		/* if(!isset($app['active']['collection']['post_type']) && aw2_library::post_exists('layout',AWESOME_CORE_POST_TYPE)){
 				return aw2_library::module_run(['post_type'=>AWESOME_CORE_POST_TYPE],'layout',null,null);
 		}	 */
-
+		
 		// well none of the layout options exists so hand it over to page.php
-
+		 
 		unset($query->query_vars['name']);
 		unset($query->query_vars['attachment']);
 		unset($query->query_vars['post_type']);
 		unset($query->query_vars['page']);
 		unset($query->query_vars['error']);
 		unset($query->query_vars[$app['active']['collection']['post_type']]);
-
-		$query->query_vars['post_type'] = $app['active']['collection']['post_type'];
-		$query->query_vars['pagename'] = $slug;
-
+		
+		$query->query_vars['post_type']=$app['active']['collection']['post_type'];
+		$query->query_vars['pagename']=$slug;
+		
 		//exit();
 		return false;
 	}
-
-	static function set_qs($o)
-	{
-		$qs =& aw2_library::get_array_ref('qs');
-		$i = 0;
-		foreach ($o->pieces as $value) {
-			$qs[$i] = \aw2\clean\safe(['main' => $value]);
+	
+	static function set_qs($o){
+		$qs=&aw2_library::get_array_ref('qs');
+		$i=0;
+		foreach ($o->pieces as $value){
+			$qs[$i]=\aw2\clean\safe(['main'=>$value]);
 			$i++;
 			/* $pos = strpos($value, '$$');
 			if ($pos === false) {
@@ -1185,72 +1170,71 @@ class controllers
 			array_shift($o->pieces);
 		}
 	}
-
-	static function module_parts()
-	{
-		$t = strpos(self::$module, '.');
-		if ($t === false) {
-			self::$template = '';
-			return;
+	
+	static function module_parts(){
+		$t=strpos(self::$module,'.');
+		if($t===false){
+			self::$template='';
+			return;	
 		}
-		$parts = explode('.', self::$module);
-
-		self::$module = $parts[0];
+		$parts=explode ('.' , self::$module); 
+		
+		self::$module=$parts[0];
 		array_shift($parts);
-		self::$template = implode('.', $parts);
+		self::$template=implode('.',$parts);
 	}
-
+	
 	/// New function by Sam on 9th august related to Ag Grid 
-	static function controller_report_grid($o)
-	{
+	static function controller_report_grid($o){
 
-		$grid_ticket = array_shift($o->pieces);
-
-		$sql = \aw2\session_ticket\get(["main" => $grid_ticket, "field" => 'sql'], null, null);
-
-		if (empty($sql)) {
-			echo 'Ticket is invalid: ' . $grid_ticket;
-			exit();
+		$grid_ticket=array_shift($o->pieces);
+		
+		$sql=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'sql'],null,null);
+		
+		if(empty($sql)){
+			echo 'Ticket is invalid: ' . esc_html($grid_ticket);
+			exit();			
 		}
-
+		
 		$redis = aw2_library::redis_connect(REDIS_DATABASE_SESSION_CACHE);
+		
+		$conn = new \mysqli(DB_HOST,DB_USER , DB_PASSWORD, DB_NAME);
 
-		$conn = new \mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-
-		$report_header_name = "";
-		$header = "";
-		$rows = array();
-
-		if (mysqli_multi_query($conn, $sql)) {
+		$report_header_name= "";
+		$header= "";
+		$rows=array();
+		
+		if(mysqli_multi_query($conn,$sql)){
 
 
-			do {
-				if ($result = mysqli_store_result($conn)) {
+			do{
+				if ($result=mysqli_store_result($conn)) {
 
-					$first_row = \aw2\session_ticket\get(["main" => $grid_ticket, "field" => 'first_row'], null, null);
-					$header = \aw2\session_ticket\get(["main" => $grid_ticket, "field" => 'custom_aggrid_header'], null, null);
-					$report_header_name = \aw2\session_ticket\get(["main" => $grid_ticket, "field" => 'header_name'], null, null);
-
-					for ($i = 0; $row = mysqli_fetch_assoc($result); $i++) {
+					$first_row=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'first_row'],null,null);
+					$header=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'custom_aggrid_header'],null,null);
+					$report_header_name=\aw2\session_ticket\get(["main"=>$grid_ticket,"field"=>'header_name'],null,null);
+					
+					for($i = 0; $row = mysqli_fetch_assoc($result); $i++){
 
 						$rows[] = $row;
 
-
+				
 					}
-
+	
 				}
-			} while (mysqli_more_results($conn) && mysqli_next_result($conn));
+			} while(mysqli_more_results($conn) && mysqli_next_result($conn));
 
 
-			if (is_array($rows) && count($rows)) {
+			if(is_array($rows) && count($rows))
+			{
 				$total_records = count($rows);
 			}
 
-
-
+			
+			
 			//$json_decoded_header = json_decode($header);
 
-			$json_decoded_header = json_decode($header, true);
+			$json_decoded_header = json_decode($header,true);
 			// print "<pre>";
 			// print_r($json_decoded_header);
 			$temp_arr = array();
@@ -1258,25 +1242,43 @@ class controllers
 			/* Few variables we have to change here as Ag Grid internally needs Capital case for ex. headerName, enableValue, however our awesome code is 
 			making it all lower case of all the array keys hence we are using below code to change the keys in ag grid expected format */
 
-			if (is_array($json_decoded_header) && count($json_decoded_header)) {
-				foreach ($json_decoded_header as $key_outer => $array1) {
-					if (is_array($array1) && count($array1)) {
-						foreach ($array1 as $key_inner => $array2) {
-							if ($key_inner == "header_name") {
+			if(is_array($json_decoded_header) && count($json_decoded_header))
+			{
+				foreach($json_decoded_header as $key_outer=>$array1)
+				{
+					if(is_array($array1) && count($array1))
+					{
+						foreach($array1 as $key_inner=>$array2)
+						{
+							if($key_inner=="header_name")
+							{
 								$temp_arr[$key_outer]['headerName'] = $json_decoded_header[$key_outer]['header_name'];
-							} else if ($key_inner == "enable_value") {
-								$temp_arr[$key_outer]['enableValue'] = (bool) $json_decoded_header[$key_outer]['enable_value'];
-							} else if ($key_inner == "enable_row_group") {
+							}
+							else if($key_inner=="enable_value")
+							{
+								$temp_arr[$key_outer]['enableValue'] = (bool)$json_decoded_header[$key_outer]['enable_value'];
+							}
+							else if($key_inner=="enable_row_group")
+							{
 								$temp_arr[$key_outer]['enableRowGroup'] = (bool) $json_decoded_header[$key_outer]['enable_row_group'];
-							} else if ($key_inner == "row_group") {
-								$temp_arr[$key_outer]['rowGroup'] = (bool) $json_decoded_header[$key_outer]['row_group'];
-							} else if ($key_inner == "hide") {
-								$temp_arr[$key_outer]['hide'] = (bool) $json_decoded_header[$key_outer]['hide'];
-							} else if ($key_inner == "agg_func") {
+							}
+							else if($key_inner=="row_group")
+							{
+								$temp_arr[$key_outer]['rowGroup'] = (bool)$json_decoded_header[$key_outer]['row_group'];
+							}
+							else if($key_inner=="hide")
+							{
+								$temp_arr[$key_outer]['hide'] = (bool)$json_decoded_header[$key_outer]['hide'];
+							}
+							else if($key_inner=="agg_func")
+							{
 								$temp_arr[$key_outer]['aggFunc'] = $json_decoded_header[$key_outer]['agg_func'];
-							} else if ($key_inner == "enable_pivot") {
-								$temp_arr[$key_outer]['enablePivot'] = (bool) $json_decoded_header[$key_outer]['enable_pivot'];
-							} else {
+							}
+							else if($key_inner=="enable_pivot")
+							{
+								$temp_arr[$key_outer]['enablePivot'] = (bool)$json_decoded_header[$key_outer]['enable_pivot'];
+							}
+							else{
 								$temp_arr[$key_outer][$key_inner] = $json_decoded_header[$key_outer][$key_inner];
 							}
 
@@ -1285,35 +1287,40 @@ class controllers
 							// echo "<br>=> array2 ".$array2;
 						}
 
-						if (isset($json_decoded_header[$key_outer]['to_int']) && $json_decoded_header[$key_outer]['to_int'] == 'yes') {
-							for ($counter = 0; $counter < $total_records; $counter++) {
+						if(isset($json_decoded_header[$key_outer]['to_int']) && $json_decoded_header[$key_outer]['to_int'] == 'yes')
+						{
+							for($counter = 0; $counter<$total_records;$counter++)
+							{
 								// print_r($temp_arr[$key_outer]);
 
 								$key_name = $temp_arr[$key_outer]['field'];
-
-								$rows[$counter][$key_name] = (int) $rows[$counter][$key_name];
+								
+								$rows[$counter][$key_name] = (int) $rows[$counter][$key_name]; 
 							}
-						}
+						}						
 
-
+						
 					}
-
+					
 				}
-
+	
 			}
 
-
+			
 			$columns_json = json_encode($temp_arr);
-
-
+			
+			
 
 			// print "<pre>";
 			// print_r($rows);
 			// exit;
 
-			if (isset($rows) && is_array($rows) && count($rows)) {
-				$rows = json_encode($rows);
-			} else {
+			if(isset($rows) && is_array($rows) && count($rows))
+			{
+				$rows  = json_encode($rows);
+			}
+			else
+			{
 				echo "<div style='text-align:center;'><h1>$report_header_name </h1><br><br><h3>No data to display for this selection</h3></div>";
 				exit;
 			}
@@ -1338,10 +1345,10 @@ class controllers
 
 			echo '<div id="grid-wrapper" style="padding: 1rem; padding-top: 0; overflow:hidden;">';
 			echo '<div id="myGrid" style="height: 85%; overflow:hidden;" class="ag-theme-balham" >';
-			echo "</div></div>";
+			echo "</div></div>";			
 
 
-
+			
 			echo "
 			<script src='https://unpkg.com/ag-grid-enterprise@21.0.1/dist/ag-grid-enterprise.min.js' ></script>
 				<script >
@@ -1403,9 +1410,9 @@ class controllers
 		<script type='text/javascript'>window.NREUM||(NREUM={});NREUM.info={'beacon':'bam.nr-data.net','licenseKey':'0dcebb20b3',
 			'applicationID':'171679852','transactionName':'bldbMBMEDBFXAUIMWlcdbBYISgsMUgdOS0VRQg==','queueTime':0,
 			'applicationTime':526,'atts':'QhBYRlseHx8=','errorBeacon':'bam.nr-data.net','agent':''}</script>
-		";
-
-		}
-		exit();
+		";			
+			
+		}		
+		exit();	
 	}
 }

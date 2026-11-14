@@ -943,7 +943,7 @@ static function process_handler($inputs){
 		$sc['handler']=$handlers[$service];
 		$next_tag=$pieces[0];
 		
-		if(isset($sc['handler'][$next_tag])){
+		if($next_tag !== null && isset($sc['handler'][$next_tag])){
 			$service=array_shift($pieces);
 			$sc['handler']=$sc['handler'][$service];
 			$next_tag=null;
@@ -951,7 +951,7 @@ static function process_handler($inputs){
 		}
 
 		#for 3rd level		
-		if(isset($sc['handler'][$next_tag])){
+		if($next_tag !== null && isset($sc['handler'][$next_tag])){
 			$service=array_shift($pieces);
 			$sc['handler']=$sc['handler'][$service];
 			$next_tag=null;
@@ -959,14 +959,14 @@ static function process_handler($inputs){
 		}	
 
 		#for 4th level		
-		if(isset($sc['handler'][$next_tag])){
+		if($next_tag !== null && isset($sc['handler'][$next_tag])){
 			$service=array_shift($pieces);
 			$sc['handler']=$sc['handler'][$service];
 			$next_tag=null;
 			if(isset($pieces[0]))$next_tag=$pieces[0];	
 		}				
 		#for 5th level		
-		if(isset($sc['handler'][$next_tag])){
+		if($next_tag !== null && isset($sc['handler'][$next_tag])){
 			$service=array_shift($pieces);
 			$sc['handler']=$sc['handler'][$service];
 			$next_tag=null;

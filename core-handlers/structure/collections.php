@@ -216,7 +216,7 @@ function import($atts,$content=null,$shortcode = array()){
 	if(!$post_type)return 'Post Type not provided';
 
 	global $wpdb;
-	$sql="select post_name,ID from  ".$wpdb->posts."  where post_status='publish' and post_type='" . $post_type . "'";
+	$sql=$wpdb->prepare("select post_name,ID from  ".$wpdb->posts."  where post_status='publish' and post_type=%s", $post_type);
 	$posts = $wpdb->get_results($sql, 'ARRAY_A');	
 
 	foreach($posts as $post){
